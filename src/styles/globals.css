@@ -1,0 +1,754 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   EstateIQ - Premium Enterprise Design System
+   ============================================ */
+
+@layer base {
+  :root {
+    /* ========================================
+       LIGHT MODE - "Soft Tech" Palette
+       Eliminates harsh white, professional feel
+       ======================================== */
+
+    /* Base Colors - Soft Gray/Off-white */
+    --background: 210 20% 98%;           /* #F8FAFC - Soft gray background */
+    --foreground: 222 47% 11%;           /* #0F172A - Deep Navy text */
+
+    /* Cards - Pure white with no borders, soft shadows */
+    --card: 0 0% 100%;                   /* #FFFFFF - Pure white cards */
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Primary - Emerald Green for trust & growth */
+    --primary: 160 84% 39%;              /* #059669 - Emerald */
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Soft slate */
+    --secondary: 210 20% 96%;            /* #F1F5F9 */
+    --secondary-foreground: 215 25% 27%;
+
+    /* Muted - Subtle gray tones */
+    --muted: 210 20% 94%;                /* #E2E8F0 */
+    --muted-foreground: 215 16% 47%;     /* #64748B */
+
+    /* Accent - Deep Navy for sophistication */
+    --accent: 222 47% 11%;               /* #0F172A - Deep Navy */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders - Very subtle, almost invisible */
+    --border: 214 32% 91%;               /* #E2E8F0 */
+    --input: 214 32% 91%;
+    --ring: 160 84% 39%;                 /* Emerald ring */
+    --radius: 0.75rem;
+
+    /* Extended Colors */
+    --success: 160 84% 39%;              /* Emerald */
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;               /* Amber */
+    --warning-foreground: 0 0% 100%;
+    --info: 199 89% 48%;                 /* Sky blue */
+    --info-foreground: 0 0% 100%;
+
+    /* Sidebar - Clean white with subtle separation */
+    --sidebar-bg: 0 0% 100%;
+    --sidebar-border: 214 32% 94%;
+    --sidebar-item-hover: 160 30% 97%;
+    --sidebar-item-active: 160 84% 39%;
+
+    /* EstateIQ Brand Colors */
+    --estate-navy: 222 47% 11%;          /* #0F172A */
+    --estate-emerald: 160 84% 39%;       /* #059669 */
+    --estate-gold: 38 92% 50%;           /* #F59E0B */
+    --estate-slate: 215 16% 47%;         /* #64748B */
+  }
+
+  .dark {
+    /* ========================================
+       DARK MODE - "Deep Midnight" Palette
+       Rich, not pure black, with good contrast
+       ======================================== */
+
+    /* Base - Rich navy with better contrast */
+    --background: 222 47% 10%;           /* Slightly lighter base */
+    --foreground: 210 40% 98%;           /* Brighter text */
+
+    /* Cards - Elevated with clear distinction from background */
+    --card: 222 40% 16%;                 /* Lighter cards for contrast */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 40% 18%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Primary - Brighter emerald for dark mode */
+    --primary: 160 84% 45%;              /* #10B981 */
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - More visible */
+    --secondary: 222 32% 20%;
+    --secondary-foreground: 210 40% 95%;
+
+    /* Muted - Better contrast */
+    --muted: 222 32% 18%;
+    --muted-foreground: 215 25% 65%;     /* Brighter muted text */
+
+    /* Accent - Soft emerald glow */
+    --accent: 160 84% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 63% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders - More visible */
+    --border: 222 30% 25%;               /* Lighter borders */
+    --input: 222 30% 20%;
+    --ring: 160 84% 45%;
+
+    /* Extended Colors for Dark Mode */
+    --success: 160 84% 50%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 0%;
+    --info: 199 89% 55%;
+    --info-foreground: 0 0% 100%;
+
+    /* Sidebar - Slightly elevated from background */
+    --sidebar-bg: 222 47% 12%;
+    --sidebar-border: 222 30% 22%;
+    --sidebar-item-hover: 222 32% 18%;
+    --sidebar-item-active: 160 84% 45%;
+
+    /* EstateIQ Brand Colors - Dark Mode */
+    --estate-navy: 222 47% 25%;
+    --estate-emerald: 160 84% 45%;
+    --estate-gold: 38 92% 55%;
+    --estate-slate: 215 25% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* RTL Support - Enhanced for Arabic with IBM Plex Sans Arabic */
+  [dir="rtl"] {
+    text-align: right;
+    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+  }
+
+  [dir="rtl"] h1,
+  [dir="rtl"] h2,
+  [dir="rtl"] h3,
+  [dir="rtl"] h4,
+  [dir="rtl"] h5,
+  [dir="rtl"] h6 {
+    letter-spacing: 0;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+
+  [dir="rtl"] p,
+  [dir="rtl"] span,
+  [dir="rtl"] label,
+  [dir="rtl"] button {
+    line-height: 1.7;
+    letter-spacing: 0;
+  }
+
+  [dir="rtl"] input,
+  [dir="rtl"] textarea {
+    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    line-height: 1.6;
+  }
+
+  [dir="rtl"] input::placeholder,
+  [dir="rtl"] textarea::placeholder {
+    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+  }
+
+  [dir="ltr"] {
+    text-align: left;
+    font-family: var(--font-ibm-plex), 'IBM Plex Sans', 'Inter', system-ui, sans-serif;
+  }
+
+  /* Better Arabic Typography */
+  .arabic-text {
+    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    line-height: 1.7;
+    letter-spacing: 0;
+  }
+
+  /* Focus styles for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary/50 ring-offset-2 ring-offset-background;
+  }
+
+  /* Selection styling */
+  ::selection {
+    @apply bg-primary/20 text-foreground;
+  }
+
+  /* Premium Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/20 rounded-full;
+    transition: background-color 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/40;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-white/10;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    @apply bg-white/20;
+  }
+}
+
+@layer components {
+  /* Arabic font class */
+  .font-arabic {
+    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    line-height: 1.7;
+  }
+
+  /* ========================================
+     Premium Card Styles - No borders, soft shadows
+     ======================================== */
+  .card-premium {
+    @apply bg-card rounded-2xl shadow-soft transition-all duration-300;
+  }
+
+  .card-premium:hover {
+    @apply shadow-soft-lg;
+  }
+
+  .dark .card-premium {
+    @apply bg-card backdrop-blur-xl border border-white/10;
+  }
+
+  .dark .card-premium:hover {
+    @apply border-white/20 shadow-lg shadow-primary/10;
+  }
+
+  /* Card hover effects */
+  .card-hover {
+    @apply transition-all duration-300;
+  }
+
+  .card-hover:hover {
+    @apply shadow-soft-lg -translate-y-0.5;
+  }
+
+  .dark .card-hover:hover {
+    @apply shadow-xl shadow-primary/5 border-primary/20;
+  }
+
+  /* ========================================
+     Glassmorphism Components (Dark Mode)
+     ======================================== */
+  .glass {
+    @apply bg-white/95 backdrop-blur-xl;
+  }
+
+  .dark .glass {
+    @apply bg-card backdrop-blur-xl border border-white/15;
+  }
+
+  .glass-sidebar {
+    @apply bg-sidebar-bg;
+  }
+
+  .dark .glass-sidebar {
+    @apply bg-sidebar-bg backdrop-blur-2xl border-r border-white/10;
+  }
+
+  /* ========================================
+     Gradient Text - EstateIQ Brand
+     ======================================== */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary via-emerald-500 to-teal-500 bg-clip-text text-transparent;
+  }
+
+  .gradient-text-gold {
+    @apply bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 bg-clip-text text-transparent;
+  }
+
+  .gradient-text-navy {
+    @apply bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600 bg-clip-text text-transparent;
+  }
+
+  .dark .gradient-text-navy {
+    @apply from-slate-200 via-slate-300 to-slate-400;
+  }
+
+  /* ========================================
+     Navigation Styles
+     ======================================== */
+  .nav-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200;
+  }
+
+  .nav-item-inactive {
+    @apply text-muted-foreground hover:bg-primary/5 hover:text-foreground;
+  }
+
+  .nav-item-active {
+    @apply bg-primary/10 text-primary font-medium;
+  }
+
+  .dark .nav-item-active {
+    @apply bg-primary/15 shadow-glow;
+  }
+
+  /* ========================================
+     Premium Button Styles
+     ======================================== */
+  .btn-premium {
+    @apply bg-primary text-primary-foreground px-6 py-3 rounded-xl font-medium;
+    @apply shadow-soft hover:shadow-soft-lg transition-all duration-200;
+    @apply hover:bg-primary/90 active:scale-[0.98];
+  }
+
+  .btn-premium-outline {
+    @apply border-2 border-primary text-primary px-6 py-3 rounded-xl font-medium;
+    @apply hover:bg-primary hover:text-primary-foreground transition-all duration-200;
+    @apply active:scale-[0.98];
+  }
+
+  .btn-gradient {
+    @apply bg-gradient-to-r from-primary via-emerald-500 to-teal-500 text-white;
+    @apply px-6 py-3 rounded-xl font-medium shadow-soft;
+    @apply hover:shadow-soft-lg hover:opacity-90 transition-all duration-200;
+    @apply active:scale-[0.98];
+  }
+
+  /* Premium AI Feature Button - Glowing effect */
+  .btn-ai-premium {
+    @apply relative overflow-hidden bg-gradient-to-r from-primary via-emerald-500 to-teal-500;
+    @apply text-white px-6 py-3 rounded-xl font-medium;
+    @apply shadow-glow hover:shadow-glow-lg transition-all duration-300;
+  }
+
+  .btn-ai-premium::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent;
+    @apply -translate-x-full;
+    animation: shimmer 2s infinite;
+  }
+
+  /* ========================================
+     Form Input Styling - Premium
+     ======================================== */
+  .input-premium {
+    @apply flex h-12 w-full rounded-xl border-0 bg-muted/50 px-4 py-3 text-sm;
+    @apply ring-1 ring-border/50 ring-offset-background;
+    @apply placeholder:text-muted-foreground;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+    @apply transition-all duration-200;
+  }
+
+  .dark .input-premium {
+    @apply bg-white/5 ring-white/10;
+    @apply focus-visible:ring-primary/50 focus-visible:bg-white/10;
+  }
+
+  /* Select dropdown styling for dark mode */
+  select.input-premium {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+  }
+
+  [dir="rtl"] select.input-premium {
+    background-position: left 0.75rem center;
+    padding-right: 1rem;
+    padding-left: 2.5rem;
+  }
+
+  select.input-premium option {
+    @apply bg-background text-foreground py-2;
+  }
+
+  .dark select.input-premium option {
+    background-color: hsl(222, 47%, 11%);
+    color: white;
+  }
+
+  /* Legacy form-input support */
+  .form-input {
+    @apply input-premium;
+  }
+
+  /* ========================================
+     Badge Variants - Premium
+     ======================================== */
+  .badge-premium {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium;
+    @apply transition-colors duration-200;
+  }
+
+  .badge-success {
+    @apply bg-success/10 text-success;
+  }
+
+  .badge-warning {
+    @apply bg-warning/10 text-warning;
+  }
+
+  .badge-info {
+    @apply bg-info/10 text-info;
+  }
+
+  .badge-emerald {
+    @apply bg-primary/10 text-primary;
+  }
+
+  .badge-gold {
+    @apply bg-amber-100 text-amber-700;
+  }
+
+  .dark .badge-gold {
+    @apply bg-amber-900/30 text-amber-400;
+  }
+
+  /* ========================================
+     Progress Bar - Premium
+     ======================================== */
+  .progress-bar {
+    @apply h-2 bg-muted/50 rounded-full overflow-hidden;
+  }
+
+  .progress-bar-fill {
+    @apply h-full bg-gradient-to-r from-primary to-emerald-400 rounded-full;
+    @apply transition-all duration-500 ease-out;
+  }
+
+  /* ========================================
+     Stat Cards - Premium
+     ======================================== */
+  .stat-card {
+    @apply card-premium p-6;
+  }
+
+  .stat-card-icon {
+    @apply w-12 h-12 rounded-xl flex items-center justify-center;
+    @apply bg-gradient-to-br from-primary/10 to-emerald-500/10;
+  }
+
+  .dark .stat-card-icon {
+    @apply from-primary/20 to-emerald-500/20;
+  }
+
+  /* ========================================
+     Page Layout Components
+     ======================================== */
+  .page-header {
+    @apply mb-8;
+  }
+
+  .page-title {
+    @apply text-2xl md:text-3xl font-semibold text-foreground tracking-tight;
+  }
+
+  .page-description {
+    @apply text-muted-foreground mt-2 text-base;
+  }
+
+  .section-card {
+    @apply card-premium p-6 md:p-8;
+  }
+
+  .section-header {
+    @apply flex items-center justify-between mb-6 pb-4 border-b border-border/50;
+  }
+
+  .section-title {
+    @apply text-lg font-semibold text-foreground flex items-center gap-3;
+  }
+
+  /* ========================================
+     RTL-aware utilities
+     ======================================== */
+  .ms-auto {
+    margin-inline-start: auto;
+  }
+
+  .me-auto {
+    margin-inline-end: auto;
+  }
+
+  .ps-4 {
+    padding-inline-start: 1rem;
+  }
+
+  .pe-4 {
+    padding-inline-end: 1rem;
+  }
+
+  /* ========================================
+     Skeleton Loading - Premium
+     ======================================== */
+  .skeleton {
+    @apply animate-pulse bg-muted/60 rounded-xl;
+  }
+
+  .dark .skeleton {
+    @apply bg-white/5;
+  }
+
+  /* Waveform animation */
+  .waveform-bar {
+    @apply transition-all duration-75;
+  }
+
+  /* Real Estate specific components - Legacy support */
+  .re-highlight {
+    @apply bg-gradient-to-r from-primary/10 to-emerald-500/10 rounded-xl p-4 border border-primary/20;
+  }
+
+  .re-score-card {
+    @apply bg-gradient-to-br from-primary/5 via-transparent to-emerald-500/5 rounded-2xl p-6 border border-primary/10;
+  }
+}
+
+@layer utilities {
+  /* ========================================
+     Animation Utilities
+     ======================================== */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+
+  .animate-slide-down {
+    animation: slideDown 0.4s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+
+  .animate-fade-in-up-delayed {
+    animation: fadeInUp 0.5s ease-out forwards;
+    animation-delay: 0.1s;
+    opacity: 0;
+  }
+
+  .animate-fade-in-up-delayed-2 {
+    animation: fadeInUp 0.5s ease-out forwards;
+    animation-delay: 0.2s;
+    opacity: 0;
+  }
+
+  .animate-fade-in-up-delayed-3 {
+    animation: fadeInUp 0.5s ease-out forwards;
+    animation-delay: 0.3s;
+    opacity: 0;
+  }
+
+  .animate-scale-in-center {
+    animation: scaleInCenter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes scaleInCenter {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* ========================================
+     Auth Page Animations
+     ======================================== */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-float-delayed {
+    animation: float 6s ease-in-out infinite;
+    animation-delay: 2s;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s linear infinite;
+    background-size: 200% 100%;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+
+  @keyframes glow {
+    from { box-shadow: 0 0 20px rgba(5, 150, 105, 0.3); }
+    to { box-shadow: 0 0 40px rgba(5, 150, 105, 0.5), 0 0 60px rgba(5, 150, 105, 0.2); }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* ========================================
+     Auth Page Backgrounds - Enterprise Grade
+     ======================================== */
+  .auth-gradient {
+    background: linear-gradient(135deg,
+      hsl(222, 47%, 8%) 0%,
+      hsl(222, 47%, 11%) 25%,
+      hsl(160, 84%, 15%) 50%,
+      hsl(222, 47%, 11%) 75%,
+      hsl(222, 47%, 8%) 100%);
+    background-size: 400% 400%;
+    animation: gradientMove 20s ease infinite;
+  }
+
+  .auth-gradient-solid {
+    background: linear-gradient(135deg,
+      #070B14 0%,
+      #0D1320 35%,
+      #0A1A15 50%,
+      #0D1320 65%,
+      #070B14 100%);
+  }
+
+  @keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Geometric pattern overlay */
+  .auth-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* ========================================
+     Theme Transitions
+     ======================================== */
+  .theme-transition {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  /* ========================================
+     Text Utilities
+     ======================================== */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .arabic-spacing {
+    word-spacing: 0.05em;
+    letter-spacing: 0;
+    line-height: 1.9;
+  }
+
+  /* ========================================
+     Scrollbar Utilities
+     ======================================== */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ========================================
+     Focus Ring Animation
+     ======================================== */
+  .input-focus-ring {
+    position: relative;
+  }
+
+  .input-focus-ring::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 0.875rem;
+    background: linear-gradient(45deg, hsl(160, 84%, 39%), hsl(160, 84%, 50%), hsl(160, 84%, 39%));
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.3s ease;
+  }
+
+  .input-focus-ring:focus-within::after {
+    opacity: 0.5;
+    animation: pulse-ring 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-ring {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+  }
+}

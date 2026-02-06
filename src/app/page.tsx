@@ -1,0 +1,496 @@
+'use client';
+
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { SettingsDropdown } from '@/components/ui/LanguageToggle';
+import { cn } from '@/lib/utils';
+import {
+  Building2,
+  MessageSquare,
+  BarChart,
+  Award,
+  Play,
+  CheckCircle,
+  Star,
+  ArrowRight,
+  ArrowLeft,
+  Users,
+  TrendingUp,
+  Shield,
+  Zap,
+  BookOpen,
+  Target,
+  Phone,
+  Globe
+} from 'lucide-react';
+
+export default function HomePage() {
+  const { t, isRTL } = useLanguage();
+
+  // RTL-aware arrow
+  const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
+
+  return (
+    <div className="flex flex-col min-h-screen bg-background">
+      {/* Navigation */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center">
+                <Building2 className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-foreground">{t.landing.brandName}</span>
+            </div>
+            <nav className="hidden md:flex items-center gap-8">
+              <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.features}</a>
+              <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.howItWorks}</a>
+              <a href="#testimonials" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.testimonials}</a>
+              <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.pricing}</a>
+            </nav>
+            <div className="flex items-center gap-3">
+              <SettingsDropdown />
+              <Link href="/login">
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+                  {t.landing.nav.signIn}
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button className="btn-gradient shadow-lg">
+                  {t.landing.nav.getStarted}
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-grow pt-16">
+        {/* Hero Section */}
+        <section className="relative overflow-hidden bg-gradient-to-b from-muted/50 to-background py-20 lg:py-32">
+          <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] dark:opacity-20" />
+          <div className="container mx-auto px-4 lg:px-8 relative">
+            <div className="max-w-4xl mx-auto text-center">
+              <Badge className="mb-6 bg-primary/10 text-primary hover:bg-primary/10 px-4 py-1.5">
+                <Zap className={cn("h-3.5 w-3.5", isRTL ? "ml-1" : "mr-1")} />
+                {t.landing.hero.badge}
+              </Badge>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
+                {t.landing.hero.titlePart1}{' '}
+                <span className="gradient-text">
+                  {t.landing.hero.titleHighlight}
+                </span>
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
+                {t.landing.hero.description}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/register">
+                  <Button size="lg" className="w-full sm:w-auto btn-gradient h-12 px-8 text-base shadow-lg">
+                    {t.landing.hero.startFreeTrial}
+                    <ArrowIcon className={cn("h-4 w-4", isRTL ? "mr-2" : "ml-2")} />
+                  </Button>
+                </Link>
+                <Link href="#how-it-works">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto h-12 px-8 text-base">
+                    <Play className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                    {t.landing.hero.watchDemo}
+                  </Button>
+                </Link>
+              </div>
+              <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-success" />
+                  <span>{t.landing.hero.noCreditCard}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-success" />
+                  <span>{t.landing.hero.freeTrial}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-success" />
+                  <span>{t.landing.hero.cancelAnytime}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="py-12 bg-card border-y border-border">
+          <div className="container mx-auto px-4 lg:px-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              <div className="text-center">
+                <p className="text-3xl md:text-4xl font-bold text-foreground">10,000+</p>
+                <p className="text-sm text-muted-foreground mt-1">{t.landing.stats.activeTrainees}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl md:text-4xl font-bold text-foreground">95%</p>
+                <p className="text-sm text-muted-foreground mt-1">{t.landing.stats.successRate}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl md:text-4xl font-bold text-foreground">50K+</p>
+                <p className="text-sm text-muted-foreground mt-1">{t.landing.stats.sessionsCompleted}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl md:text-4xl font-bold text-foreground">4.9</p>
+                <p className="text-sm text-muted-foreground mt-1">{t.landing.stats.userRating}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section id="features" className="py-20 lg:py-28 bg-background">
+          <div className="container mx-auto px-4 lg:px-8">
+            <div className="text-center mb-16">
+              <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/10">{t.landing.nav.features}</Badge>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                {t.landing.features.title}
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t.landing.features.subtitle}
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              <Card className="card-hover group">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary transition-colors">
+                    <MessageSquare className="h-6 w-6 text-primary group-hover:text-white transition-colors" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{t.landing.features.aiSimulations.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {t.landing.features.aiSimulations.description}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="card-hover group">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4 group-hover:bg-purple-600 transition-colors">
+                    <Phone className="h-6 w-6 text-purple-600 dark:text-purple-400 group-hover:text-white transition-colors" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{t.landing.features.voiceCalls.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {t.landing.features.voiceCalls.description}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="card-hover group">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center mb-4 group-hover:bg-success transition-colors">
+                    <BarChart className="h-6 w-6 text-success group-hover:text-white transition-colors" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{t.landing.features.analytics.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {t.landing.features.analytics.description}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="card-hover group">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 rounded-xl bg-warning/10 flex items-center justify-center mb-4 group-hover:bg-warning transition-colors">
+                    <BookOpen className="h-6 w-6 text-warning group-hover:text-white transition-colors" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{t.landing.features.courses.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {t.landing.features.courses.description}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="card-hover group">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center mb-4 group-hover:bg-destructive transition-colors">
+                    <Award className="h-6 w-6 text-destructive group-hover:text-white transition-colors" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{t.landing.features.certifications.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {t.landing.features.certifications.description}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="card-hover group">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 rounded-xl bg-info/10 flex items-center justify-center mb-4 group-hover:bg-info transition-colors">
+                    <Globe className="h-6 w-6 text-info group-hover:text-white transition-colors" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{t.landing.features.bilingual.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {t.landing.features.bilingual.description}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* How It Works Section */}
+        <section id="how-it-works" className="py-20 lg:py-28 bg-muted/30">
+          <div className="container mx-auto px-4 lg:px-8">
+            <div className="text-center mb-16">
+              <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/10">{t.landing.nav.howItWorks}</Badge>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                {t.landing.howItWorks.title}
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t.landing.howItWorks.subtitle}
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+              <div className="relative">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-white text-2xl font-bold mb-6 shadow-lg">
+                    1
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-3">{t.landing.howItWorks.step1.title}</h3>
+                  <p className="text-muted-foreground">
+                    {t.landing.howItWorks.step1.description}
+                  </p>
+                </div>
+                <div className={cn(
+                  "hidden md:block absolute top-8 w-[calc(40%+2rem)] h-0.5 bg-gradient-to-r from-primary to-purple-600",
+                  isRTL ? "right-[60%]" : "left-[60%]"
+                )} />
+              </div>
+
+              <div className="relative">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-purple-600 flex items-center justify-center text-white text-2xl font-bold mb-6 shadow-lg">
+                    2
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-3">{t.landing.howItWorks.step2.title}</h3>
+                  <p className="text-muted-foreground">
+                    {t.landing.howItWorks.step2.description}
+                  </p>
+                </div>
+                <div className={cn(
+                  "hidden md:block absolute top-8 w-[calc(40%+2rem)] h-0.5 bg-gradient-to-r from-purple-600 to-success",
+                  isRTL ? "right-[60%]" : "left-[60%]"
+                )} />
+              </div>
+
+              <div className="relative">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-success flex items-center justify-center text-white text-2xl font-bold mb-6 shadow-lg">
+                    3
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-3">{t.landing.howItWorks.step3.title}</h3>
+                  <p className="text-muted-foreground">
+                    {t.landing.howItWorks.step3.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials Section */}
+        <section id="testimonials" className="py-20 lg:py-28 bg-background">
+          <div className="container mx-auto px-4 lg:px-8">
+            <div className="text-center mb-16">
+              <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/10">{t.landing.nav.testimonials}</Badge>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                {t.landing.testimonials.title}
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t.landing.testimonials.subtitle}
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {t.landing.testimonials.items.map((testimonial, index) => (
+                <Card key={index} className="card-hover">
+                  <CardContent className="p-6">
+                    <div className="flex gap-1 mb-4">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-5 w-5 fill-warning text-warning" />
+                      ))}
+                    </div>
+                    <p className="text-muted-foreground mb-6 leading-relaxed">
+                      "{testimonial.quote}"
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm",
+                        index === 0 ? "bg-gradient-to-br from-primary to-blue-600" :
+                        index === 1 ? "bg-gradient-to-br from-success to-emerald-500" :
+                        "bg-gradient-to-br from-purple-500 to-pink-500"
+                      )}>
+                        {testimonial.initials}
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">{testimonial.name}</p>
+                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing Section */}
+        <section id="pricing" className="py-20 lg:py-28 bg-muted/30">
+          <div className="container mx-auto px-4 lg:px-8">
+            <div className="text-center mb-16">
+              <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/10">{t.landing.nav.pricing}</Badge>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                {t.landing.pricing.title}
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t.landing.pricing.subtitle}
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {/* Free Plan */}
+              <Card className="card-hover">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{t.landing.pricing.free.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">{t.landing.pricing.free.description}</p>
+                  <div className="mb-6">
+                    <span className="text-4xl font-bold text-foreground">{t.landing.pricing.free.price}</span>
+                    <span className="text-muted-foreground">/{t.landing.pricing.perMonth}</span>
+                  </div>
+                  <ul className="space-y-3 mb-6">
+                    {t.landing.pricing.free.features.map((feature, i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <CheckCircle className="h-4 w-4 text-success flex-shrink-0" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/register">
+                    <Button variant="outline" className="w-full">{t.landing.pricing.getStarted}</Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Pro Plan */}
+              <Card className="border-primary bg-primary/5 relative">
+                <div className={cn("absolute -top-3", isRTL ? "right-1/2 translate-x-1/2" : "left-1/2 -translate-x-1/2")}>
+                  <Badge className="bg-primary text-white hover:bg-primary">{t.landing.pricing.mostPopular}</Badge>
+                </div>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{t.landing.pricing.pro.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">{t.landing.pricing.pro.description}</p>
+                  <div className="mb-6">
+                    <span className="text-4xl font-bold text-foreground">{t.landing.pricing.pro.price}</span>
+                    <span className="text-muted-foreground">/{t.landing.pricing.perMonth}</span>
+                  </div>
+                  <ul className="space-y-3 mb-6">
+                    {t.landing.pricing.pro.features.map((feature, i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <CheckCircle className="h-4 w-4 text-success flex-shrink-0" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/register">
+                    <Button className="w-full btn-gradient">{t.landing.pricing.startTrial}</Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Enterprise Plan */}
+              <Card className="card-hover">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{t.landing.pricing.enterprise.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">{t.landing.pricing.enterprise.description}</p>
+                  <div className="mb-6">
+                    <span className="text-4xl font-bold text-foreground">{t.landing.pricing.enterprise.price}</span>
+                  </div>
+                  <ul className="space-y-3 mb-6">
+                    {t.landing.pricing.enterprise.features.map((feature, i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <CheckCircle className="h-4 w-4 text-success flex-shrink-0" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button variant="outline" className="w-full">{t.landing.pricing.contactSales}</Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20 lg:py-28 bg-gradient-to-br from-primary via-primary to-blue-700 dark:from-primary/90 dark:via-primary/80 dark:to-blue-800">
+          <div className="container mx-auto px-4 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              {t.landing.cta.title}
+            </h2>
+            <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
+              {t.landing.cta.description}
+            </p>
+            <Link href="/register">
+              <Button size="lg" className="bg-white text-primary hover:bg-white/90 h-12 px-8 text-base font-semibold shadow-lg">
+                {t.landing.cta.button}
+                <ArrowIcon className={cn("h-4 w-4", isRTL ? "mr-2" : "ml-2")} />
+              </Button>
+            </Link>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-card border-t border-border py-12">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center">
+                  <Building2 className="h-4 w-4 text-white" />
+                </div>
+                <span className="text-lg font-bold text-foreground">{t.landing.brandName}</span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {t.landing.footer.description}
+              </p>
+            </div>
+            <div>
+              <h4 className="text-foreground font-semibold mb-4">{t.landing.footer.product}</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.features}</a></li>
+                <li><a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.pricing}</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.courses}</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.simulations}</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-foreground font-semibold mb-4">{t.landing.footer.company}</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.about}</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.blog}</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.careers}</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.contact}</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-foreground font-semibold mb-4">{t.landing.footer.legal}</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.privacy}</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.terms}</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.cookies}</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="pt-8 border-t border-border text-center text-sm text-muted-foreground">
+            <p>&copy; {new Date().getFullYear()} {t.landing.brandName}. {t.landing.footer.allRightsReserved}</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
