@@ -370,7 +370,7 @@ export default function AdminLayout({
           </div>
 
           {/* Admin Info */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500/5 via-purple-500/5 to-transparent border border-violet-500/10">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-transparent border border-violet-500/20">
             <div className="flex items-center gap-3">
               <Avatar className="h-11 w-11 border-2 border-violet-500/20 shadow-soft">
                 <AvatarFallback className="bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600 text-white text-sm font-bold">
@@ -567,7 +567,7 @@ export default function AdminLayout({
           <div className="flex justify-center">
             <CompactSettings />
           </div>
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500/5 via-purple-500/5 to-transparent border border-violet-500/10">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-transparent border border-violet-500/20">
             <div className="flex items-center gap-3">
               <Avatar className="h-11 w-11 border-2 border-violet-500/20 shadow-soft">
                 <AvatarFallback className="bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600 text-white text-sm font-bold">

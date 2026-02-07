@@ -29,23 +29,23 @@
     --primary-foreground: 0 0% 100%;
 
     /* Secondary - Soft slate */
-    --secondary: 210 20% 96%;            /* #F1F5F9 */
-    --secondary-foreground: 215 25% 27%;
+    --secondary: 210 20% 95%;            /* #EEF2F6 - Slightly more visible */
+    --secondary-foreground: 222 47% 11%; /* Dark text on secondary */
 
     /* Muted - Subtle gray tones */
     --muted: 210 20% 94%;                /* #E2E8F0 */
-    --muted-foreground: 215 16% 47%;     /* #64748B */
+    --muted-foreground: 215 20% 35%;     /* #475569 - Slate-600, readable */
 
-    /* Accent - Deep Navy for sophistication */
-    --accent: 222 47% 11%;               /* #0F172A - Deep Navy */
-    --accent-foreground: 0 0% 100%;
+    /* Accent - Light gray for hover states */
+    --accent: 210 20% 94%;               /* #E8ECF1 - Light hover bg */
+    --accent-foreground: 222 47% 11%;    /* Dark text on hover */
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Borders - Very subtle, almost invisible */
-    --border: 214 32% 91%;               /* #E2E8F0 */
-    --input: 214 32% 91%;
+    /* Borders - Visible light gray */
+    --border: 214 32% 86%;               /* #D1D9E6 - Visible borders */
+    --input: 214 32% 86%;
     --ring: 160 84% 39%;                 /* Emerald ring */
     --radius: 0.75rem;
 
@@ -57,9 +57,9 @@
     --info: 199 89% 48%;                 /* Sky blue */
     --info-foreground: 0 0% 100%;
 
-    /* Sidebar - Clean white with subtle separation */
+    /* Sidebar - Clean white with visible separation */
     --sidebar-bg: 0 0% 100%;
-    --sidebar-border: 214 32% 94%;
+    --sidebar-border: 214 32% 88%;
     --sidebar-item-hover: 160 30% 97%;
     --sidebar-item-active: 160 84% 39%;
 
@@ -99,9 +99,9 @@
     --muted: 222 32% 18%;
     --muted-foreground: 215 25% 65%;     /* Brighter muted text */
 
-    /* Accent - Soft emerald glow */
-    --accent: 160 84% 45%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent - Subtle surface for hover states */
+    --accent: 222 32% 22%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 63% 55%;
     --destructive-foreground: 0 0% 100%;
@@ -498,7 +498,7 @@
   }
 
   .section-header {
-    @apply flex items-center justify-between mb-6 pb-4 border-b border-border/50;
+    @apply flex items-center justify-between mb-6 pb-4 border-b border-border;
   }
 
   .section-title {
@@ -546,7 +546,7 @@
   }
 
   .re-score-card {
-    @apply bg-gradient-to-br from-primary/5 via-transparent to-emerald-500/5 rounded-2xl p-6 border border-primary/10;
+    @apply bg-gradient-to-br from-primary/10 via-transparent to-emerald-500/5 rounded-2xl p-6 border border-primary/20;
   }
 }
 

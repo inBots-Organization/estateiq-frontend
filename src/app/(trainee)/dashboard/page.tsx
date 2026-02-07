@@ -228,7 +228,7 @@ export default function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {/* Overall Progress */}
-        <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-primary/10 via-background to-background">
+        <Card className="relative overflow-hidden border border-border/50 shadow-lg bg-gradient-to-br from-primary/10 via-background to-background">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-16 translate-x-16" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -253,7 +253,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Average Score */}
-        <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-emerald-500/10 via-background to-background">
+        <Card className="relative overflow-hidden border border-border/50 shadow-lg bg-gradient-to-br from-emerald-500/10 via-background to-background">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -translate-y-16 translate-x-16" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -272,7 +272,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Current Streak */}
-        <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-amber-500/10 via-background to-background">
+        <Card className="relative overflow-hidden border border-border/50 shadow-lg bg-gradient-to-br from-amber-500/10 via-background to-background">
           <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full -translate-y-16 translate-x-16" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -289,7 +289,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Time Invested */}
-        <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-blue-500/10 via-background to-background">
+        <Card className="relative overflow-hidden border border-border/50 shadow-lg bg-gradient-to-br from-blue-500/10 via-background to-background">
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -translate-y-16 translate-x-16" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -314,7 +314,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* Current Course Progress */}
           {data.currentCourse && (
-            <Card className="border-0 shadow-lg overflow-hidden">
+            <Card className="border border-border/50 shadow-lg overflow-hidden">
               <div className="h-1 bg-gradient-to-r from-primary via-primary/80 to-primary/60" />
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-foreground">
@@ -355,7 +355,7 @@ export default function DashboardPage() {
           {/* Quick Actions */}
           <div className="grid gap-4 md:grid-cols-2">
             {/* Practice Simulations */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all group">
+            <Card className="border border-border/50 shadow-lg hover:shadow-xl transition-all group">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-foreground group-hover:text-primary transition-colors">
                   <MessageSquare className="h-5 w-5 text-primary" />
@@ -382,7 +382,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Voice Practice */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all group">
+            <Card className="border border-border/50 shadow-lg hover:shadow-xl transition-all group">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-foreground group-hover:text-primary transition-colors">
                   <Phone className="h-5 w-5 text-primary" />
@@ -412,7 +412,7 @@ export default function DashboardPage() {
 
         {/* Right Column - Weekly Activity */}
         <div className="space-y-6">
-          <Card className="border-0 shadow-lg">
+          <Card className="border border-border/50 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-foreground">
                 <Activity className="h-5 w-5 text-primary" />
@@ -447,7 +447,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Progress Summary Section */}
-      <Card className="border-0 shadow-lg">
+      <Card className="border border-border/50 shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <BarChart className="h-5 w-5 text-primary" />

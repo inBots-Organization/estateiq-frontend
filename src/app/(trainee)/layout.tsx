@@ -253,7 +253,7 @@ export default function TraineeLayout({
           </div>
 
           {/* User Info - Premium Card */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/5 via-emerald-500/5 to-transparent border border-primary/10">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-emerald-500/5 to-transparent border border-primary/20">
             <div className="flex items-center gap-3">
               <Avatar className="h-11 w-11 border-2 border-primary/20 shadow-soft">
                 <AvatarFallback className="bg-gradient-to-br from-primary via-emerald-500 to-estate-gold text-white text-sm font-bold">
@@ -410,7 +410,7 @@ export default function TraineeLayout({
           <div className="flex justify-center">
             <CompactSettings />
           </div>
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/5 via-emerald-500/5 to-transparent border border-primary/10">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-emerald-500/5 to-transparent border border-primary/20">
             <div className="flex items-center gap-3">
               <Avatar className="h-11 w-11 border-2 border-primary/20 shadow-soft">
                 <AvatarFallback className="bg-gradient-to-br from-primary via-emerald-500 to-estate-gold text-white text-sm font-bold">
