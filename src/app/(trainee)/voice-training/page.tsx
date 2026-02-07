@@ -42,6 +42,63 @@ function getAuthToken(): string | null {
   return null;
 }
 
+// Error translation helper
+function translateError(error: unknown): string {
+  const errorString = String(error).toLowerCase();
+
+  // Microphone permission errors
+  if (errorString.includes('permission denied') ||
+      errorString.includes('notallowederror') ||
+      errorString.includes('not allowed')) {
+    return 'تم رفض الوصول إلى الميكروفون. يرجى السماح بالوصول من إعدادات المتصفح ثم المحاولة مرة أخرى.';
+  }
+
+  if (errorString.includes('permission') && errorString.includes('microphone')) {
+    return 'يرجى السماح بالوصول إلى الميكروفون للتمكن من إجراء المكالمات الصوتية.';
+  }
+
+  // Device not found
+  if (errorString.includes('notfounderror') ||
+      errorString.includes('no microphone') ||
+      errorString.includes('device not found')) {
+    return 'لم يتم العثور على ميكروفون. يرجى التأكد من توصيل ميكروفون بجهازك.';
+  }
+
+  // Device in use
+  if (errorString.includes('notreadableerror') ||
+      errorString.includes('device in use') ||
+      errorString.includes('could not start')) {
+    return 'الميكروفون مستخدم حالياً من تطبيق آخر. يرجى إغلاق التطبيقات الأخرى والمحاولة مرة أخرى.';
+  }
+
+  // Connection errors
+  if (errorString.includes('network') ||
+      errorString.includes('connection') ||
+      errorString.includes('websocket')) {
+    return 'خطأ في الاتصال بالإنترنت. يرجى التحقق من اتصالك والمحاولة مرة أخرى.';
+  }
+
+  // Timeout
+  if (errorString.includes('timeout')) {
+    return 'انتهت مهلة الاتصال. يرجى المحاولة مرة أخرى.';
+  }
+
+  // HTTPS required
+  if (errorString.includes('secure context') ||
+      errorString.includes('https')) {
+    return 'المكالمات الصوتية تتطلب اتصال آمن (HTTPS). يرجى استخدام الموقع عبر HTTPS.';
+  }
+
+  // Generic browser support
+  if (errorString.includes('not supported') ||
+      errorString.includes('notsupportederror')) {
+    return 'متصفحك لا يدعم المكالمات الصوتية. يرجى استخدام Chrome أو Firefox أو Safari.';
+  }
+
+  // Default - show original error with Arabic prefix
+  return `حدث خطأ: ${error}`;
+}
+
 // Types
 interface PerformanceAnalysis {
   overallScore: number;
@@ -209,7 +266,8 @@ export default function VoiceTrainingPage() {
     },
     onError: (error) => {
       console.error('[VoiceTraining] Error:', error);
-      setError(`Connection error: ${error}`);
+      const errorMessage = translateError(error);
+      setError(errorMessage);
       setCallStatus('idle');
     },
   });
@@ -346,8 +404,27 @@ export default function VoiceTrainingPage() {
 
         {/* Error Display */}
         {error && (
-          <div className="bg-rose-100 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 rounded-lg p-4 mb-6 text-center">
-            <p className="text-rose-700 dark:text-rose-300">{error}</p>
+          <div className="bg-rose-100 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 rounded-lg p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-10 h-10 bg-rose-200 dark:bg-rose-900/50 rounded-full flex items-center justify-center">
+                <span className="text-xl">⚠️</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-rose-800 dark:text-rose-200 mb-1">خطأ في المكالمة</h3>
+                <p className="text-rose-700 dark:text-rose-300 text-sm">{error}</p>
+                {error.includes('الميكروفون') && (
+                  <div className="mt-3 p-3 bg-white/50 dark:bg-black/20 rounded-lg">
+                    <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold mb-2">كيفية السماح بالميكروفون:</p>
+                    <ol className="text-xs text-rose-600 dark:text-rose-400 space-y-1 list-decimal list-inside">
+                      <li>اضغط على أيقونة القفل 🔒 بجانب عنوان الموقع</li>
+                      <li>ابحث عن &quot;الميكروفون&quot; أو &quot;Microphone&quot;</li>
+                      <li>غيّر الإعداد إلى &quot;السماح&quot; أو &quot;Allow&quot;</li>
+                      <li>أعد تحميل الصفحة وحاول مرة أخرى</li>
+                    </ol>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
