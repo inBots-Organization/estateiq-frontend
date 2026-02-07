@@ -59,27 +59,28 @@ export default function HomePage() {
               <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.pricing}</a>
             </nav>
 
-            {/* Desktop Actions */}
-            <div className="hidden md:flex items-center gap-3">
+            {/* Actions Container - Desktop and Mobile */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Settings - Always visible */}
               <SettingsDropdown />
-              <Link href="/login">
+
+              {/* Desktop Actions - Hidden on mobile */}
+              <Link href="/login" className="hidden md:block">
                 <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
                   {t.landing.nav.signIn}
                 </Button>
               </Link>
-              <Link href="/register">
+              <Link href="/register" className="hidden md:block">
                 <Button className="btn-gradient shadow-lg">
                   {t.landing.nav.getStarted}
                 </Button>
               </Link>
-            </div>
 
-            {/* Mobile Menu Button */}
-            <div className="flex md:hidden items-center gap-2">
-              <SettingsDropdown />
+              {/* Mobile Menu Button - Hidden on desktop */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 rounded-lg hover:bg-muted/60 transition-colors"
+                className="md:hidden p-2 rounded-lg hover:bg-muted/60 transition-colors"
+                aria-label="Toggle menu"
               >
                 {mobileMenuOpen ? (
                   <X className="h-6 w-6 text-foreground" />
