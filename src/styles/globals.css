@@ -153,17 +153,31 @@
   /* RTL Support - Enhanced for Arabic with IBM Plex Sans Arabic */
   [dir="rtl"] {
     text-align: right;
-    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    letter-spacing: 0;
+    font-weight: 400;
   }
 
   [dir="rtl"] h1,
-  [dir="rtl"] h2,
+  [dir="rtl"] h2 {
+    letter-spacing: 0;
+    line-height: 1.5;
+    font-weight: 700;
+  }
+
   [dir="rtl"] h3,
-  [dir="rtl"] h4,
+  [dir="rtl"] h4 {
+    letter-spacing: 0;
+    line-height: 1.5;
+    font-weight: 600;
+  }
+
   [dir="rtl"] h5,
   [dir="rtl"] h6 {
     letter-spacing: 0;
-    line-height: 1.4;
+    line-height: 1.6;
     font-weight: 600;
   }
 
@@ -175,15 +189,24 @@
     letter-spacing: 0;
   }
 
+  [dir="rtl"] small,
+  [dir="rtl"] .text-xs,
+  [dir="rtl"] .text-sm {
+    font-size: max(0.875rem, 14px);
+    line-height: 1.6;
+  }
+
   [dir="rtl"] input,
-  [dir="rtl"] textarea {
-    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+  [dir="rtl"] textarea,
+  [dir="rtl"] select {
+    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    font-size: 16px;
     line-height: 1.6;
   }
 
   [dir="rtl"] input::placeholder,
   [dir="rtl"] textarea::placeholder {
-    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
   }
 
   [dir="ltr"] {
@@ -193,7 +216,8 @@
 
   /* Better Arabic Typography */
   .arabic-text {
-    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    font-size: 16px;
     line-height: 1.7;
     letter-spacing: 0;
   }
