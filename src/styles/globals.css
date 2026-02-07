@@ -154,52 +154,11 @@
      Edge Browser Compatibility Fixes
      ======================================== */
 
-  /* Fix backdrop-blur for Edge - use fallback background */
-  @supports not ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
-    .backdrop-blur-xl,
-    .backdrop-blur-lg,
-    .backdrop-blur-md,
-    .backdrop-blur-sm,
-    .backdrop-blur {
-      background-color: hsla(var(--card), 0.98) !important;
-    }
-
-    .dark .backdrop-blur-xl,
-    .dark .backdrop-blur-lg,
-    .dark .backdrop-blur-md,
-    .dark .backdrop-blur-sm,
-    .dark .backdrop-blur {
-      background-color: hsla(var(--card), 0.98) !important;
-    }
-  }
-
-  /* Ensure gradients render correctly in Edge */
-  .bg-gradient-to-r,
-  .bg-gradient-to-l,
-  .bg-gradient-to-t,
-  .bg-gradient-to-b,
-  .bg-gradient-to-br,
-  .bg-gradient-to-bl,
-  .bg-gradient-to-tr,
-  .bg-gradient-to-tl {
-    -webkit-background-clip: padding-box;
-    background-clip: padding-box;
-  }
-
   /* Fix text gradient clipping in Edge */
   .bg-clip-text {
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-  }
-
-  /* Edge-specific fixes for animations */
-  @supports (-ms-ime-align: auto) {
-    .animate-pulse,
-    .animate-bounce,
-    .animate-spin {
-      animation-timing-function: ease-in-out;
-    }
   }
 
   /* RTL Support - Enhanced for Arabic with IBM Plex Sans Arabic */
