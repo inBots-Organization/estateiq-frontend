@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,11 +25,14 @@ import {
   BookOpen,
   Target,
   Phone,
-  Globe
+  Globe,
+  Menu,
+  X
 } from 'lucide-react';
 
 export default function HomePage() {
   const { t, isRTL } = useLanguage();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // RTL-aware arrow
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
@@ -39,19 +43,24 @@ export default function HomePage() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-16">
+            {/* Logo */}
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center">
                 <Building2 className="h-5 w-5 text-white" />
               </div>
               <span className="text-xl font-bold text-foreground">{t.landing.brandName}</span>
             </div>
+
+            {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-8">
               <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.features}</a>
               <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.howItWorks}</a>
               <a href="#testimonials" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.testimonials}</a>
               <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.pricing}</a>
             </nav>
-            <div className="flex items-center gap-3">
+
+            {/* Desktop Actions */}
+            <div className="hidden md:flex items-center gap-3">
               <SettingsDropdown />
               <Link href="/login">
                 <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
@@ -64,54 +73,117 @@ export default function HomePage() {
                 </Button>
               </Link>
             </div>
+
+            {/* Mobile Menu Button */}
+            <div className="flex md:hidden items-center gap-2">
+              <SettingsDropdown />
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 rounded-lg hover:bg-muted/60 transition-colors"
+              >
+                {mobileMenuOpen ? (
+                  <X className="h-6 w-6 text-foreground" />
+                ) : (
+                  <Menu className="h-6 w-6 text-foreground" />
+                )}
+              </button>
+            </div>
           </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden py-4 border-t border-border animate-fade-in">
+              <nav className="flex flex-col gap-4 mb-4">
+                <a
+                  href="#features"
+                  className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {t.landing.nav.features}
+                </a>
+                <a
+                  href="#how-it-works"
+                  className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {t.landing.nav.howItWorks}
+                </a>
+                <a
+                  href="#testimonials"
+                  className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {t.landing.nav.testimonials}
+                </a>
+                <a
+                  href="#pricing"
+                  className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {t.landing.nav.pricing}
+                </a>
+              </nav>
+              <div className="flex flex-col gap-3 pt-4 border-t border-border">
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="outline" className="w-full">
+                    {t.landing.nav.signIn}
+                  </Button>
+                </Link>
+                <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+                  <Button className="w-full btn-gradient">
+                    {t.landing.nav.getStarted}
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
       <main className="flex-grow pt-16">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-muted/50 to-background py-20 lg:py-32">
+        <section className="relative overflow-hidden bg-gradient-to-b from-muted/50 to-background py-16 sm:py-20 lg:py-32">
           <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] dark:opacity-20" />
           <div className="container mx-auto px-4 lg:px-8 relative">
             <div className="max-w-4xl mx-auto text-center">
-              <Badge className="mb-6 bg-primary/10 text-primary hover:bg-primary/10 px-4 py-1.5">
-                <Zap className={cn("h-3.5 w-3.5", isRTL ? "ml-1" : "mr-1")} />
+              <Badge className="mb-4 sm:mb-6 bg-primary/10 text-primary hover:bg-primary/10 px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm">
+                <Zap className={cn("h-3 w-3 sm:h-3.5 sm:w-3.5", isRTL ? "ml-1" : "mr-1")} />
                 {t.landing.hero.badge}
               </Badge>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 sm:mb-6 leading-tight px-2">
                 {t.landing.hero.titlePart1}{' '}
                 <span className="gradient-text">
                   {t.landing.hero.titleHighlight}
                 </span>
               </h1>
-              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-4">
                 {t.landing.hero.description}
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/register">
-                  <Button size="lg" className="w-full sm:w-auto btn-gradient h-12 px-8 text-base shadow-lg">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
+                <Link href="/register" className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full sm:w-auto btn-gradient h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base shadow-lg">
                     {t.landing.hero.startFreeTrial}
                     <ArrowIcon className={cn("h-4 w-4", isRTL ? "mr-2" : "ml-2")} />
                   </Button>
                 </Link>
-                <Link href="#how-it-works">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto h-12 px-8 text-base">
+                <Link href="#how-it-works" className="w-full sm:w-auto">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base">
                     <Play className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
                     {t.landing.hero.watchDemo}
                   </Button>
                 </Link>
               </div>
-              <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground">
+              <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs sm:text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-success" />
+                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
                   <span>{t.landing.hero.noCreditCard}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-success" />
+                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
                   <span>{t.landing.hero.freeTrial}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-success" />
+                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
                   <span>{t.landing.hero.cancelAnytime}</span>
                 </div>
               </div>
@@ -120,38 +192,38 @@ export default function HomePage() {
         </section>
 
         {/* Stats Section */}
-        <section className="py-12 bg-card border-y border-border">
+        <section className="py-8 sm:py-12 bg-card border-y border-border">
           <div className="container mx-auto px-4 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div className="text-center">
-                <p className="text-3xl md:text-4xl font-bold text-foreground">10,000+</p>
-                <p className="text-sm text-muted-foreground mt-1">{t.landing.stats.activeTrainees}</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8">
+              <div className="text-center p-3 sm:p-0">
+                <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">10,000+</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t.landing.stats.activeTrainees}</p>
               </div>
-              <div className="text-center">
-                <p className="text-3xl md:text-4xl font-bold text-foreground">95%</p>
-                <p className="text-sm text-muted-foreground mt-1">{t.landing.stats.successRate}</p>
+              <div className="text-center p-3 sm:p-0">
+                <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">95%</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t.landing.stats.successRate}</p>
               </div>
-              <div className="text-center">
-                <p className="text-3xl md:text-4xl font-bold text-foreground">50K+</p>
-                <p className="text-sm text-muted-foreground mt-1">{t.landing.stats.sessionsCompleted}</p>
+              <div className="text-center p-3 sm:p-0">
+                <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">50K+</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t.landing.stats.sessionsCompleted}</p>
               </div>
-              <div className="text-center">
-                <p className="text-3xl md:text-4xl font-bold text-foreground">4.9</p>
-                <p className="text-sm text-muted-foreground mt-1">{t.landing.stats.userRating}</p>
+              <div className="text-center p-3 sm:p-0">
+                <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">4.9</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t.landing.stats.userRating}</p>
               </div>
             </div>
           </div>
         </section>
 
         {/* Features Section */}
-        <section id="features" className="py-20 lg:py-28 bg-background">
+        <section id="features" className="py-16 sm:py-20 lg:py-28 bg-background">
           <div className="container mx-auto px-4 lg:px-8">
-            <div className="text-center mb-16">
-              <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/10">{t.landing.nav.features}</Badge>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <div className="text-center mb-10 sm:mb-16">
+              <Badge className="mb-3 sm:mb-4 bg-primary/10 text-primary hover:bg-primary/10 text-xs sm:text-sm">{t.landing.nav.features}</Badge>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4 px-4">
                 {t.landing.features.title}
               </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
                 {t.landing.features.subtitle}
               </p>
             </div>
@@ -233,19 +305,19 @@ export default function HomePage() {
         </section>
 
         {/* How It Works Section */}
-        <section id="how-it-works" className="py-20 lg:py-28 bg-muted/30">
+        <section id="how-it-works" className="py-16 sm:py-20 lg:py-28 bg-muted/30">
           <div className="container mx-auto px-4 lg:px-8">
-            <div className="text-center mb-16">
-              <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/10">{t.landing.nav.howItWorks}</Badge>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <div className="text-center mb-10 sm:mb-16">
+              <Badge className="mb-3 sm:mb-4 bg-primary/10 text-primary hover:bg-primary/10 text-xs sm:text-sm">{t.landing.nav.howItWorks}</Badge>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4 px-4">
                 {t.landing.howItWorks.title}
               </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
                 {t.landing.howItWorks.subtitle}
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+            <div className="grid md:grid-cols-3 gap-6 sm:gap-8 lg:gap-12">
               <div className="relative">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-white text-2xl font-bold mb-6 shadow-lg">
@@ -294,19 +366,19 @@ export default function HomePage() {
         </section>
 
         {/* Testimonials Section */}
-        <section id="testimonials" className="py-20 lg:py-28 bg-background">
+        <section id="testimonials" className="py-16 sm:py-20 lg:py-28 bg-background">
           <div className="container mx-auto px-4 lg:px-8">
-            <div className="text-center mb-16">
-              <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/10">{t.landing.nav.testimonials}</Badge>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <div className="text-center mb-10 sm:mb-16">
+              <Badge className="mb-3 sm:mb-4 bg-primary/10 text-primary hover:bg-primary/10 text-xs sm:text-sm">{t.landing.nav.testimonials}</Badge>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4 px-4">
                 {t.landing.testimonials.title}
               </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
                 {t.landing.testimonials.subtitle}
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 gap-4 sm:gap-8">
               {t.landing.testimonials.items.map((testimonial, index) => (
                 <Card key={index} className="card-hover">
                   <CardContent className="p-6">
@@ -340,19 +412,19 @@ export default function HomePage() {
         </section>
 
         {/* Pricing Section */}
-        <section id="pricing" className="py-20 lg:py-28 bg-muted/30">
+        <section id="pricing" className="py-16 sm:py-20 lg:py-28 bg-muted/30">
           <div className="container mx-auto px-4 lg:px-8">
-            <div className="text-center mb-16">
-              <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/10">{t.landing.nav.pricing}</Badge>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <div className="text-center mb-10 sm:mb-16">
+              <Badge className="mb-3 sm:mb-4 bg-primary/10 text-primary hover:bg-primary/10 text-xs sm:text-sm">{t.landing.nav.pricing}</Badge>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4 px-4">
                 {t.landing.pricing.title}
               </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
                 {t.landing.pricing.subtitle}
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-4 sm:gap-8 max-w-5xl mx-auto">
               {/* Free Plan */}
               <Card className="card-hover">
                 <CardContent className="p-6">
@@ -426,16 +498,16 @@ export default function HomePage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 lg:py-28 bg-gradient-to-br from-primary via-primary to-blue-700 dark:from-primary/90 dark:via-primary/80 dark:to-blue-800">
+        <section className="py-16 sm:py-20 lg:py-28 bg-gradient-to-br from-primary via-primary to-blue-700 dark:from-primary/90 dark:via-primary/80 dark:to-blue-800">
           <div className="container mx-auto px-4 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4 px-4">
               {t.landing.cta.title}
             </h2>
-            <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-lg text-white/80 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
               {t.landing.cta.description}
             </p>
             <Link href="/register">
-              <Button size="lg" className="bg-white text-primary hover:bg-white/90 h-12 px-8 text-base font-semibold shadow-lg">
+              <Button size="lg" className="bg-white text-primary hover:bg-white/90 h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base font-semibold shadow-lg">
                 {t.landing.cta.button}
                 <ArrowIcon className={cn("h-4 w-4", isRTL ? "mr-2" : "ml-2")} />
               </Button>
@@ -445,48 +517,55 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-card border-t border-border py-12">
+      <footer className="bg-card border-t border-border py-8 sm:py-12">
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-8">
+            {/* Brand */}
+            <div className="col-span-2 sm:col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center">
                   <Building2 className="h-4 w-4 text-white" />
                 </div>
                 <span className="text-lg font-bold text-foreground">{t.landing.brandName}</span>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 {t.landing.footer.description}
               </p>
             </div>
+
+            {/* Product Links */}
             <div>
-              <h4 className="text-foreground font-semibold mb-4">{t.landing.footer.product}</h4>
-              <ul className="space-y-2 text-sm">
+              <h4 className="text-foreground font-semibold mb-3 sm:mb-4 text-sm sm:text-base">{t.landing.footer.product}</h4>
+              <ul className="space-y-2 text-xs sm:text-sm">
                 <li><a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.features}</a></li>
                 <li><a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.pricing}</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.courses}</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.simulations}</a></li>
               </ul>
             </div>
+
+            {/* Company Links */}
             <div>
-              <h4 className="text-foreground font-semibold mb-4">{t.landing.footer.company}</h4>
-              <ul className="space-y-2 text-sm">
+              <h4 className="text-foreground font-semibold mb-3 sm:mb-4 text-sm sm:text-base">{t.landing.footer.company}</h4>
+              <ul className="space-y-2 text-xs sm:text-sm">
                 <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.about}</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.blog}</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.careers}</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.contact}</a></li>
               </ul>
             </div>
+
+            {/* Legal Links */}
             <div>
-              <h4 className="text-foreground font-semibold mb-4">{t.landing.footer.legal}</h4>
-              <ul className="space-y-2 text-sm">
+              <h4 className="text-foreground font-semibold mb-3 sm:mb-4 text-sm sm:text-base">{t.landing.footer.legal}</h4>
+              <ul className="space-y-2 text-xs sm:text-sm">
                 <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.privacy}</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.terms}</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.cookies}</a></li>
               </ul>
             </div>
           </div>
-          <div className="pt-8 border-t border-border text-center text-sm text-muted-foreground">
+          <div className="pt-6 sm:pt-8 border-t border-border text-center text-xs sm:text-sm text-muted-foreground">
             <p>&copy; {new Date().getFullYear()} {t.landing.brandName}. {t.landing.footer.allRightsReserved}</p>
           </div>
         </div>
