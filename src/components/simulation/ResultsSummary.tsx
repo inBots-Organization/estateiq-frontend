@@ -222,7 +222,7 @@ export function ResultsSummary({ analysis, onViewFullReport, onPracticeAgain, se
   return (
     <div className="max-w-4xl mx-auto space-y-6 p-4">
       {/* Hero Performance Card */}
-      <Card className="overflow-hidden border border-border/50 shadow-xl">
+      <Card className="overflow-hidden border border-border shadow-xl">
         <div className={cn("p-8", gradeStyle.bg)}>
           <div className="flex flex-col md:flex-row items-center gap-8">
             {/* Grade Circle */}

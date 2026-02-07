@@ -228,7 +228,7 @@ export default function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {/* Overall Progress */}
-        <Card className="relative overflow-hidden border border-border/50 shadow-lg bg-gradient-to-br from-primary/10 via-background to-background">
+        <Card className="relative overflow-hidden border border-border shadow-lg bg-gradient-to-br from-primary/10 via-background to-background">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-16 translate-x-16" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -253,7 +253,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Average Score */}
-        <Card className="relative overflow-hidden border border-border/50 shadow-lg bg-gradient-to-br from-emerald-500/10 via-background to-background">
+        <Card className="relative overflow-hidden border border-border shadow-lg bg-gradient-to-br from-emerald-500/10 via-background to-background">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -translate-y-16 translate-x-16" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -272,7 +272,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Current Streak */}
-        <Card className="relative overflow-hidden border border-border/50 shadow-lg bg-gradient-to-br from-amber-500/10 via-background to-background">
+        <Card className="relative overflow-hidden border border-border shadow-lg bg-gradient-to-br from-amber-500/10 via-background to-background">
           <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full -translate-y-16 translate-x-16" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -289,7 +289,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Time Invested */}
-        <Card className="relative overflow-hidden border border-border/50 shadow-lg bg-gradient-to-br from-blue-500/10 via-background to-background">
+        <Card className="relative overflow-hidden border border-border shadow-lg bg-gradient-to-br from-blue-500/10 via-background to-background">
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -translate-y-16 translate-x-16" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -314,7 +314,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* Current Course Progress */}
           {data.currentCourse && (
-            <Card className="border border-border/50 shadow-lg overflow-hidden">
+            <Card className="border border-border shadow-lg overflow-hidden">
               <div className="h-1 bg-gradient-to-r from-primary via-primary/80 to-primary/60" />
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-foreground">
@@ -324,7 +324,7 @@ export default function DashboardPage() {
                 <CardDescription>{t.dashboard.pickUpWhereYouLeft}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="p-4 bg-muted/30 rounded-xl border border-border/50">
+                <div className="p-4 bg-muted/30 rounded-xl border border-border">
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <div className="flex-1">
                       <h4 className={cn('font-semibold text-foreground mb-1', isRTL && 'font-arabic')}>
@@ -355,7 +355,7 @@ export default function DashboardPage() {
           {/* Quick Actions */}
           <div className="grid gap-4 md:grid-cols-2">
             {/* Practice Simulations */}
-            <Card className="border border-border/50 shadow-lg hover:shadow-xl transition-all group">
+            <Card className="border border-border shadow-lg hover:shadow-xl transition-all group">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-foreground group-hover:text-primary transition-colors">
                   <MessageSquare className="h-5 w-5 text-primary" />
@@ -364,7 +364,7 @@ export default function DashboardPage() {
                 <CardDescription>{t.dashboard.sharpenSkills}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="p-3 bg-muted/30 rounded-lg border border-border/50 mb-4">
+                <div className="p-3 bg-muted/30 rounded-lg border border-border mb-4">
                   <p className={cn('text-sm text-muted-foreground', isRTL && 'font-arabic')}>
                     {t.dashboard.recommendedScenario}
                   </p>
@@ -382,7 +382,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Voice Practice */}
-            <Card className="border border-border/50 shadow-lg hover:shadow-xl transition-all group">
+            <Card className="border border-border shadow-lg hover:shadow-xl transition-all group">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-foreground group-hover:text-primary transition-colors">
                   <Phone className="h-5 w-5 text-primary" />
@@ -391,7 +391,7 @@ export default function DashboardPage() {
                 <CardDescription>{t.dashboard.practiceWithAI}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="p-3 bg-muted/30 rounded-lg border border-border/50 mb-4">
+                <div className="p-3 bg-muted/30 rounded-lg border border-border mb-4">
                   <p className={cn('text-sm text-muted-foreground', isRTL && 'font-arabic')}>
                     {t.dashboard.realtimeConversation}
                   </p>
@@ -412,7 +412,7 @@ export default function DashboardPage() {
 
         {/* Right Column - Weekly Activity */}
         <div className="space-y-6">
-          <Card className="border border-border/50 shadow-lg">
+          <Card className="border border-border shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-foreground">
                 <Activity className="h-5 w-5 text-primary" />
@@ -447,7 +447,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Progress Summary Section */}
-      <Card className="border border-border/50 shadow-lg">
+      <Card className="border border-border shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <BarChart className="h-5 w-5 text-primary" />
@@ -457,35 +457,35 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            <div className="text-center p-4 bg-gradient-to-br from-primary/5 to-transparent rounded-xl border border-border/50">
+            <div className="text-center p-4 bg-gradient-to-br from-primary/5 to-transparent rounded-xl border border-border">
               <div className="p-2 rounded-lg bg-primary/10 w-fit mx-auto mb-2">
                 <MessageSquare className="h-5 w-5 text-primary" />
               </div>
               <p className="text-3xl font-bold text-foreground">{data.simulationsCompleted}</p>
               <p className="text-sm text-muted-foreground">{t.dashboard.simulations}</p>
             </div>
-            <div className="text-center p-4 bg-gradient-to-br from-emerald-500/5 to-transparent rounded-xl border border-border/50">
+            <div className="text-center p-4 bg-gradient-to-br from-emerald-500/5 to-transparent rounded-xl border border-border">
               <div className="p-2 rounded-lg bg-emerald-500/10 w-fit mx-auto mb-2">
                 <Phone className="h-5 w-5 text-emerald-500" />
               </div>
               <p className="text-3xl font-bold text-foreground">{data.voiceCallsCompleted}</p>
               <p className="text-sm text-muted-foreground">{t.dashboard.voiceCalls}</p>
             </div>
-            <div className="text-center p-4 bg-gradient-to-br from-blue-500/5 to-transparent rounded-xl border border-border/50">
+            <div className="text-center p-4 bg-gradient-to-br from-blue-500/5 to-transparent rounded-xl border border-border">
               <div className="p-2 rounded-lg bg-blue-500/10 w-fit mx-auto mb-2">
                 <BookOpen className="h-5 w-5 text-blue-500" />
               </div>
               <p className="text-3xl font-bold text-foreground">{data.lecturesCompleted}</p>
               <p className="text-sm text-muted-foreground">{isRTL ? 'دروس' : 'Lectures'}</p>
             </div>
-            <div className="text-center p-4 bg-gradient-to-br from-amber-500/5 to-transparent rounded-xl border border-border/50">
+            <div className="text-center p-4 bg-gradient-to-br from-amber-500/5 to-transparent rounded-xl border border-border">
               <div className="p-2 rounded-lg bg-amber-500/10 w-fit mx-auto mb-2">
                 <CheckCircle2 className="h-5 w-5 text-amber-500" />
               </div>
               <p className="text-3xl font-bold text-foreground">{data.coursesCompleted}</p>
               <p className="text-sm text-muted-foreground">{t.dashboard.courses}</p>
             </div>
-            <div className="text-center p-4 bg-gradient-to-br from-purple-500/5 to-transparent rounded-xl border border-border/50">
+            <div className="text-center p-4 bg-gradient-to-br from-purple-500/5 to-transparent rounded-xl border border-border">
               <div className="p-2 rounded-lg bg-purple-500/10 w-fit mx-auto mb-2">
                 <Target className="h-5 w-5 text-purple-500" />
               </div>
@@ -505,7 +505,7 @@ export default function DashboardPage() {
                 {data.recentSessions.slice(0, 5).map((session) => (
                   <div
                     key={session.id}
-                    className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/50"
+                    className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border"
                   >
                     <div className="flex items-center gap-3">
                       <div className={cn(

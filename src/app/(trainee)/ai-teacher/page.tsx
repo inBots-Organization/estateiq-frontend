@@ -946,7 +946,7 @@ ${lastLessonText}
       <div className="grid lg:grid-cols-4 gap-3">
         {/* Main Chat Area */}
         <div className="lg:col-span-3">
-          <Card className="border border-border/50 shadow-lg overflow-hidden h-[calc(100vh-120px)] flex flex-col">
+          <Card className="border border-border shadow-lg overflow-hidden h-[calc(100vh-120px)] flex flex-col">
             {/* Lesson Context Banner */}
             {currentLessonContext && (
               <div className="bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-fuchsia-500/10 border-b border-violet-500/20 px-4 py-3">
@@ -1210,7 +1210,7 @@ ${lastLessonText}
         <div className="space-y-3 h-[calc(100vh-120px)] overflow-y-auto">
           {/* Quick Actions for Lesson Context */}
           {currentLessonContext && (
-            <Card className="border border-border/50 shadow-lg bg-gradient-to-br from-violet-500/5 to-purple-500/5">
+            <Card className="border border-border shadow-lg bg-gradient-to-br from-violet-500/5 to-purple-500/5">
               <CardContent className="p-3">
                 <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2 text-sm">
                   <Lightbulb className="h-4 w-4 text-violet-500" />
@@ -1260,7 +1260,7 @@ ${lastLessonText}
 
           {/* Progress Card */}
           {welcome && (
-            <Card className="border border-border/50 shadow-lg">
+            <Card className="border border-border shadow-lg">
               <CardContent className="p-3">
                 <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2 text-sm">
                   <TrendingUp className="h-4 w-4 text-primary" />
@@ -1289,7 +1289,7 @@ ${lastLessonText}
 
           {/* Suggested Topics */}
           {welcome && welcome.suggestedTopics.length > 0 && (
-            <Card className="border border-border/50 shadow-lg">
+            <Card className="border border-border shadow-lg">
               <CardContent className="p-3">
                 <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2 text-sm">
                   <Target className="h-4 w-4 text-amber-500" />
@@ -1317,7 +1317,7 @@ ${lastLessonText}
           )}
 
           {/* Profile Summary - Enhanced */}
-          <Card className="border border-border/50 shadow-lg">
+          <Card className="border border-border shadow-lg">
             <CardContent className="p-3">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-foreground flex items-center gap-2 text-sm">
@@ -1423,7 +1423,7 @@ ${lastLessonText}
           </Card>
 
           {/* AI Content Generation Tools */}
-          <Card className="border border-border/50 shadow-lg bg-gradient-to-br from-fuchsia-500/5 to-pink-500/5">
+          <Card className="border border-border shadow-lg bg-gradient-to-br from-fuchsia-500/5 to-pink-500/5">
             <CardContent className="p-3">
               <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2 text-sm">
                 <Brain className="h-4 w-4 text-fuchsia-500" />

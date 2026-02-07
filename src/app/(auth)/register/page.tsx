@@ -730,7 +730,7 @@ export default function RegisterPage() {
                     type="button"
                     variant="outline"
                     onClick={handlePrev}
-                    className="flex-1 h-12 rounded-xl border-border/50 hover:bg-muted/50"
+                    className="flex-1 h-12 rounded-xl border-border hover:bg-muted/50"
                   >
                     <PrevArrow className={cn("h-5 w-5", isRTL ? "ml-2" : "mr-2")} />
                     {isRTL ? 'السابق' : 'Previous'}
@@ -769,7 +769,7 @@ export default function RegisterPage() {
             </form>
 
             {/* Login Link */}
-            <div className="mt-6 pt-6 border-t border-border/50 text-center">
+            <div className="mt-6 pt-6 border-t border-border text-center">
               <p className="text-sm text-muted-foreground">
                 {isRTL ? 'لديك حساب بالفعل؟' : 'Already have an account?'}{' '}
                 <Link

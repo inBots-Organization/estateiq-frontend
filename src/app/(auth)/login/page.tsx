@@ -319,7 +319,7 @@ export default function LoginPage() {
               {/* Divider */}
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border/50" />
+                  <div className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-xs">
                   <span className="px-4 bg-card text-muted-foreground">
@@ -386,7 +386,7 @@ export default function LoginPage() {
                 </span>
                 <code className="text-slate-600 dark:text-muted-foreground font-mono">fahad@macsoft.com</code>
               </div>
-              <p className="text-xs text-muted-foreground mt-2 pt-2 border-t border-border/50">
+              <p className="text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
                 {isRTL ? 'كلمة المرور:' : 'Password:'} <code className="font-mono text-foreground">Test1234</code>
                 <br />
                 <span className="text-rose-500">{isRTL ? 'مدير المنصة:' : 'Super Admin:'}</span> <code className="font-mono text-foreground">SuperAdmin@123!</code>

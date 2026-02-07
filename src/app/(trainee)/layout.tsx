@@ -159,13 +159,13 @@ export default function TraineeLayout({
         className={cn(
           "fixed top-0 bottom-0 w-[280px] bg-card/95 backdrop-blur-xl hidden lg:flex flex-col shadow-soft-xl z-30",
           isRTL
-            ? "right-0 border-l border-border/50"
-            : "left-0 border-r border-border/50"
+            ? "right-0 border-l border-border"
+            : "left-0 border-r border-border"
         )}
         key={`sidebar-${language}`}
       >
         {/* Logo - Premium EstateIQ Branding */}
-        <div className="h-20 flex items-center px-6 border-b border-border/50">
+        <div className="h-20 flex items-center px-6 border-b border-border">
           <Link href="/dashboard" className="flex items-center gap-3.5 group" prefetch={true}>
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary via-emerald-500 to-estate-gold flex items-center justify-center shadow-soft group-hover:shadow-glow transition-shadow duration-300">
               <Building2 className="h-6 w-6 text-white" />
@@ -246,7 +246,7 @@ export default function TraineeLayout({
         </nav>
 
         {/* Settings and User section - Premium Design */}
-        <div className="p-4 border-t border-border/50 space-y-4">
+        <div className="p-4 border-t border-border space-y-4">
           {/* Language and Theme */}
           <div className="flex justify-center">
             <CompactSettings />
@@ -289,7 +289,7 @@ export default function TraineeLayout({
         isRTL ? "lg:mr-[280px]" : "lg:ml-[280px]"
       )}>
         {/* Mobile header - Premium Design */}
-        <header className="h-16 bg-card/95 backdrop-blur-xl border-b border-border/50 flex items-center justify-between px-4 lg:hidden shadow-soft">
+        <header className="h-16 bg-card/95 backdrop-blur-xl border-b border-border flex items-center justify-between px-4 lg:hidden shadow-soft">
           <Avatar className="h-9 w-9 border-2 border-primary/20 shadow-soft">
             <AvatarFallback className="bg-gradient-to-br from-primary via-emerald-500 to-estate-gold text-white text-xs font-bold">
               {getInitials()}
@@ -333,7 +333,7 @@ export default function TraineeLayout({
             : cn("left-0", mobileMenuOpen ? "translate-x-0" : "-translate-x-full")
         )}
       >
-        <div className="h-20 flex items-center justify-between px-5 border-b border-border/50">
+        <div className="h-20 flex items-center justify-between px-5 border-b border-border">
           <Link href="/dashboard" className="flex items-center gap-3" prefetch={true}>
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-emerald-500 to-estate-gold flex items-center justify-center shadow-soft">
               <Building2 className="h-5 w-5 text-white" />
@@ -406,7 +406,7 @@ export default function TraineeLayout({
           })}
         </nav>
 
-        <div className="p-4 border-t border-border/50 space-y-4">
+        <div className="p-4 border-t border-border space-y-4">
           <div className="flex justify-center">
             <CompactSettings />
           </div>

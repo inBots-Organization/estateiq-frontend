@@ -257,13 +257,13 @@ export default function AdminLayout({
           "fixed bottom-0 w-[280px] bg-card/95 backdrop-blur-xl hidden lg:flex flex-col shadow-soft-xl z-30",
           isImpersonating ? "top-10" : "top-0",
           isRTL
-            ? "right-0 border-l border-border/50"
-            : "left-0 border-r border-border/50"
+            ? "right-0 border-l border-border"
+            : "left-0 border-r border-border"
         )}
         key={`admin-sidebar-${language}`}
       >
         {/* Logo - Admin/Trainer Branding */}
-        <div className="h-20 flex items-center px-6 border-b border-border/50">
+        <div className="h-20 flex items-center px-6 border-b border-border">
           <Link href="/admin" className="flex items-center gap-3.5 group" prefetch={true}>
             <div className={cn(
               "w-11 h-11 rounded-2xl flex items-center justify-center shadow-soft transition-shadow duration-300",
@@ -360,7 +360,7 @@ export default function AdminLayout({
         </nav>
 
         {/* Settings and User section */}
-        <div className="p-4 border-t border-border/50 space-y-4">
+        <div className="p-4 border-t border-border space-y-4">
           {/* View Mode Switcher - Switch to Trainee View */}
           <ViewModeSwitcher className="w-full" />
 
@@ -410,7 +410,7 @@ export default function AdminLayout({
       )}>
         {/* Mobile header */}
         <header className={cn(
-          "h-16 bg-card/95 backdrop-blur-xl border-b border-border/50 flex items-center justify-between px-4 lg:hidden shadow-soft",
+          "h-16 bg-card/95 backdrop-blur-xl border-b border-border flex items-center justify-between px-4 lg:hidden shadow-soft",
           isImpersonating && "mt-10"
         )}>
           <Avatar className={cn(
@@ -482,7 +482,7 @@ export default function AdminLayout({
             : cn("left-0", mobileMenuOpen ? "translate-x-0" : "-translate-x-full")
         )}
       >
-        <div className="h-20 flex items-center justify-between px-5 border-b border-border/50">
+        <div className="h-20 flex items-center justify-between px-5 border-b border-border">
           <Link href="/admin" className="flex items-center gap-3" prefetch={true}>
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600 flex items-center justify-center shadow-soft">
               <Shield className="h-5 w-5 text-white" />
@@ -557,7 +557,7 @@ export default function AdminLayout({
           })}
         </nav>
 
-        <div className="p-4 border-t border-border/50 space-y-4">
+        <div className="p-4 border-t border-border space-y-4">
           <Link href="/dashboard">
             <Button variant="outline" className="w-full justify-start gap-2 h-11 rounded-xl border-violet-500/20 hover:bg-violet-500/10 hover:text-violet-500 transition-colors duration-200">
               <ArrowLeft className={cn("h-4 w-4", isRTL && "rotate-180")} />

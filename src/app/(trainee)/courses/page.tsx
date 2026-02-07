@@ -230,7 +230,7 @@ export default function CoursesPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={cn(
-                  "h-12 rounded-xl border-border/50 focus:border-primary transition-colors",
+                  "h-12 rounded-xl border-border focus:border-primary transition-colors",
                   isRTL ? "pr-12 text-right" : "pl-12"
                 )}
               />
@@ -293,7 +293,7 @@ export default function CoursesPage() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredCourses.map((course) => (
               <Link key={course.id} href={`/courses/${course.id}`} prefetch={true}>
-                <Card className="h-full overflow-hidden border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300 cursor-pointer group bg-card">
+                <Card className="h-full overflow-hidden border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300 cursor-pointer group bg-card">
                   {/* Course Image/Thumbnail */}
                   <div className="relative aspect-video bg-gradient-to-br from-muted/80 to-muted overflow-hidden">
                     {/* Background image using Unsplash */}
@@ -349,7 +349,7 @@ export default function CoursesPage() {
                     </div>
 
                     {/* Course Info */}
-                    <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t border-border/50">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t border-border">
                       <div className="flex items-center gap-1.5">
                         <Clock className="h-4 w-4" />
                         <span>{formatDuration(course.estimatedDurationMinutes)}</span>

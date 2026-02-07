@@ -34,7 +34,7 @@
 
     /* Muted - Subtle gray tones */
     --muted: 210 20% 94%;                /* #E2E8F0 */
-    --muted-foreground: 215 20% 35%;     /* #475569 - Slate-600, readable */
+    --muted-foreground: 215 25% 27%;     /* #334155 - Slate-700, high readability */
 
     /* Accent - Light gray for hover states */
     --accent: 210 20% 94%;               /* #E8ECF1 - Light hover bg */
@@ -43,9 +43,9 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Borders - Visible light gray */
-    --border: 214 32% 86%;               /* #D1D9E6 - Visible borders */
-    --input: 214 32% 86%;
+    /* Borders - Clear light gray */
+    --border: 214 32% 82%;               /* #C4CDD9 - Clear visible borders */
+    --input: 214 32% 82%;
     --ring: 160 84% 39%;                 /* Emerald ring */
     --radius: 0.75rem;
 
@@ -59,7 +59,7 @@
 
     /* Sidebar - Clean white with visible separation */
     --sidebar-bg: 0 0% 100%;
-    --sidebar-border: 214 32% 88%;
+    --sidebar-border: 214 32% 84%;
     --sidebar-item-hover: 160 30% 97%;
     --sidebar-item-active: 160 84% 39%;
 
@@ -263,7 +263,8 @@
 @layer components {
   /* Arabic font class */
   .font-arabic {
-    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    font-size: 16px;
     line-height: 1.7;
   }
 
@@ -271,7 +272,7 @@
      Premium Card Styles - No borders, soft shadows
      ======================================== */
   .card-premium {
-    @apply bg-card rounded-2xl shadow-soft transition-all duration-300 border border-border/40;
+    @apply bg-card rounded-2xl shadow-soft transition-all duration-300 border border-border;
   }
 
   .card-premium:hover {
@@ -396,10 +397,10 @@
      Form Input Styling - Premium
      ======================================== */
   .input-premium {
-    @apply flex h-12 w-full rounded-xl border-0 bg-muted/50 px-4 py-3 text-sm text-foreground;
-    @apply ring-1 ring-border ring-offset-background;
+    @apply flex h-12 w-full rounded-xl bg-background px-4 py-3 text-sm text-foreground;
+    @apply border border-border ring-offset-background;
     @apply placeholder:text-muted-foreground;
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary/50;
     @apply disabled:cursor-not-allowed disabled:opacity-50;
     @apply transition-all duration-200;
   }
