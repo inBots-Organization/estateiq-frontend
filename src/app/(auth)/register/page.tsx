@@ -583,7 +583,7 @@ export default function RegisterPage() {
                   </div>
 
                   {/* Admin Badge */}
-                  <div className="p-4 bg-primary/5 border border-primary/10 rounded-xl">
+                  <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-primary/10 rounded-lg">
                         <Shield className="h-5 w-5 text-primary" />

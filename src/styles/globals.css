@@ -247,7 +247,7 @@
      Premium Card Styles - No borders, soft shadows
      ======================================== */
   .card-premium {
-    @apply bg-card rounded-2xl shadow-soft transition-all duration-300;
+    @apply bg-card rounded-2xl shadow-soft transition-all duration-300 border border-border/40;
   }
 
   .card-premium:hover {
@@ -372,8 +372,8 @@
      Form Input Styling - Premium
      ======================================== */
   .input-premium {
-    @apply flex h-12 w-full rounded-xl border-0 bg-muted/50 px-4 py-3 text-sm;
-    @apply ring-1 ring-border/50 ring-offset-background;
+    @apply flex h-12 w-full rounded-xl border-0 bg-muted/50 px-4 py-3 text-sm text-foreground;
+    @apply ring-1 ring-border ring-offset-background;
     @apply placeholder:text-muted-foreground;
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50;
     @apply disabled:cursor-not-allowed disabled:opacity-50;
@@ -398,6 +398,10 @@
     background-position: left 0.75rem center;
     padding-right: 1rem;
     padding-left: 2.5rem;
+  }
+
+  select.input-premium {
+    @apply text-foreground;
   }
 
   select.input-premium option {
@@ -673,6 +677,15 @@
   }
 
   .auth-gradient-solid {
+    background: linear-gradient(135deg,
+      #070B14 0%,
+      #0D1320 35%,
+      #0A1A15 50%,
+      #0D1320 65%,
+      #070B14 100%);
+  }
+
+  .auth-gradient-bg {
     background: linear-gradient(135deg,
       #070B14 0%,
       #0D1320 35%,

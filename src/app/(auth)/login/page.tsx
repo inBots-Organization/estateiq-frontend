@@ -354,7 +354,7 @@ export default function LoginPage() {
           </p>
 
           {/* Demo Credentials - Development Only */}
-          <div className="mt-5 p-4 bg-gradient-to-br from-primary/5 via-emerald-500/5 to-transparent rounded-xl border border-primary/10">
+          <div className="mt-5 p-4 bg-gradient-to-br from-primary/10 via-emerald-500/5 to-transparent rounded-xl border border-primary/20">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
               <p className="text-xs font-semibold text-foreground">
@@ -366,25 +366,25 @@ export default function LoginPage() {
                 <span className="px-2 py-0.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded font-medium">
                   {isRTL ? 'مدير المنصة' : 'Super Admin'}
                 </span>
-                <code className="text-muted-foreground font-mono">superadmin@estateiq.com</code>
+                <code className="text-slate-600 dark:text-muted-foreground font-mono">superadmin@estateiq.com</code>
               </div>
               <div className="flex items-center gap-2 text-xs">
                 <span className="px-2 py-0.5 bg-primary/10 text-primary rounded font-medium">
                   {isRTL ? 'مدير' : 'Admin'}
                 </span>
-                <code className="text-muted-foreground font-mono">admin@macsoft.com</code>
+                <code className="text-slate-600 dark:text-muted-foreground font-mono">admin@macsoft.com</code>
               </div>
               <div className="flex items-center gap-2 text-xs">
                 <span className="px-2 py-0.5 bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded font-medium">
                   {isRTL ? 'مدرب' : 'Trainer'}
                 </span>
-                <code className="text-muted-foreground font-mono">abdullah@macsoft.com</code>
+                <code className="text-slate-600 dark:text-muted-foreground font-mono">abdullah@macsoft.com</code>
               </div>
               <div className="flex items-center gap-2 text-xs">
                 <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded font-medium">
                   {isRTL ? 'متدرب' : 'Trainee'}
                 </span>
-                <code className="text-muted-foreground font-mono">fahad@macsoft.com</code>
+                <code className="text-slate-600 dark:text-muted-foreground font-mono">fahad@macsoft.com</code>
               </div>
               <p className="text-xs text-muted-foreground mt-2 pt-2 border-t border-border/50">
                 {isRTL ? 'كلمة المرور:' : 'Password:'} <code className="font-mono text-foreground">Test1234</code>
