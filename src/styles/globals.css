@@ -150,6 +150,58 @@
     text-rendering: optimizeLegibility;
   }
 
+  /* ========================================
+     Edge Browser Compatibility Fixes
+     ======================================== */
+
+  /* Fix backdrop-blur for Edge - use fallback background */
+  @supports not ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
+    .backdrop-blur-xl,
+    .backdrop-blur-lg,
+    .backdrop-blur-md,
+    .backdrop-blur-sm,
+    .backdrop-blur {
+      background-color: hsla(var(--card), 0.98) !important;
+    }
+
+    .dark .backdrop-blur-xl,
+    .dark .backdrop-blur-lg,
+    .dark .backdrop-blur-md,
+    .dark .backdrop-blur-sm,
+    .dark .backdrop-blur {
+      background-color: hsla(var(--card), 0.98) !important;
+    }
+  }
+
+  /* Ensure gradients render correctly in Edge */
+  .bg-gradient-to-r,
+  .bg-gradient-to-l,
+  .bg-gradient-to-t,
+  .bg-gradient-to-b,
+  .bg-gradient-to-br,
+  .bg-gradient-to-bl,
+  .bg-gradient-to-tr,
+  .bg-gradient-to-tl {
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+  }
+
+  /* Fix text gradient clipping in Edge */
+  .bg-clip-text {
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Edge-specific fixes for animations */
+  @supports (-ms-ime-align: auto) {
+    .animate-pulse,
+    .animate-bounce,
+    .animate-spin {
+      animation-timing-function: ease-in-out;
+    }
+  }
+
   /* RTL Support - Enhanced for Arabic with IBM Plex Sans Arabic */
   [dir="rtl"] {
     text-align: right;
@@ -788,5 +840,28 @@
   @keyframes pulse-ring {
     0%, 100% { opacity: 0.3; }
     50% { opacity: 0.6; }
+  }
+
+  /* Subtle bounce animation for floating buttons */
+  .animate-bounce-subtle {
+    animation: bounce-subtle 2s ease-in-out infinite;
+  }
+
+  @keyframes bounce-subtle {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
+  }
+
+  /* Shadow glow animations for violet/teal buttons */
+  .shadow-glow-violet {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  }
+
+  .shadow-glow-teal {
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
   }
 }

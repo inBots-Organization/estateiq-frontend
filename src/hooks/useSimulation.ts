@@ -61,6 +61,9 @@ export function useSimulation() {
       });
       store.completeSimulation(result);
 
+      // Set analyzing state to show loading indicator
+      store.setAnalyzing();
+
       const analysis = await simulationApi.getAnalysis({
         sessionId: store.sessionId,
         includeDetailedTranscriptAnalysis: true,

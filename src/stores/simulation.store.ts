@@ -10,7 +10,7 @@ import type {
   SimulationAnalysisOutput,
 } from '@/types/simulation.types';
 
-type SimulationStatus = 'idle' | 'initializing' | 'ready' | 'in_progress' | 'ending' | 'completed' | 'error';
+type SimulationStatus = 'idle' | 'initializing' | 'ready' | 'in_progress' | 'ending' | 'analyzing' | 'completed' | 'error';
 
 interface SimulationState {
   sessionId: string | null;
@@ -34,6 +34,7 @@ interface SimulationState {
   addTraineeMessage: (message: string) => void;
   handleClientResponse: (response: SimulationMessageOutput) => void;
   completeSimulation: (result: EndSimulationOutput) => void;
+  setAnalyzing: () => void;
   setAnalysis: (analysis: SimulationAnalysisOutput) => void;
   setTyping: (isTyping: boolean) => void;
   setSending: (isSending: boolean) => void;
@@ -121,14 +122,18 @@ export const useSimulationStore = create<SimulationState>()(
 
       completeSimulation: (result: EndSimulationOutput) => {
         set({
-          status: 'completed',
+          status: 'ending',
           outcome: result.outcome,
           preliminaryScore: result.preliminaryScore,
         });
       },
 
+      setAnalyzing: () => {
+        set({ status: 'analyzing' });
+      },
+
       setAnalysis: (analysis: SimulationAnalysisOutput) => {
-        set({ analysis });
+        set({ analysis, status: 'completed' });
       },
 
       setTyping: (isTyping: boolean) => set({ isTyping }),

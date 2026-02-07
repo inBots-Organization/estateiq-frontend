@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useViewModeStore } from '@/stores/viewMode.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -90,24 +90,41 @@ export function ViewModeSwitcher({ variant = 'default', className }: ViewModeSwi
   );
 }
 
-// Floating button version for trainee dashboard when admin is viewing as trainee
+// Floating button version for navigation between admin and trainee views
 export function FloatingAdminReturn() {
   const router = useRouter();
+  const pathname = usePathname();
   const { user } = useAuthStore();
   const { viewMode, setViewMode } = useViewModeStore();
   const { isRTL } = useLanguage();
 
-  // Only show when admin is in trainee view mode
-  const showButton =
-    (user?.role === 'org_admin' || user?.role === 'trainer') &&
-    viewMode === 'trainee';
+  // Check if user is admin or trainer
+  const isAdminOrTrainer = user?.role === 'org_admin' || user?.role === 'trainer';
+
+  // Check if currently on admin pages
+  const isOnAdminPage = pathname?.startsWith('/admin');
+
+  // Show button when:
+  // 1. User is admin/trainer AND in trainee view mode (show "Back to Admin")
+  // 2. User is admin/trainer AND on admin page (show "Go to Trainee")
+  const showButton = isAdminOrTrainer && (viewMode === 'trainee' || isOnAdminPage);
 
   if (!showButton) return null;
 
-  const handleReturn = () => {
-    setViewMode('admin');
-    router.push('/admin');
+  const handleNavigation = () => {
+    if (isOnAdminPage) {
+      // Currently on admin page - go to trainee view
+      setViewMode('trainee');
+      router.push('/dashboard');
+    } else {
+      // Currently on trainee page - go back to admin
+      setViewMode('admin');
+      router.push('/admin');
+    }
   };
+
+  // Determine button style and text based on current location
+  const isGoingToTrainee = isOnAdminPage;
 
   return (
     <div className={cn(
@@ -115,17 +132,27 @@ export function FloatingAdminReturn() {
       isRTL ? 'left-6' : 'right-6'
     )}>
       <Button
-        onClick={handleReturn}
+        onClick={handleNavigation}
         className={cn(
           'gap-2 h-12 px-5 rounded-full shadow-lg',
-          'bg-gradient-to-r from-violet-500 to-purple-600',
-          'hover:from-violet-600 hover:to-purple-700',
           'text-white font-medium',
-          'animate-bounce-subtle'
+          'animate-bounce-subtle',
+          isGoingToTrainee
+            ? 'bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700'
+            : 'bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700'
         )}
       >
-        <Shield className="h-5 w-5" />
-        <span>{isRTL ? 'العودة للوحة الإدارة' : 'Back to Admin Panel'}</span>
+        {isGoingToTrainee ? (
+          <>
+            <Users className="h-5 w-5" />
+            <span>{isRTL ? 'الذهاب لصفحة المتدرب' : 'Go to Trainee Page'}</span>
+          </>
+        ) : (
+          <>
+            <Shield className="h-5 w-5" />
+            <span>{isRTL ? 'العودة للوحة الإدارة' : 'Back to Admin Panel'}</span>
+          </>
+        )}
       </Button>
     </div>
   );

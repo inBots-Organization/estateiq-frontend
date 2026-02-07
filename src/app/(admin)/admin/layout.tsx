@@ -19,7 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuthStore, usePermissions } from '@/stores/auth.store';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { CompactSettings } from '@/components/ui/LanguageToggle';
-import { ViewModeSwitcher } from '@/components/admin/ViewModeSwitcher';
+import { ViewModeSwitcher, FloatingAdminReturn } from '@/components/admin/ViewModeSwitcher';
 import { AdminRoleProvider } from '@/contexts/AdminRoleContext';
 import { cn } from '@/lib/utils';
 import {
@@ -597,6 +597,9 @@ export default function AdminLayout({
           </Button>
         </div>
       </aside>
+
+      {/* Floating button for navigation to trainee page */}
+      <FloatingAdminReturn />
     </div>
   );
 }

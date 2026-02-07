@@ -12,7 +12,7 @@ import { ResultsSummary } from '@/components/simulation/ResultsSummary';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import type { SimulationScenarioType, DifficultyLevel } from '@/types';
-import { MessageSquare, Play, ArrowLeft, ArrowRight, Phone, X } from 'lucide-react';
+import { MessageSquare, Play, ArrowLeft, ArrowRight, Phone, X, Loader2, Brain, Sparkles } from 'lucide-react';
 
 type SimulationMode = 'chat' | 'voice' | null;
 
@@ -143,6 +143,74 @@ export default function SimulationPage() {
 
   // RTL-aware arrow
   const BackArrow = isRTL ? ArrowRight : ArrowLeft;
+
+  // Analyzing state - show loading indicator
+  if (status === 'analyzing' || status === 'ending') {
+    return (
+      <div className="container mx-auto py-8 px-4 max-w-4xl">
+        <Card className="w-full">
+          <CardContent className="flex flex-col items-center justify-center py-16 space-y-6">
+            {/* Animated AI Brain Icon */}
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center animate-pulse">
+                <Brain className="h-12 w-12 text-primary" />
+              </div>
+              <div className="absolute -top-2 -right-2">
+                <Sparkles className="h-6 w-6 text-yellow-500 animate-bounce" />
+              </div>
+              <div className="absolute -bottom-1 -left-1">
+                <div className="w-4 h-4 rounded-full bg-primary animate-ping" />
+              </div>
+            </div>
+
+            {/* Loading Text */}
+            <div className="text-center space-y-2">
+              <h3 className="text-xl font-semibold text-foreground">
+                {isRTL ? 'جاري تحليل المحادثة...' : 'Analyzing Conversation...'}
+              </h3>
+              <p className="text-muted-foreground max-w-md">
+                {isRTL
+                  ? 'الذكاء الاصطناعي يقوم بتحليل أداءك وتقديم تقييم شامل. يرجى الانتظار قليلاً.'
+                  : 'AI is analyzing your performance and preparing a comprehensive evaluation. Please wait a moment.'}
+              </p>
+            </div>
+
+            {/* Progress Indicator */}
+            <div className="flex items-center gap-3">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <span className="text-sm text-muted-foreground">
+                {isRTL ? 'قد يستغرق هذا بضع ثوان...' : 'This may take a few seconds...'}
+              </span>
+            </div>
+
+            {/* Progress Steps */}
+            <div className="flex items-center gap-4 mt-4">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-primary" />
+                <span className="text-xs text-muted-foreground">
+                  {isRTL ? 'تحليل الحوار' : 'Analyzing dialogue'}
+                </span>
+              </div>
+              <div className="w-8 h-0.5 bg-border" />
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-primary/50 animate-pulse" />
+                <span className="text-xs text-muted-foreground">
+                  {isRTL ? 'إعداد التقييم' : 'Preparing evaluation'}
+                </span>
+              </div>
+              <div className="w-8 h-0.5 bg-border" />
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-muted" />
+                <span className="text-xs text-muted-foreground">
+                  {isRTL ? 'النتيجة النهائية' : 'Final results'}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (status === 'completed' && analysis) {
     return (
