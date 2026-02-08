@@ -188,50 +188,63 @@ export default function AITeacherPage() {
     autoPlayAudioRef.current = autoPlayAudio;
   }, [autoPlayAudio]);
 
+  // Global audio cleanup function
+  const cleanupAudio = useCallback(() => {
+    if (audioRef.current) {
+      try {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current.onended = null;
+        audioRef.current.onerror = null;
+        audioRef.current.onplay = null;
+        audioRef.current.src = ''; // Release the audio resource
+        audioRef.current.load(); // Reset the audio element
+      } catch {
+        // Ignore errors during cleanup
+      }
+      audioRef.current = null;
+    }
+    isPlayingRef.current = false;
+    currentAudioIdRef.current = null;
+    audioQueueRef.current = [];
+  }, []);
+
   // Handle page visibility - stop audio when leaving page
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         isPageVisibleRef.current = false;
-        // Stop any playing audio when page is hidden
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
-          audioRef.current = null;
-        }
-        // Clear audio queue and reset state
-        audioQueueRef.current = [];
-        isPlayingRef.current = false;
-        currentAudioIdRef.current = null;
+        // Stop any playing audio IMMEDIATELY when page is hidden
+        cleanupAudio();
       } else {
         isPageVisibleRef.current = true;
-        // Don't auto-play when returning - user must click to play
+        // IMPORTANT: Don't auto-play when returning - user must click to play
+        // Reset the initial audio flag so it won't auto-play again
+        hasPlayedInitialAudioRef.current = true;
       }
     };
 
-    // Also stop audio when navigating away (beforeunload)
+    // Stop audio when navigating away
     const handleBeforeUnload = () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-      isPlayingRef.current = false;
-      currentAudioIdRef.current = null;
+      cleanupAudio();
+    };
+
+    // Stop audio when route changes (Next.js)
+    const handleRouteChange = () => {
+      cleanupAudio();
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handleRouteChange);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      // Cleanup on unmount
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+      window.removeEventListener('popstate', handleRouteChange);
+      cleanupAudio();
     };
-  }, []);
+  }, [cleanupAudio]);
 
   // Scroll to bottom when messages change
   const scrollToBottom = useCallback(() => {
@@ -244,8 +257,9 @@ export default function AITeacherPage() {
 
   // Play audio from base64 - stops any currently playing audio first
   const playAudio = useCallback((base64Audio: string, audioId?: string) => {
-    // Don't play if page is not visible
-    if (!isPageVisibleRef.current) {
+    // Don't play if page is not visible or document is hidden
+    if (!isPageVisibleRef.current || document.hidden) {
+      console.log('[Audio] Blocked: page not visible');
       return;
     }
 
@@ -254,60 +268,73 @@ export default function AITeacherPage() {
 
     // If same audio is already playing, ignore
     if (currentAudioIdRef.current === thisAudioId && isPlayingRef.current) {
+      console.log('[Audio] Blocked: same audio already playing');
       return;
     }
 
-    // Stop any currently playing audio FIRST
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current.onended = null;
-      audioRef.current.onerror = null;
-      audioRef.current = null;
+    // If ANY audio is currently playing, stop it first
+    if (isPlayingRef.current || audioRef.current) {
+      console.log('[Audio] Stopping previous audio');
+      cleanupAudio();
     }
 
-    // Update state
+    // Double-check visibility after cleanup
+    if (document.hidden) {
+      return;
+    }
+
+    // Update state BEFORE creating audio
     isPlayingRef.current = true;
     currentAudioIdRef.current = thisAudioId;
 
-    const audio = new Audio(`data:audio/mp3;base64,${base64Audio}`);
-    audioRef.current = audio;
+    try {
+      const audio = new Audio(`data:audio/mp3;base64,${base64Audio}`);
+      audioRef.current = audio;
 
-    // Increase playback speed for faster audio (1.15x is natural sounding but faster)
-    audio.playbackRate = 1.15;
+      // Normal playback speed (ElevenLabs already sounds natural)
+      audio.playbackRate = 1.0;
 
-    // Track when audio ends
-    audio.onended = () => {
+      // Track when audio ends
+      audio.onended = () => {
+        if (currentAudioIdRef.current === thisAudioId) {
+          isPlayingRef.current = false;
+          currentAudioIdRef.current = null;
+          audioRef.current = null;
+        }
+      };
+
+      audio.onerror = () => {
+        if (currentAudioIdRef.current === thisAudioId) {
+          isPlayingRef.current = false;
+          currentAudioIdRef.current = null;
+          audioRef.current = null;
+        }
+      };
+
+      // Check visibility one more time before playing
+      if (document.hidden || !isPageVisibleRef.current) {
+        cleanupAudio();
+        return;
+      }
+
+      audio.play().catch(() => {
+        if (currentAudioIdRef.current === thisAudioId) {
+          isPlayingRef.current = false;
+          currentAudioIdRef.current = null;
+          audioRef.current = null;
+        }
+      });
+    } catch {
       isPlayingRef.current = false;
       currentAudioIdRef.current = null;
-      audioRef.current = null;
-    };
-
-    audio.onerror = () => {
-      isPlayingRef.current = false;
-      currentAudioIdRef.current = null;
-      audioRef.current = null;
-    };
-
-    audio.play().catch(() => {
-      isPlayingRef.current = false;
-      currentAudioIdRef.current = null;
-      audioRef.current = null;
-    });
-  }, []);
-
-  // Stop any playing audio
-  const stopAudio = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current.onended = null;
-      audioRef.current.onerror = null;
       audioRef.current = null;
     }
-    isPlayingRef.current = false;
-    currentAudioIdRef.current = null;
-  }, []);
+  }, [cleanupAudio]);
+
+  // Stop any playing audio - uses cleanupAudio
+  const stopAudio = useCallback(() => {
+    cleanupAudio();
+  }, [cleanupAudio]);
 
   // Generate and play audio on demand
   const generateAndPlayAudio = useCallback(async (text: string) => {
