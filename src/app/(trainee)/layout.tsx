@@ -33,6 +33,7 @@ import {
   Loader2,
   GraduationCap,
   Sparkles,
+  ClipboardCheck,
 } from 'lucide-react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { FloatingAdminReturn } from '@/components/admin/ViewModeSwitcher';
@@ -59,9 +60,10 @@ export default function TraineeLayout({
     { href: '/courses', label: t.nav.courses, icon: BookOpen, description: t.nav.coursesDesc },
     { href: '/simulation', label: t.nav.simulations, icon: MessageSquare, description: t.nav.simulationsDesc },
     { href: '/voice-training', label: t.nav.voicePractice, icon: Phone, description: t.nav.voicePracticeDesc },
+    { href: '/quizzes', label: t.quiz.quizzes, icon: ClipboardCheck, description: t.quiz.quizzesDesc },
     { href: '/ai-teacher', label: t.nav.aiTeacher, icon: GraduationCap, description: t.nav.aiTeacherDesc },
     { href: '/reports', label: t.nav.reports, icon: BarChart, description: t.nav.reportsDesc },
-  ], [t.nav]);
+  ], [t.nav, t.quiz]);
 
   // Optimized navigation handler - instant UI update
   const handleNavClick = useCallback((href: string) => (e: React.MouseEvent) => {
