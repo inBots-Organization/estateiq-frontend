@@ -169,7 +169,7 @@ export default function AITeacherPage() {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
-  const [autoPlayAudio, setAutoPlayAudio] = useState(true);
+  // Audio plays only when user clicks "Listen" button - no auto-play
   const [showSettings, setShowSettings] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [audioState, setAudioState] = useState<'idle' | 'loading' | 'playing' | 'paused'>('idle');
@@ -205,12 +205,10 @@ export default function AITeacherPage() {
   }, [messages, scrollToBottom]);
 
   // Play audio using global AudioManager (prevents all overlap)
+  // Only called when user clicks "Listen" button
   const playAudio = useCallback((base64Audio: string, audioId?: string) => {
-    if (!autoPlayAudio && !audioId?.includes('manual')) {
-      return; // Don't auto-play if disabled
-    }
     audioManager.play(base64Audio, audioId);
-  }, [audioManager, autoPlayAudio]);
+  }, [audioManager]);
 
   // Stop any playing audio
   const stopAudio = useCallback(() => {
@@ -626,16 +624,15 @@ ${lastLessonText}
           };
           setMessages([contextualWelcome]);
 
-          // Generate audio for contextual greeting - only once (using AudioManager)
-          if (autoPlayAudio && !hasPlayedInitialAudioRef.current && !document.hidden) {
-            hasPlayedInitialAudioRef.current = true; // Mark as played to prevent duplicates
+          // Pre-generate audio for welcome message (don't auto-play)
+          if (!hasPlayedInitialAudioRef.current && !document.hidden) {
+            hasPlayedInitialAudioRef.current = true;
             try {
               const lang = isRTL ? 'ar' : 'en';
               const response = await aiTeacherApi.textToSpeech(contextualGreeting, lang as 'ar' | 'en');
-              if (response.audio && !document.hidden) {
-                // Update message with audio
+              if (response.audio) {
+                // Store audio with message - user can click to play
                 setMessages([{ ...contextualWelcome, audioBase64: response.audio }]);
-                playAudio(response.audio, 'initial-greeting');
               }
             } catch {
               // Audio generation failed - continue without audio
@@ -653,15 +650,15 @@ ${lastLessonText}
           };
           setMessages([sidebarWelcome]);
 
-          // Generate audio for sidebar greeting - only once (using AudioManager)
-          if (autoPlayAudio && !hasPlayedInitialAudioRef.current && !document.hidden) {
-            hasPlayedInitialAudioRef.current = true; // Mark as played to prevent duplicates
+          // Pre-generate audio for welcome message (don't auto-play)
+          if (!hasPlayedInitialAudioRef.current && !document.hidden) {
+            hasPlayedInitialAudioRef.current = true;
             try {
               const lang = isRTL ? 'ar' : 'en';
               const response = await aiTeacherApi.textToSpeech(sidebarGreeting, lang as 'ar' | 'en');
-              if (response.audio && !document.hidden) {
+              if (response.audio) {
+                // Store audio with message - user can click to play
                 setMessages([{ ...sidebarWelcome, audioBase64: response.audio }]);
-                playAudio(response.audio, 'initial-greeting');
               }
             } catch {
               // Audio generation failed - continue without audio
@@ -751,10 +748,8 @@ ${lastLessonText}
             )
           );
 
-          // Auto-play response audio if available and enabled
-          if (audioBase64 && autoPlayAudio) {
-            playAudio(audioBase64, assistantMessageId);
-          }
+          // Audio is stored with message - user clicks button to play
+          // No auto-play
         } else if (chunk.type === 'error') {
           throw new Error(chunk.error || 'Streaming error');
         }
@@ -962,26 +957,6 @@ ${lastLessonText}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const newValue = !autoPlayAudio;
-                setAutoPlayAudio(newValue);
-                // Stop any playing audio when disabling
-                if (!newValue) {
-                  stopAudio();
-                }
-              }}
-              className="gap-2"
-            >
-              {autoPlayAudio ? (
-                <Volume2 className="h-4 w-4" />
-              ) : (
-                <VolumeX className="h-4 w-4" />
-              )}
-              {isRTL ? (autoPlayAudio ? 'صوت مفعل' : 'صوت معطل') : (autoPlayAudio ? 'Audio On' : 'Audio Off')}
-            </Button>
             <Button variant="outline" size="icon" onClick={() => setShowSettings(!showSettings)}>
               <Settings className="h-4 w-4" />
             </Button>
