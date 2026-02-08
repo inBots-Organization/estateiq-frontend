@@ -177,11 +177,39 @@ export default function AITeacherPage() {
   const audioChunksRef = useRef<Blob[]>([]);
   const initializationRef = useRef<boolean>(false);
   const autoPlayAudioRef = useRef<boolean>(true);
+  const isPageVisibleRef = useRef<boolean>(true);
+  const audioQueueRef = useRef<string[]>([]);
+  const isPlayingRef = useRef<boolean>(false);
 
   // Keep autoPlayAudioRef in sync
   useEffect(() => {
     autoPlayAudioRef.current = autoPlayAudio;
   }, [autoPlayAudio]);
+
+  // Handle page visibility - stop audio when leaving page
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        isPageVisibleRef.current = false;
+        // Stop any playing audio when page is hidden
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+          audioRef.current = null;
+        }
+        // Clear audio queue
+        audioQueueRef.current = [];
+        isPlayingRef.current = false;
+      } else {
+        isPageVisibleRef.current = true;
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   // Scroll to bottom when messages change
   const scrollToBottom = useCallback(() => {
@@ -194,6 +222,16 @@ export default function AITeacherPage() {
 
   // Play audio from base64 - stops any currently playing audio first
   const playAudio = useCallback((base64Audio: string) => {
+    // Don't play if page is not visible
+    if (!isPageVisibleRef.current) {
+      return;
+    }
+
+    // If already playing, don't interrupt
+    if (isPlayingRef.current && audioRef.current && !audioRef.current.paused) {
+      return;
+    }
+
     // Stop any currently playing audio
     if (audioRef.current) {
       audioRef.current.pause();
@@ -201,9 +239,25 @@ export default function AITeacherPage() {
       audioRef.current = null;
     }
 
+    isPlayingRef.current = true;
     const audio = new Audio(`data:audio/mp3;base64,${base64Audio}`);
     audioRef.current = audio;
-    audio.play().catch(console.error);
+
+    // Track when audio ends
+    audio.onended = () => {
+      isPlayingRef.current = false;
+      audioRef.current = null;
+    };
+
+    audio.onerror = () => {
+      isPlayingRef.current = false;
+      audioRef.current = null;
+    };
+
+    audio.play().catch(() => {
+      isPlayingRef.current = false;
+      audioRef.current = null;
+    });
   }, []);
 
   // Stop any playing audio
@@ -676,8 +730,12 @@ ${lastLessonText}
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
+        audioRef.current.currentTime = 0;
         audioRef.current = null;
       }
+      isPlayingRef.current = false;
+      audioQueueRef.current = [];
+      initializationRef.current = false;
     };
   }, [isRTL, playAudio, lessonContext]);
 
