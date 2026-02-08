@@ -161,38 +161,56 @@
     -webkit-text-fill-color: transparent;
   }
 
-  /* RTL Support - Enhanced for Arabic with IBM Plex Sans Arabic */
+  /* ========================================
+     Enhanced Arabic Typography System
+     Modern, readable, and well-balanced
+     ======================================== */
   [dir="rtl"] {
     text-align: right;
     font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
     font-size: 16px;
-    line-height: 1.7;
+    line-height: 1.8;
     letter-spacing: 0;
     font-weight: 400;
+    word-spacing: 0.02em;
   }
 
-  [dir="rtl"] h1,
+  /* Arabic Headings - More prominent and readable */
+  [dir="rtl"] h1 {
+    letter-spacing: -0.01em;
+    line-height: 1.4;
+    font-weight: 700;
+    word-spacing: 0.05em;
+  }
+
   [dir="rtl"] h2 {
     letter-spacing: 0;
-    line-height: 1.5;
+    line-height: 1.45;
     font-weight: 700;
+    word-spacing: 0.04em;
   }
 
-  [dir="rtl"] h3,
-  [dir="rtl"] h4 {
+  [dir="rtl"] h3 {
     letter-spacing: 0;
     line-height: 1.5;
     font-weight: 600;
+    word-spacing: 0.03em;
   }
 
+  [dir="rtl"] h4,
   [dir="rtl"] h5,
   [dir="rtl"] h6 {
     letter-spacing: 0;
-    line-height: 1.6;
+    line-height: 1.55;
     font-weight: 600;
   }
 
-  [dir="rtl"] p,
+  [dir="rtl"] p {
+    line-height: 1.85;
+    letter-spacing: 0;
+    word-spacing: 0.02em;
+  }
+
   [dir="rtl"] span,
   [dir="rtl"] label,
   [dir="rtl"] button {
@@ -200,11 +218,24 @@
     letter-spacing: 0;
   }
 
+  /* Arabic small text - Ensure readability */
   [dir="rtl"] small,
-  [dir="rtl"] .text-xs,
+  [dir="rtl"] .text-xs {
+    font-size: max(0.8125rem, 13px);
+    line-height: 1.65;
+    font-weight: 450;
+  }
+
   [dir="rtl"] .text-sm {
     font-size: max(0.875rem, 14px);
-    line-height: 1.6;
+    line-height: 1.7;
+    font-weight: 400;
+  }
+
+  /* Arabic muted/secondary text - Better contrast */
+  [dir="rtl"] .text-muted-foreground {
+    font-weight: 450;
+    opacity: 0.95;
   }
 
   [dir="rtl"] input,
@@ -212,25 +243,41 @@
   [dir="rtl"] select {
     font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
     font-size: 16px;
-    line-height: 1.6;
+    line-height: 1.65;
   }
 
   [dir="rtl"] input::placeholder,
   [dir="rtl"] textarea::placeholder {
     font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    opacity: 0.7;
   }
 
+  /* LTR Typography */
   [dir="ltr"] {
     text-align: left;
     font-family: var(--font-ibm-plex), 'IBM Plex Sans', 'Inter', system-ui, sans-serif;
   }
 
-  /* Better Arabic Typography */
+  /* Arabic Text Utility Classes */
   .arabic-text {
     font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
     font-size: 16px;
-    line-height: 1.7;
+    line-height: 1.8;
     letter-spacing: 0;
+  }
+
+  .arabic-heading {
+    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif;
+    font-weight: 700;
+    line-height: 1.4;
+    word-spacing: 0.05em;
+  }
+
+  .arabic-body {
+    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif;
+    font-weight: 400;
+    line-height: 1.85;
+    word-spacing: 0.02em;
   }
 
   /* Focus styles for accessibility */
@@ -822,5 +869,237 @@
 
   .shadow-glow-teal {
     box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
+  }
+
+  /* ========================================
+     Premium Shadow System
+     ======================================== */
+  .shadow-soft {
+    box-shadow:
+      0 2px 4px -1px rgba(0, 0, 0, 0.04),
+      0 4px 6px -1px rgba(0, 0, 0, 0.06),
+      0 8px 16px -4px rgba(0, 0, 0, 0.04);
+  }
+
+  .shadow-soft-lg {
+    box-shadow:
+      0 4px 6px -2px rgba(0, 0, 0, 0.04),
+      0 10px 15px -3px rgba(0, 0, 0, 0.08),
+      0 20px 25px -5px rgba(0, 0, 0, 0.06);
+  }
+
+  .shadow-glow {
+    box-shadow:
+      0 0 20px rgba(5, 150, 105, 0.15),
+      0 0 40px rgba(5, 150, 105, 0.08);
+  }
+
+  .shadow-glow-lg {
+    box-shadow:
+      0 0 30px rgba(5, 150, 105, 0.2),
+      0 0 60px rgba(5, 150, 105, 0.1);
+  }
+
+  .dark .shadow-soft {
+    box-shadow:
+      0 2px 4px -1px rgba(0, 0, 0, 0.2),
+      0 4px 8px -2px rgba(0, 0, 0, 0.3);
+  }
+
+  .dark .shadow-soft-lg {
+    box-shadow:
+      0 4px 8px -2px rgba(0, 0, 0, 0.25),
+      0 12px 20px -4px rgba(0, 0, 0, 0.35);
+  }
+
+  /* ========================================
+     Report Page Specific Styles
+     High contrast text for readability
+     ======================================== */
+  .report-score-display {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .report-grade-badge {
+    font-weight: 700;
+    min-width: 3rem;
+    min-height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Ensure high contrast for score colors in light mode */
+  .text-success {
+    color: hsl(160, 84%, 30%); /* Darker emerald for better readability */
+  }
+
+  .dark .text-success {
+    color: hsl(160, 84%, 50%);
+  }
+
+  .text-info {
+    color: hsl(199, 89%, 40%); /* Darker sky blue */
+  }
+
+  .dark .text-info {
+    color: hsl(199, 89%, 55%);
+  }
+
+  .text-warning {
+    color: hsl(38, 92%, 42%); /* Darker amber */
+  }
+
+  .dark .text-warning {
+    color: hsl(38, 92%, 55%);
+  }
+
+  .text-destructive {
+    color: hsl(0, 84%, 45%); /* Darker red */
+  }
+
+  .dark .text-destructive {
+    color: hsl(0, 63%, 60%);
+  }
+
+  /* ========================================
+     Landing Page Animations
+     Smooth, subtle entrance effects
+     ======================================== */
+  .animate-hero-fade-in {
+    animation: heroFadeIn 0.8s ease-out forwards;
+  }
+
+  .animate-hero-slide-up {
+    animation: heroSlideUp 0.6s ease-out forwards;
+  }
+
+  .animate-feature-appear {
+    animation: featureAppear 0.5s ease-out forwards;
+    opacity: 0;
+  }
+
+  .animate-feature-appear-1 {
+    animation-delay: 0.1s;
+  }
+
+  .animate-feature-appear-2 {
+    animation-delay: 0.2s;
+  }
+
+  .animate-feature-appear-3 {
+    animation-delay: 0.3s;
+  }
+
+  .animate-feature-appear-4 {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes heroFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(30px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes heroSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes featureAppear {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Hover lift effect for cards */
+  .hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+  }
+
+  /* Gradient border effect */
+  .gradient-border {
+    position: relative;
+    background: linear-gradient(to right, hsl(160, 84%, 39%), hsl(180, 80%, 40%));
+    border-radius: 1rem;
+    padding: 2px;
+  }
+
+  .gradient-border > * {
+    background: hsl(var(--background));
+    border-radius: calc(1rem - 2px);
+  }
+
+  /* Pulse animation for CTAs */
+  .animate-pulse-soft {
+    animation: pulseSoft 2s ease-in-out infinite;
+  }
+
+  @keyframes pulseSoft {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 12px rgba(5, 150, 105, 0);
+    }
+  }
+
+  /* Text reveal animation */
+  .text-reveal {
+    animation: textReveal 0.8s ease-out forwards;
+  }
+
+  @keyframes textReveal {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  /* Stagger children animation helper */
+  .stagger-children > * {
+    opacity: 0;
+    animation: staggerFadeIn 0.4s ease-out forwards;
+  }
+
+  .stagger-children > *:nth-child(1) { animation-delay: 0.1s; }
+  .stagger-children > *:nth-child(2) { animation-delay: 0.2s; }
+  .stagger-children > *:nth-child(3) { animation-delay: 0.3s; }
+  .stagger-children > *:nth-child(4) { animation-delay: 0.4s; }
+  .stagger-children > *:nth-child(5) { animation-delay: 0.5s; }
+  .stagger-children > *:nth-child(6) { animation-delay: 0.6s; }
+
+  @keyframes staggerFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
