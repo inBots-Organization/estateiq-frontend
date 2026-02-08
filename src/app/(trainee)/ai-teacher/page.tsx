@@ -56,6 +56,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useLessonContext, LessonContext } from '@/contexts/LessonContext';
 import { cn } from '@/lib/utils';
+import { useAudioManager } from '@/lib/audio-manager';
 import {
   aiTeacherApi,
   WelcomeResponse,
@@ -132,6 +133,9 @@ export default function AITeacherPage() {
   const { t, isRTL, language } = useLanguage();
   const { lessonContext, clearLessonContext, hasLessonContext } = useLessonContext();
 
+  // Global Audio Manager (Singleton - prevents all audio overlap)
+  const audioManager = useAudioManager();
+
   // State
   const [profile, setProfile] = useState<TraineeProfile | null>(null);
   const [currentLessonContext, setCurrentLessonContext] = useState<LessonContext | null>(null);
@@ -168,83 +172,28 @@ export default function AITeacherPage() {
   const [autoPlayAudio, setAutoPlayAudio] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [audioState, setAudioState] = useState<'idle' | 'loading' | 'playing' | 'paused'>('idle');
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const initializationRef = useRef<boolean>(false);
-  const autoPlayAudioRef = useRef<boolean>(true);
-  const isPageVisibleRef = useRef<boolean>(true);
-  const audioQueueRef = useRef<string[]>([]);
-  const isPlayingRef = useRef<boolean>(false);
   const hasPlayedInitialAudioRef = useRef<boolean>(false);
-  const currentAudioIdRef = useRef<string | null>(null);
 
-  // Keep autoPlayAudioRef in sync
+  // Setup audio manager events
   useEffect(() => {
-    autoPlayAudioRef.current = autoPlayAudio;
-  }, [autoPlayAudio]);
+    audioManager.setEvents({
+      onStateChange: setAudioState,
+      onError: (err) => console.error('[Audio Error]', err),
+    });
 
-  // Global audio cleanup function
-  const cleanupAudio = useCallback(() => {
-    if (audioRef.current) {
-      try {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        audioRef.current.onended = null;
-        audioRef.current.onerror = null;
-        audioRef.current.onplay = null;
-        audioRef.current.src = ''; // Release the audio resource
-        audioRef.current.load(); // Reset the audio element
-      } catch {
-        // Ignore errors during cleanup
-      }
-      audioRef.current = null;
-    }
-    isPlayingRef.current = false;
-    currentAudioIdRef.current = null;
-    audioQueueRef.current = [];
-  }, []);
-
-  // Handle page visibility - stop audio when leaving page
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        isPageVisibleRef.current = false;
-        // Stop any playing audio IMMEDIATELY when page is hidden
-        cleanupAudio();
-      } else {
-        isPageVisibleRef.current = true;
-        // IMPORTANT: Don't auto-play when returning - user must click to play
-        // Reset the initial audio flag so it won't auto-play again
-        hasPlayedInitialAudioRef.current = true;
-      }
-    };
-
-    // Stop audio when navigating away
-    const handleBeforeUnload = () => {
-      cleanupAudio();
-    };
-
-    // Stop audio when route changes (Next.js)
-    const handleRouteChange = () => {
-      cleanupAudio();
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('popstate', handleRouteChange);
-
+    // Cleanup on unmount
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('popstate', handleRouteChange);
-      cleanupAudio();
+      audioManager.stop();
     };
-  }, [cleanupAudio]);
+  }, [audioManager]);
 
   // Scroll to bottom when messages change
   const scrollToBottom = useCallback(() => {
@@ -255,86 +204,18 @@ export default function AITeacherPage() {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  // Play audio from base64 - stops any currently playing audio first
+  // Play audio using global AudioManager (prevents all overlap)
   const playAudio = useCallback((base64Audio: string, audioId?: string) => {
-    // Don't play if page is not visible or document is hidden
-    if (!isPageVisibleRef.current || document.hidden) {
-      console.log('[Audio] Blocked: page not visible');
-      return;
+    if (!autoPlayAudio && !audioId?.includes('manual')) {
+      return; // Don't auto-play if disabled
     }
+    audioManager.play(base64Audio, audioId);
+  }, [audioManager, autoPlayAudio]);
 
-    // Generate unique ID for this audio request
-    const thisAudioId = audioId || `audio-${Date.now()}-${Math.random()}`;
-
-    // If same audio is already playing, ignore
-    if (currentAudioIdRef.current === thisAudioId && isPlayingRef.current) {
-      console.log('[Audio] Blocked: same audio already playing');
-      return;
-    }
-
-    // If ANY audio is currently playing, stop it first
-    if (isPlayingRef.current || audioRef.current) {
-      console.log('[Audio] Stopping previous audio');
-      cleanupAudio();
-    }
-
-    // Double-check visibility after cleanup
-    if (document.hidden) {
-      return;
-    }
-
-    // Update state BEFORE creating audio
-    isPlayingRef.current = true;
-    currentAudioIdRef.current = thisAudioId;
-
-    try {
-      const audio = new Audio(`data:audio/mp3;base64,${base64Audio}`);
-      audioRef.current = audio;
-
-      // Normal playback speed (ElevenLabs already sounds natural)
-      audio.playbackRate = 1.0;
-
-      // Track when audio ends
-      audio.onended = () => {
-        if (currentAudioIdRef.current === thisAudioId) {
-          isPlayingRef.current = false;
-          currentAudioIdRef.current = null;
-          audioRef.current = null;
-        }
-      };
-
-      audio.onerror = () => {
-        if (currentAudioIdRef.current === thisAudioId) {
-          isPlayingRef.current = false;
-          currentAudioIdRef.current = null;
-          audioRef.current = null;
-        }
-      };
-
-      // Check visibility one more time before playing
-      if (document.hidden || !isPageVisibleRef.current) {
-        cleanupAudio();
-        return;
-      }
-
-      audio.play().catch(() => {
-        if (currentAudioIdRef.current === thisAudioId) {
-          isPlayingRef.current = false;
-          currentAudioIdRef.current = null;
-          audioRef.current = null;
-        }
-      });
-    } catch {
-      isPlayingRef.current = false;
-      currentAudioIdRef.current = null;
-      audioRef.current = null;
-    }
-  }, [cleanupAudio]);
-
-  // Stop any playing audio - uses cleanupAudio
+  // Stop any playing audio
   const stopAudio = useCallback(() => {
-    cleanupAudio();
-  }, [cleanupAudio]);
+    audioManager.stop();
+  }, [audioManager]);
 
   // Generate and play audio on demand
   const generateAndPlayAudio = useCallback(async (text: string) => {
@@ -345,14 +226,15 @@ export default function AITeacherPage() {
       const lang = isRTL ? 'ar' : 'en';
       const response = await aiTeacherApi.textToSpeech(text, lang as 'ar' | 'en');
       if (response.audio) {
-        playAudio(response.audio);
+        // Use 'manual' in ID to bypass auto-play check
+        audioManager.play(response.audio, `manual-${Date.now()}`);
       }
     } catch {
       // Audio generation failed - continue without audio
     } finally {
       setIsGeneratingAudio(false);
     }
-  }, [isRTL, playAudio, isGeneratingAudio]);
+  }, [isRTL, audioManager, isGeneratingAudio]);
 
   // Generate lesson summary
   const generateLessonSummary = useCallback(async () => {
@@ -744,13 +626,13 @@ ${lastLessonText}
           };
           setMessages([contextualWelcome]);
 
-          // Generate audio for contextual greeting - only once
-          if (autoPlayAudioRef.current && !hasPlayedInitialAudioRef.current && isPageVisibleRef.current) {
+          // Generate audio for contextual greeting - only once (using AudioManager)
+          if (autoPlayAudio && !hasPlayedInitialAudioRef.current && !document.hidden) {
             hasPlayedInitialAudioRef.current = true; // Mark as played to prevent duplicates
             try {
               const lang = isRTL ? 'ar' : 'en';
               const response = await aiTeacherApi.textToSpeech(contextualGreeting, lang as 'ar' | 'en');
-              if (response.audio && isPageVisibleRef.current) {
+              if (response.audio && !document.hidden) {
                 // Update message with audio
                 setMessages([{ ...contextualWelcome, audioBase64: response.audio }]);
                 playAudio(response.audio, 'initial-greeting');
@@ -771,13 +653,13 @@ ${lastLessonText}
           };
           setMessages([sidebarWelcome]);
 
-          // Generate audio for sidebar greeting - only once
-          if (autoPlayAudioRef.current && !hasPlayedInitialAudioRef.current && isPageVisibleRef.current) {
+          // Generate audio for sidebar greeting - only once (using AudioManager)
+          if (autoPlayAudio && !hasPlayedInitialAudioRef.current && !document.hidden) {
             hasPlayedInitialAudioRef.current = true; // Mark as played to prevent duplicates
             try {
               const lang = isRTL ? 'ar' : 'en';
               const response = await aiTeacherApi.textToSpeech(sidebarGreeting, lang as 'ar' | 'en');
-              if (response.audio && isPageVisibleRef.current) {
+              if (response.audio && !document.hidden) {
                 setMessages([{ ...sidebarWelcome, audioBase64: response.audio }]);
                 playAudio(response.audio, 'initial-greeting');
               }
@@ -795,24 +677,14 @@ ${lastLessonText}
 
     initialize();
 
-    // Cleanup: stop audio when component unmounts
+    // Cleanup: stop audio when component unmounts (AudioManager handles this globally)
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        audioRef.current.onended = null;
-        audioRef.current.onerror = null;
-        audioRef.current = null;
-      }
-      isPlayingRef.current = false;
-      currentAudioIdRef.current = null;
-      audioQueueRef.current = [];
       initializationRef.current = false;
       hasPlayedInitialAudioRef.current = false;
     };
   }, [isRTL, playAudio, lessonContext]);
 
-  // Send message
+  // Send message with streaming support
   const sendMessage = async () => {
     if (!inputMessage.trim() && attachments.length === 0) return;
 
@@ -824,40 +696,83 @@ ${lastLessonText}
       attachments: attachments.length > 0 ? [...attachments] : undefined,
     };
 
+    const messageToSend = inputMessage;
+    const attachmentsToSend = [...attachments];
+
     setMessages((prev) => [...prev, userMessage]);
     setInputMessage('');
     setAttachments([]);
     setIsSending(true);
 
+    // Create placeholder for streaming response
+    const assistantMessageId = `assistant-${Date.now()}`;
+    const assistantMessage: Message = {
+      id: assistantMessageId,
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+    };
+
+    // Add empty assistant message immediately
+    setMessages((prev) => [...prev, assistantMessage]);
+
     try {
-      // Include lesson context in the message if available
-      const response = await aiTeacherApi.sendMessage(inputMessage, attachments, currentLessonContext || undefined);
+      // Use streaming API for real-time response
+      let fullContent = '';
+      let audioBase64: string | undefined;
 
-      const assistantMessage: Message = {
-        id: `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: response.message,
-        timestamp: new Date(),
-        audioBase64: response.audioBase64,
-      };
+      for await (const chunk of aiTeacherApi.sendMessageStream(
+        messageToSend,
+        attachmentsToSend,
+        currentLessonContext || undefined
+      )) {
+        if (chunk.type === 'chunk' && chunk.content) {
+          fullContent += chunk.content;
+          // Update message content in real-time
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantMessageId
+                ? { ...m, content: fullContent }
+                : m
+            )
+          );
+        } else if (chunk.type === 'done') {
+          // Final update with full message and audio
+          if (chunk.fullMessage) {
+            fullContent = chunk.fullMessage;
+          }
+          audioBase64 = chunk.audioBase64;
 
-      setMessages((prev) => [...prev, assistantMessage]);
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantMessageId
+                ? { ...m, content: fullContent, audioBase64 }
+                : m
+            )
+          );
 
-      // Auto-play response audio if available and enabled
-      if (response.audioBase64 && autoPlayAudio) {
-        playAudio(response.audioBase64);
+          // Auto-play response audio if available and enabled
+          if (audioBase64 && autoPlayAudio) {
+            playAudio(audioBase64, assistantMessageId);
+          }
+        } else if (chunk.type === 'error') {
+          throw new Error(chunk.error || 'Streaming error');
+        }
       }
     } catch {
-      // Add error message
-      const errorMessage: Message = {
-        id: `error-${Date.now()}`,
-        role: 'assistant',
-        content: isRTL
-          ? 'عذراً، حدث خطأ. يرجى المحاولة مرة أخرى.'
-          : 'Sorry, an error occurred. Please try again.',
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      // Update the assistant message with error
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantMessageId
+            ? {
+                ...m,
+                content: isRTL
+                  ? 'عذراً، حدث خطأ. يرجى المحاولة مرة أخرى.'
+                  : 'Sorry, an error occurred. Please try again.',
+              }
+            : m
+        )
+      );
     } finally {
       setIsSending(false);
     }
@@ -1166,25 +1081,39 @@ ${lastLessonText}
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-7 px-3 text-xs bg-violet-500/10 border-violet-500/30 text-violet-400 hover:text-violet-300 hover:bg-violet-500/20 hover:border-violet-500/50"
-                          disabled={isGeneratingAudio}
+                          className={cn(
+                            "h-7 px-3 text-xs transition-all",
+                            audioState === 'playing' && audioManager.getCurrentAudioId() === message.id
+                              ? "bg-violet-500/30 border-violet-500/50 text-violet-300"
+                              : "bg-violet-500/10 border-violet-500/30 text-violet-400 hover:text-violet-300 hover:bg-violet-500/20 hover:border-violet-500/50"
+                          )}
+                          disabled={isGeneratingAudio || audioState === 'loading'}
                           onClick={() => {
-                            // Stop any currently playing audio first
-                            stopAudio();
+                            // If this message is playing, stop it
+                            if (audioState === 'playing' && audioManager.getCurrentAudioId() === message.id) {
+                              stopAudio();
+                              return;
+                            }
+                            // Otherwise play this message
                             if (message.audioBase64) {
-                              playAudio(message.audioBase64, message.id);
+                              audioManager.play(message.audioBase64, message.id);
                             } else {
                               // Generate audio on demand if not available
                               generateAndPlayAudio(message.content);
                             }
                           }}
                         >
-                          {isGeneratingAudio ? (
+                          {isGeneratingAudio || (audioState === 'loading' && audioManager.getCurrentAudioId() === message.id) ? (
                             <Loader2 className="h-3.5 w-3.5 me-1.5 animate-spin" />
+                          ) : audioState === 'playing' && audioManager.getCurrentAudioId() === message.id ? (
+                            <VolumeX className="h-3.5 w-3.5 me-1.5" />
                           ) : (
                             <Volume2 className="h-3.5 w-3.5 me-1.5" />
                           )}
-                          {isRTL ? 'استمع للرسالة' : 'Listen'}
+                          {audioState === 'playing' && audioManager.getCurrentAudioId() === message.id
+                            ? (isRTL ? 'إيقاف' : 'Stop')
+                            : (isRTL ? 'استمع للرسالة' : 'Listen')
+                          }
                         </Button>
                       </div>
                     )}
