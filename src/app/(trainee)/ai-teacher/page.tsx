@@ -180,6 +180,8 @@ export default function AITeacherPage() {
   const isPageVisibleRef = useRef<boolean>(true);
   const audioQueueRef = useRef<string[]>([]);
   const isPlayingRef = useRef<boolean>(false);
+  const hasPlayedInitialAudioRef = useRef<boolean>(false);
+  const currentAudioIdRef = useRef<string | null>(null);
 
   // Keep autoPlayAudioRef in sync
   useEffect(() => {
@@ -197,17 +199,37 @@ export default function AITeacherPage() {
           audioRef.current.currentTime = 0;
           audioRef.current = null;
         }
-        // Clear audio queue
+        // Clear audio queue and reset state
         audioQueueRef.current = [];
         isPlayingRef.current = false;
+        currentAudioIdRef.current = null;
       } else {
         isPageVisibleRef.current = true;
+        // Don't auto-play when returning - user must click to play
       }
     };
 
+    // Also stop audio when navigating away (beforeunload)
+    const handleBeforeUnload = () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      isPlayingRef.current = false;
+      currentAudioIdRef.current = null;
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Cleanup on unmount
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
     };
   }, []);
 
@@ -221,41 +243,55 @@ export default function AITeacherPage() {
   }, [messages, scrollToBottom]);
 
   // Play audio from base64 - stops any currently playing audio first
-  const playAudio = useCallback((base64Audio: string) => {
+  const playAudio = useCallback((base64Audio: string, audioId?: string) => {
     // Don't play if page is not visible
     if (!isPageVisibleRef.current) {
       return;
     }
 
-    // If already playing, don't interrupt
-    if (isPlayingRef.current && audioRef.current && !audioRef.current.paused) {
+    // Generate unique ID for this audio request
+    const thisAudioId = audioId || `audio-${Date.now()}-${Math.random()}`;
+
+    // If same audio is already playing, ignore
+    if (currentAudioIdRef.current === thisAudioId && isPlayingRef.current) {
       return;
     }
 
-    // Stop any currently playing audio
+    // Stop any currently playing audio FIRST
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
+      audioRef.current.onended = null;
+      audioRef.current.onerror = null;
       audioRef.current = null;
     }
 
+    // Update state
     isPlayingRef.current = true;
+    currentAudioIdRef.current = thisAudioId;
+
     const audio = new Audio(`data:audio/mp3;base64,${base64Audio}`);
     audioRef.current = audio;
+
+    // Increase playback speed for faster audio (1.15x is natural sounding but faster)
+    audio.playbackRate = 1.15;
 
     // Track when audio ends
     audio.onended = () => {
       isPlayingRef.current = false;
+      currentAudioIdRef.current = null;
       audioRef.current = null;
     };
 
     audio.onerror = () => {
       isPlayingRef.current = false;
+      currentAudioIdRef.current = null;
       audioRef.current = null;
     };
 
     audio.play().catch(() => {
       isPlayingRef.current = false;
+      currentAudioIdRef.current = null;
       audioRef.current = null;
     });
   }, []);
@@ -265,8 +301,12 @@ export default function AITeacherPage() {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
+      audioRef.current.onended = null;
+      audioRef.current.onerror = null;
       audioRef.current = null;
     }
+    isPlayingRef.current = false;
+    currentAudioIdRef.current = null;
   }, []);
 
   // Generate and play audio on demand
@@ -677,15 +717,16 @@ ${lastLessonText}
           };
           setMessages([contextualWelcome]);
 
-          // Generate audio for contextual greeting
-          if (autoPlayAudioRef.current) {
+          // Generate audio for contextual greeting - only once
+          if (autoPlayAudioRef.current && !hasPlayedInitialAudioRef.current && isPageVisibleRef.current) {
+            hasPlayedInitialAudioRef.current = true; // Mark as played to prevent duplicates
             try {
               const lang = isRTL ? 'ar' : 'en';
               const response = await aiTeacherApi.textToSpeech(contextualGreeting, lang as 'ar' | 'en');
-              if (response.audio) {
+              if (response.audio && isPageVisibleRef.current) {
                 // Update message with audio
                 setMessages([{ ...contextualWelcome, audioBase64: response.audio }]);
-                playAudio(response.audio);
+                playAudio(response.audio, 'initial-greeting');
               }
             } catch {
               // Audio generation failed - continue without audio
@@ -703,14 +744,15 @@ ${lastLessonText}
           };
           setMessages([sidebarWelcome]);
 
-          // Generate audio for sidebar greeting
-          if (autoPlayAudioRef.current) {
+          // Generate audio for sidebar greeting - only once
+          if (autoPlayAudioRef.current && !hasPlayedInitialAudioRef.current && isPageVisibleRef.current) {
+            hasPlayedInitialAudioRef.current = true; // Mark as played to prevent duplicates
             try {
               const lang = isRTL ? 'ar' : 'en';
               const response = await aiTeacherApi.textToSpeech(sidebarGreeting, lang as 'ar' | 'en');
-              if (response.audio) {
+              if (response.audio && isPageVisibleRef.current) {
                 setMessages([{ ...sidebarWelcome, audioBase64: response.audio }]);
-                playAudio(response.audio);
+                playAudio(response.audio, 'initial-greeting');
               }
             } catch {
               // Audio generation failed - continue without audio
@@ -731,11 +773,15 @@ ${lastLessonText}
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
+        audioRef.current.onended = null;
+        audioRef.current.onerror = null;
         audioRef.current = null;
       }
       isPlayingRef.current = false;
+      currentAudioIdRef.current = null;
       audioQueueRef.current = [];
       initializationRef.current = false;
+      hasPlayedInitialAudioRef.current = false;
     };
   }, [isRTL, playAudio, lessonContext]);
 
@@ -1096,8 +1142,10 @@ ${lastLessonText}
                           className="h-7 px-3 text-xs bg-violet-500/10 border-violet-500/30 text-violet-400 hover:text-violet-300 hover:bg-violet-500/20 hover:border-violet-500/50"
                           disabled={isGeneratingAudio}
                           onClick={() => {
+                            // Stop any currently playing audio first
+                            stopAudio();
                             if (message.audioBase64) {
-                              playAudio(message.audioBase64);
+                              playAudio(message.audioBase64, message.id);
                             } else {
                               // Generate audio on demand if not available
                               generateAndPlayAudio(message.content);
