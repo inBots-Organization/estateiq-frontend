@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * EstateIQ Login Page
+ * INLEARN Login Page
  *
  * Premium enterprise-grade login experience with:
  * - Split-screen layout (Brand visualization + Clean form)
@@ -110,7 +110,7 @@ export default function LoginPage() {
               <Building2 className="h-9 w-9 text-white" />
             </div>
             <div>
-              <span className="text-2xl font-bold text-white tracking-tight block">EstateIQ</span>
+              <span className="text-2xl font-bold text-white tracking-tight block">INLEARN</span>
               <span className="text-sm text-white/60 font-medium">
                 {isRTL ? 'منصة التدريب العقاري الذكية' : 'Intelligent Real Estate Training'}
               </span>
@@ -129,8 +129,8 @@ export default function LoginPage() {
             </h1>
             <p className="text-lg text-white/75 leading-relaxed max-w-md">
               {isRTL
-                ? 'انضم إلى آلاف المحترفين الذين يستخدمون EstateIQ لتحسين أدائهم وإتقان فن المبيعات العقارية.'
-                : 'Join thousands of professionals using EstateIQ to enhance their performance and master the art of real estate sales.'}
+                ? 'انضم إلى آلاف المحترفين الذين يستخدمون INLEARN لتحسين أدائهم وإتقان فن المبيعات العقارية.'
+                : 'Join thousands of professionals using INLEARN to enhance their performance and master the art of real estate sales.'}
             </p>
           </div>
 
@@ -181,8 +181,8 @@ export default function LoginPage() {
         <div className="relative z-10 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
           <p className="text-sm text-white/40">
             {isRTL
-              ? '© 2024 EstateIQ. جميع الحقوق محفوظة.'
-              : '© 2024 EstateIQ. All rights reserved.'}
+              ? '© 2024 INLEARN. جميع الحقوق محفوظة.'
+              : '© 2024 INLEARN. All rights reserved.'}
           </p>
         </div>
       </div>
@@ -199,7 +199,7 @@ export default function LoginPage() {
             <div className="p-2.5 bg-primary/10 rounded-xl">
               <Building2 className="h-7 w-7 text-primary" />
             </div>
-            <span className="text-xl font-bold text-foreground tracking-tight">EstateIQ</span>
+            <span className="text-xl font-bold text-foreground tracking-tight">INLEARN</span>
           </div>
 
           {/* Login Card */}
@@ -366,7 +366,7 @@ export default function LoginPage() {
                 <span className="px-2 py-0.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded font-medium">
                   {isRTL ? 'مدير المنصة' : 'Super Admin'}
                 </span>
-                <code className="text-slate-600 dark:text-muted-foreground font-mono">superadmin@estateiq.com</code>
+                <code className="text-slate-600 dark:text-muted-foreground font-mono">superadmin@inlearn.ai</code>
               </div>
               <div className="flex items-center gap-2 text-xs">
                 <span className="px-2 py-0.5 bg-primary/10 text-primary rounded font-medium">

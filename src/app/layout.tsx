@@ -22,13 +22,13 @@ const ibmPlexArabic = IBM_Plex_Sans_Arabic({
 });
 
 export const metadata: Metadata = {
-  title: 'EstateIQ | AI-Powered Real Estate Training Platform',
-  description: 'Transform your real estate sales with intelligent AI training. Practice with realistic client simulations, master video courses, and get real-time performance analytics.',
-  keywords: ['real estate training', 'AI simulation', 'sales training', 'Saudi Arabia', 'property sales', 'EstateIQ'],
-  authors: [{ name: 'EstateIQ' }],
+  title: 'INLEARN | AI-Powered Professional Training Platform',
+  description: 'Transform your professional skills with intelligent AI training. Practice with realistic simulations, master video courses, and get real-time performance analytics.',
+  keywords: ['professional training', 'AI simulation', 'sales training', 'Saudi Arabia', 'skill development', 'INLEARN'],
+  authors: [{ name: 'INLEARN' }],
   openGraph: {
-    title: 'EstateIQ | AI-Powered Real Estate Training Platform',
-    description: 'Transform your real estate sales with intelligent AI training.',
+    title: 'INLEARN | AI-Powered Professional Training Platform',
+    description: 'Transform your professional skills with intelligent AI training.',
     type: 'website',
     locale: 'ar_SA',
     alternateLocale: 'en_US',

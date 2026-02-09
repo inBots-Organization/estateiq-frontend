@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ============================================
-   EstateIQ - Premium Enterprise Design System
+   INLEARN - Premium Enterprise Design System
    ============================================ */
 
 @layer base {
@@ -63,7 +63,7 @@
     --sidebar-item-hover: 160 30% 97%;
     --sidebar-item-active: 160 84% 39%;
 
-    /* EstateIQ Brand Colors */
+    /* INLEARN Brand Colors */
     --estate-navy: 222 47% 11%;          /* #0F172A */
     --estate-emerald: 160 84% 39%;       /* #059669 */
     --estate-gold: 38 92% 50%;           /* #F59E0B */
@@ -125,7 +125,7 @@
     --sidebar-item-hover: 222 32% 18%;
     --sidebar-item-active: 160 84% 45%;
 
-    /* EstateIQ Brand Colors - Dark Mode */
+    /* INLEARN Brand Colors - Dark Mode */
     --estate-navy: 222 47% 25%;
     --estate-emerald: 160 84% 45%;
     --estate-gold: 38 92% 55%;
@@ -378,7 +378,7 @@
   }
 
   /* ========================================
-     Gradient Text - EstateIQ Brand
+     Gradient Text - INLEARN Brand
      ======================================== */
   .gradient-text {
     @apply bg-gradient-to-r from-primary via-emerald-500 to-teal-500 bg-clip-text text-transparent;
@@ -1101,5 +1101,234 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  /* ========================================
+     Enhanced Landing Page Animations
+     Modern, smooth, eye-catching effects
+     ======================================== */
+
+  /* Smooth fade in from bottom */
+  .animate-slide-in-bottom {
+    animation: slideInBottom 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+
+  @keyframes slideInBottom {
+    from {
+      opacity: 0;
+      transform: translateY(60px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Zoom in with fade */
+  .animate-zoom-in {
+    animation: zoomIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    opacity: 0;
+  }
+
+  @keyframes zoomIn {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Blur fade in */
+  .animate-blur-in {
+    animation: blurIn 0.8s ease-out forwards;
+    opacity: 0;
+  }
+
+  @keyframes blurIn {
+    from {
+      opacity: 0;
+      filter: blur(10px);
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0);
+    }
+  }
+
+  /* Card hover with glow */
+  .card-hover-glow {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-hover-glow:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px -15px rgba(5, 150, 105, 0.25),
+                0 0 30px -10px rgba(5, 150, 105, 0.1);
+  }
+
+  /* Gradient text animation */
+  .animate-gradient-text {
+    background-size: 200% auto;
+    animation: gradientText 3s linear infinite;
+  }
+
+  @keyframes gradientText {
+    0% { background-position: 0% center; }
+    50% { background-position: 100% center; }
+    100% { background-position: 0% center; }
+  }
+
+  /* Floating animation with rotation */
+  .animate-float-rotate {
+    animation: floatRotate 6s ease-in-out infinite;
+  }
+
+  @keyframes floatRotate {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    25% {
+      transform: translateY(-10px) rotate(2deg);
+    }
+    50% {
+      transform: translateY(-5px) rotate(0deg);
+    }
+    75% {
+      transform: translateY(-15px) rotate(-2deg);
+    }
+  }
+
+  /* Slide in from sides */
+  .animate-slide-in-left {
+    animation: slideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-60px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(60px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Bounce in */
+  .animate-bounce-in {
+    animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    opacity: 0;
+  }
+
+  @keyframes bounceIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Animated border gradient */
+  .animated-border {
+    position: relative;
+    background: linear-gradient(var(--background), var(--background)) padding-box,
+                linear-gradient(135deg, hsl(160, 84%, 39%), hsl(199, 89%, 48%), hsl(38, 92%, 50%)) border-box;
+    border: 2px solid transparent;
+    border-radius: 1rem;
+  }
+
+  .animated-border::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, hsl(160, 84%, 39%), hsl(199, 89%, 48%), hsl(38, 92%, 50%));
+    background-size: 300% 300%;
+    animation: borderGradient 4s ease infinite;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .animated-border:hover::before {
+    opacity: 1;
+  }
+
+  @keyframes borderGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Typewriter effect class */
+  .typewriter {
+    overflow: hidden;
+    border-right: 2px solid hsl(var(--primary));
+    white-space: nowrap;
+    animation: typing 3s steps(30, end), blinkCursor 0.75s step-end infinite;
+  }
+
+  @keyframes typing {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+
+  @keyframes blinkCursor {
+    from, to { border-color: transparent; }
+    50% { border-color: hsl(var(--primary)); }
+  }
+
+  /* Stagger delays for children */
+  .delay-100 { animation-delay: 0.1s; }
+  .delay-200 { animation-delay: 0.2s; }
+  .delay-300 { animation-delay: 0.3s; }
+  .delay-400 { animation-delay: 0.4s; }
+  .delay-500 { animation-delay: 0.5s; }
+  .delay-600 { animation-delay: 0.6s; }
+  .delay-700 { animation-delay: 0.7s; }
+  .delay-800 { animation-delay: 0.8s; }
+
+  /* Intersection observer trigger classes */
+  .animate-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .animate-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

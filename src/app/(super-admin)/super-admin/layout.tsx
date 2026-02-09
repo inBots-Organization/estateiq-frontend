@@ -125,7 +125,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
               <Crown className="h-6 w-6 text-white" />
             </div>
             <div>
-              <span className="text-lg font-bold text-foreground block">EstateIQ</span>
+              <span className="text-lg font-bold text-foreground block">INLEARN</span>
               <span className="text-xs text-rose-500 font-medium flex items-center gap-1">
                 <Shield className="h-3 w-3" />
                 {isRTL ? 'مدير المنصة' : 'Platform Admin'}
@@ -204,7 +204,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
           <div className="p-2 bg-gradient-to-br from-rose-500 to-pink-600 rounded-lg">
             <Crown className="h-5 w-5 text-white" />
           </div>
-          <span className="font-bold text-foreground">EstateIQ</span>
+          <span className="font-bold text-foreground">INLEARN</span>
         </div>
 
         <SettingsDropdown />
@@ -237,7 +237,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
               <Crown className="h-5 w-5 text-white" />
             </div>
             <div>
-              <span className="text-lg font-bold text-foreground">EstateIQ</span>
+              <span className="text-lg font-bold text-foreground">INLEARN</span>
               <span className="text-xs text-rose-500 font-medium block">
                 {isRTL ? 'مدير المنصة' : 'Platform Admin'}
               </span>

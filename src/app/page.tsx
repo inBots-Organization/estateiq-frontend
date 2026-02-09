@@ -56,7 +56,6 @@ export default function HomePage() {
               <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.features}</a>
               <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.howItWorks}</a>
               <a href="#testimonials" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.testimonials}</a>
-              <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.pricing}</a>
             </nav>
 
             {/* Actions Container - Desktop and Mobile */}
@@ -116,13 +115,6 @@ export default function HomePage() {
                 >
                   {t.landing.nav.testimonials}
                 </a>
-                <a
-                  href="#pricing"
-                  className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t.landing.nav.pricing}
-                </a>
               </nav>
               <div className="flex flex-col gap-3 pt-4 border-t border-border">
                 <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
@@ -146,26 +138,27 @@ export default function HomePage() {
         <section className="relative overflow-hidden bg-gradient-to-b from-muted/50 to-background py-16 sm:py-20 lg:py-32">
           {/* Background decorations */}
           <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] dark:opacity-20" />
-          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-pulse-soft" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse-soft" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-float-rotate" />
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/5 via-transparent to-blue-500/5 rounded-full blur-3xl animate-pulse-soft" />
 
           <div className="container mx-auto px-4 lg:px-8 relative">
             <div className="max-w-4xl mx-auto text-center">
-              <Badge className="mb-4 sm:mb-6 bg-primary/10 text-primary hover:bg-primary/15 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm animate-fade-in-up border border-primary/20 shadow-sm">
+              <Badge className="mb-4 sm:mb-6 bg-primary/10 text-primary hover:bg-primary/15 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm animate-bounce-in border border-primary/20 shadow-sm">
                 <Zap className={cn("h-3 w-3 sm:h-4 sm:w-4", isRTL ? "ml-1.5" : "mr-1.5")} />
                 {t.landing.hero.badge}
               </Badge>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-5 sm:mb-7 leading-tight px-2 animate-hero-slide-up">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-5 sm:mb-7 leading-tight px-2 animate-blur-in delay-100">
                 {t.landing.hero.titlePart1}{' '}
-                <span className="gradient-text relative">
+                <span className="gradient-text animate-gradient-text bg-gradient-to-r from-primary via-blue-500 to-primary bg-clip-text text-transparent relative">
                   {t.landing.hero.titleHighlight}
                   <span className="absolute -inset-1 bg-primary/10 blur-xl rounded-lg -z-10" />
                 </span>
               </h1>
-              <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-8 sm:mb-10 max-w-2xl mx-auto leading-relaxed px-4 animate-fade-in-up-delayed">
+              <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-8 sm:mb-10 max-w-2xl mx-auto leading-relaxed px-4 animate-slide-in-bottom delay-200">
                 {t.landing.hero.description}
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0 animate-fade-in-up-delayed-2">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0 animate-slide-in-bottom delay-300">
                 <Link href="/register" className="w-full sm:w-auto">
                   <Button size="lg" className="w-full sm:w-auto btn-gradient h-12 sm:h-14 px-7 sm:px-10 text-sm sm:text-base shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
                     {t.landing.hero.startFreeTrial}
@@ -208,23 +201,23 @@ export default function HomePage() {
           {/* Subtle background gradient */}
           <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.02] via-transparent to-primary/[0.02]" />
           <div className="container mx-auto px-4 lg:px-8 relative">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10">
-              <div className="text-center p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-muted/30 to-transparent">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10 stagger-children">
+              <div className="text-center p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-muted/30 to-transparent hover:from-primary/10 hover:to-primary/5 transition-all duration-500 card-hover-glow">
                 <p className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-1">10,000+</p>
                 <p className="text-xs sm:text-sm text-muted-foreground font-medium">{t.landing.stats.activeTrainees}</p>
               </div>
-              <div className="text-center p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-muted/30 to-transparent">
+              <div className="text-center p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-muted/30 to-transparent hover:from-primary/10 hover:to-primary/5 transition-all duration-500 card-hover-glow">
                 <p className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-1">95%</p>
                 <p className="text-xs sm:text-sm text-muted-foreground font-medium">{t.landing.stats.successRate}</p>
               </div>
-              <div className="text-center p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-muted/30 to-transparent">
+              <div className="text-center p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-muted/30 to-transparent hover:from-primary/10 hover:to-primary/5 transition-all duration-500 card-hover-glow">
                 <p className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-1">50K+</p>
                 <p className="text-xs sm:text-sm text-muted-foreground font-medium">{t.landing.stats.sessionsCompleted}</p>
               </div>
-              <div className="text-center p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-muted/30 to-transparent">
+              <div className="text-center p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-muted/30 to-transparent hover:from-primary/10 hover:to-primary/5 transition-all duration-500 card-hover-glow">
                 <div className="flex items-center justify-center gap-1 mb-1">
                   <p className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text">4.9</p>
-                  <Star className="h-5 w-5 sm:h-6 sm:w-6 fill-warning text-warning" />
+                  <Star className="h-5 w-5 sm:h-6 sm:w-6 fill-warning text-warning animate-float" />
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground font-medium">{t.landing.stats.userRating}</p>
               </div>
@@ -433,92 +426,6 @@ export default function HomePage() {
                   </CardContent>
                 </Card>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Pricing Section */}
-        <section id="pricing" className="py-16 sm:py-20 lg:py-28 bg-muted/30">
-          <div className="container mx-auto px-4 lg:px-8">
-            <div className="text-center mb-10 sm:mb-16">
-              <Badge className="mb-3 sm:mb-4 bg-primary/10 text-primary hover:bg-primary/10 text-xs sm:text-sm">{t.landing.nav.pricing}</Badge>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4 px-4">
-                {t.landing.pricing.title}
-              </h2>
-              <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-                {t.landing.pricing.subtitle}
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-4 sm:gap-8 max-w-5xl mx-auto">
-              {/* Free Plan */}
-              <Card className="card-hover">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{t.landing.pricing.free.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{t.landing.pricing.free.description}</p>
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold text-foreground">{t.landing.pricing.free.price}</span>
-                    <span className="text-muted-foreground">/{t.landing.pricing.perMonth}</span>
-                  </div>
-                  <ul className="space-y-3 mb-6">
-                    {t.landing.pricing.free.features.map((feature, i) => (
-                      <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <CheckCircle className="h-4 w-4 text-success flex-shrink-0" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/register">
-                    <Button variant="outline" className="w-full">{t.landing.pricing.getStarted}</Button>
-                  </Link>
-                </CardContent>
-              </Card>
-
-              {/* Pro Plan */}
-              <Card className="border-primary bg-primary/5 relative">
-                <div className={cn("absolute -top-3", isRTL ? "right-1/2 translate-x-1/2" : "left-1/2 -translate-x-1/2")}>
-                  <Badge className="bg-primary text-white hover:bg-primary">{t.landing.pricing.mostPopular}</Badge>
-                </div>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{t.landing.pricing.pro.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{t.landing.pricing.pro.description}</p>
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold text-foreground">{t.landing.pricing.pro.price}</span>
-                    <span className="text-muted-foreground">/{t.landing.pricing.perMonth}</span>
-                  </div>
-                  <ul className="space-y-3 mb-6">
-                    {t.landing.pricing.pro.features.map((feature, i) => (
-                      <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <CheckCircle className="h-4 w-4 text-success flex-shrink-0" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/register">
-                    <Button className="w-full btn-gradient">{t.landing.pricing.startTrial}</Button>
-                  </Link>
-                </CardContent>
-              </Card>
-
-              {/* Enterprise Plan */}
-              <Card className="card-hover">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{t.landing.pricing.enterprise.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{t.landing.pricing.enterprise.description}</p>
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold text-foreground">{t.landing.pricing.enterprise.price}</span>
-                  </div>
-                  <ul className="space-y-3 mb-6">
-                    {t.landing.pricing.enterprise.features.map((feature, i) => (
-                      <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <CheckCircle className="h-4 w-4 text-success flex-shrink-0" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button variant="outline" className="w-full">{t.landing.pricing.contactSales}</Button>
-                </CardContent>
-              </Card>
             </div>
           </div>
         </section>

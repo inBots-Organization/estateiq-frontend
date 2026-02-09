@@ -740,7 +740,7 @@ const TRANSLATIONS: Record<Language, Translations> = {
       createAccount: 'إنشاء حساب جديد',
       alreadyHaveAccount: 'لديك حساب بالفعل؟',
       dontHaveAccount: 'ليس لديك حساب؟',
-      newToPlatform: 'جديد في EstateIQ؟',
+      newToPlatform: 'جديد في INLEARN؟',
       termsAgree: 'بتسجيل الدخول، أنت توافق على',
       termsOfService: 'شروط الخدمة',
       privacyPolicy: 'سياسة الخصوصية',
@@ -799,7 +799,7 @@ const TRANSLATIONS: Record<Language, Translations> = {
     },
 
     landing: {
-      brandName: 'EstateIQ',
+      brandName: 'INLEARN',
 
       nav: {
         features: 'المميزات',
@@ -1393,7 +1393,7 @@ const TRANSLATIONS: Record<Language, Translations> = {
       createAccount: 'Create an account',
       alreadyHaveAccount: 'Already have an account?',
       dontHaveAccount: "Don't have an account?",
-      newToPlatform: 'New to EstateIQ?',
+      newToPlatform: 'New to INLEARN?',
       termsAgree: 'By signing in, you agree to our',
       termsOfService: 'Terms of Service',
       privacyPolicy: 'Privacy Policy',
@@ -1452,7 +1452,7 @@ const TRANSLATIONS: Record<Language, Translations> = {
     },
 
     landing: {
-      brandName: 'EstateIQ',
+      brandName: 'INLEARN',
 
       nav: {
         features: 'Features',
