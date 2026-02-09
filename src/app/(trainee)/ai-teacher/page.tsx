@@ -59,10 +59,13 @@ import { cn } from '@/lib/utils';
 import { useAudioManager } from '@/lib/audio-manager';
 import {
   aiTeacherApi,
+  avContentApi,
   WelcomeResponse,
   FileAttachment,
   TraineeProfile,
+  AVContent,
 } from '@/lib/api/ai-teacher.api';
+import { GenerateAVButtons, AVPlayerModal } from '@/components/ai-teacher';
 import { traineeApi } from '@/lib/api/trainee.api';
 import { courses, getCourseById } from '@/data/courses';
 
@@ -173,6 +176,11 @@ export default function AITeacherPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [audioState, setAudioState] = useState<'idle' | 'loading' | 'playing' | 'paused'>('idle');
+
+  // AV Content Generation State
+  const [avContentId, setAVContentId] = useState<string | null>(null);
+  const [showAVPlayer, setShowAVPlayer] = useState(false);
+  const [isGeneratingAVContent, setIsGeneratingAVContent] = useState(false);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -389,6 +397,107 @@ Would you like a quick quiz to test your understanding?`;
     setQuizScore(null);
     setCurrentQuestionIndex(0);
   }, []);
+
+  // Generate AV Lecture
+  const handleGenerateAVLecture = useCallback(async () => {
+    if (isGeneratingAVContent) return;
+
+    setIsGeneratingAVContent(true);
+    try {
+      // Determine topic from lesson context or general
+      const topic = currentLessonContext
+        ? (isRTL ? currentLessonContext.lessonNameAr : currentLessonContext.lessonName)
+        : (isRTL ? 'أساسيات السوق العقاري السعودي' : 'Saudi Real Estate Market Basics');
+
+      const content = await avContentApi.generateLecture({
+        topic,
+        lessonContext: currentLessonContext?.lessonDescription,
+        courseId: currentLessonContext?.courseId,
+        duration: 10,
+        language: isRTL ? 'ar' : 'en',
+      });
+
+      // Add message about lecture generation
+      const lectureMessage: Message = {
+        id: `av-lecture-${Date.now()}`,
+        role: 'assistant',
+        content: isRTL
+          ? `🎬 تم إنشاء محاضرة فيديو: "${content.titleAr || content.title}"\n\nالمدة: ${Math.round(content.totalDuration / 60)} دقائق\n\nانقر على الزر أدناه لمشاهدة المحاضرة.`
+          : `🎬 Video lecture created: "${content.title}"\n\nDuration: ${Math.round(content.totalDuration / 60)} minutes\n\nClick the button below to watch the lecture.`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, lectureMessage]);
+
+      // Open the player
+      setAVContentId(content.id);
+      setShowAVPlayer(true);
+
+    } catch (err: any) {
+      const errorDetails = err?.message || 'Unknown error';
+      const errorMessage: Message = {
+        id: `error-${Date.now()}`,
+        role: 'assistant',
+        content: isRTL
+          ? `عذراً، حدث خطأ أثناء إنشاء المحاضرة: ${errorDetails}`
+          : `Sorry, an error occurred while generating the lecture: ${errorDetails}`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsGeneratingAVContent(false);
+    }
+  }, [currentLessonContext, isRTL, isGeneratingAVContent]);
+
+  // Generate AV Summary
+  const handleGenerateAVSummary = useCallback(async () => {
+    if (isGeneratingAVContent) return;
+
+    setIsGeneratingAVContent(true);
+    try {
+      const topic = currentLessonContext
+        ? (isRTL ? currentLessonContext.lessonNameAr : currentLessonContext.lessonName)
+        : (isRTL ? 'مراجعة شاملة' : 'Comprehensive Review');
+
+      // Get trainee weaknesses for adaptive content
+      const focusAreas = profile?.weaknesses || [];
+
+      const content = await avContentApi.generateSummary({
+        topic,
+        sourceText: currentLessonContext?.lessonDescription,
+        focusAreas,
+        language: isRTL ? 'ar' : 'en',
+      });
+
+      // Add message about summary generation
+      const summaryMessage: Message = {
+        id: `av-summary-${Date.now()}`,
+        role: 'assistant',
+        content: isRTL
+          ? `🎧 تم إنشاء ملخص صوتي تفاعلي: "${content.titleAr || content.title}"\n\nالمدة: ${Math.round(content.totalDuration / 60)} دقائق\n\nتم تخصيص المحتوى بناءً على نقاط ضعفك.`
+          : `🎧 Interactive audio summary created: "${content.title}"\n\nDuration: ${Math.round(content.totalDuration / 60)} minutes\n\nContent has been tailored to your weak areas.`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, summaryMessage]);
+
+      // Open the player
+      setAVContentId(content.id);
+      setShowAVPlayer(true);
+
+    } catch (err: any) {
+      const errorDetails = err?.message || 'Unknown error';
+      const errorMessage: Message = {
+        id: `error-${Date.now()}`,
+        role: 'assistant',
+        content: isRTL
+          ? `عذراً، حدث خطأ أثناء إنشاء الملخص: ${errorDetails}`
+          : `Sorry, an error occurred while generating the summary: ${errorDetails}`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsGeneratingAVContent(false);
+    }
+  }, [currentLessonContext, profile, isRTL, isGeneratingAVContent]);
 
   // Calculate course progress for a specific course
   const getCourseProgressInfo = (courseId: string, completedIds: Set<string>) => {
@@ -1531,11 +1640,33 @@ ${lastLessonText}
                   <Zap className="h-3.5 w-3.5 me-2 text-cyan-500" />
                   {isRTL ? 'اختبار سريع' : 'Quick Knowledge Check'}
                 </Button>
+
+                {/* Divider */}
+                <div className="border-t border-border/50 my-3" />
+
+                {/* AV Content Generation */}
+                <GenerateAVButtons
+                  onGenerateLecture={handleGenerateAVLecture}
+                  onGenerateSummary={handleGenerateAVSummary}
+                  disabled={isGeneratingAVContent}
+                  language={isRTL ? 'ar' : 'en'}
+                />
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* AV Player Modal */}
+      <AVPlayerModal
+        contentId={avContentId}
+        isOpen={showAVPlayer}
+        onClose={() => {
+          setShowAVPlayer(false);
+          setAVContentId(null);
+        }}
+        language={isRTL ? 'ar' : 'en'}
+      />
 
       {/* Quiz Modal */}
       <Dialog open={showQuizModal} onOpenChange={setShowQuizModal}>

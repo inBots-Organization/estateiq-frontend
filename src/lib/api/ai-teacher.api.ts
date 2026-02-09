@@ -128,6 +128,86 @@ export interface TeacherSession {
 }
 
 // ============================================================================
+// AV CONTENT TYPES
+// ============================================================================
+
+export interface AVSlide {
+  id: string;
+  slideNumber: number;
+  title: string;
+  titleAr?: string;
+  bulletPoints: string[];
+  bulletPointsAr?: string[];
+  visualType: 'bullets' | 'diagram' | 'chart' | 'image';
+  visualData?: Record<string, unknown>;
+  narrationText: string;
+  narrationTextAr?: string;
+  audioStartTime: number;
+  audioEndTime: number;
+  duration: number;
+}
+
+export interface AVContent {
+  id: string;
+  traineeId: string;
+  type: 'lecture' | 'summary';
+  title: string;
+  titleAr?: string;
+  description?: string;
+  descriptionAr?: string;
+  topic: string;
+  sourceContext?: string;
+  totalDuration: number;
+  status: 'generating' | 'ready' | 'failed';
+  audioUrl?: string;
+  metadata: {
+    language: 'ar' | 'en' | 'bilingual';
+    voiceId?: string;
+    adaptations?: string[];
+    generationModel?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AVContentWithSlides extends AVContent {
+  slides: AVSlide[];
+}
+
+export interface GenerateLectureRequest {
+  topic: string;
+  lessonContext?: string;
+  courseId?: string;
+  duration?: number;
+  language: 'ar' | 'en' | 'bilingual';
+}
+
+export interface GenerateSummaryRequest {
+  topic: string;
+  sourceText?: string;
+  focusAreas?: string[];
+  language: 'ar' | 'en' | 'bilingual';
+}
+
+export interface AVFeedbackRequest {
+  rating?: number;
+  helpful?: boolean;
+  comment?: string;
+  watchDuration?: number;
+  completedSlides?: number[];
+}
+
+export interface PaginatedAVContent {
+  data: AVContent[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+// ============================================================================
 // API CLIENT
 // ============================================================================
 
@@ -388,5 +468,65 @@ export const aiTeacherApi = {
     }>;
   }> => {
     return apiClient.post('/ai-teacher/video-timestamps', { lessonContext, question, language });
+  },
+};
+
+// ============================================================================
+// AV CONTENT API
+// ============================================================================
+
+export const avContentApi = {
+  /**
+   * Generate a video lecture with slides and audio
+   */
+  generateLecture: async (params: GenerateLectureRequest): Promise<AVContent> => {
+    return apiClient.post<AVContent>('/ai-teacher/av/generate-lecture', params);
+  },
+
+  /**
+   * Generate an audio summary focused on weak areas
+   */
+  generateSummary: async (params: GenerateSummaryRequest): Promise<AVContent> => {
+    return apiClient.post<AVContent>('/ai-teacher/av/generate-summary', params);
+  },
+
+  /**
+   * Get specific AV content with all slides
+   */
+  getContent: async (id: string): Promise<AVContentWithSlides> => {
+    return apiClient.get<AVContentWithSlides>(`/ai-teacher/av/content/${id}`);
+  },
+
+  /**
+   * List user's AV content with pagination
+   */
+  listContent: async (params?: {
+    page?: number;
+    limit?: number;
+    type?: 'lecture' | 'summary';
+  }): Promise<PaginatedAVContent> => {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', params.page.toString());
+    if (params?.limit) searchParams.set('limit', params.limit.toString());
+    if (params?.type) searchParams.set('type', params.type);
+
+    const queryString = searchParams.toString();
+    return apiClient.get<PaginatedAVContent>(
+      `/ai-teacher/av/content${queryString ? `?${queryString}` : ''}`
+    );
+  },
+
+  /**
+   * Submit feedback for AV content
+   */
+  submitFeedback: async (id: string, feedback: AVFeedbackRequest): Promise<void> => {
+    await apiClient.post(`/ai-teacher/av/content/${id}/feedback`, feedback);
+  },
+
+  /**
+   * Delete AV content
+   */
+  deleteContent: async (id: string): Promise<void> => {
+    await apiClient.delete(`/ai-teacher/av/content/${id}`);
   },
 };
