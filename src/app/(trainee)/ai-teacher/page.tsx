@@ -56,12 +56,16 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useLessonContext, LessonContext } from '@/contexts/LessonContext';
 import { cn } from '@/lib/utils';
+import { useAudioManager } from '@/lib/audio-manager';
 import {
   aiTeacherApi,
+  avContentApi,
   WelcomeResponse,
   FileAttachment,
   TraineeProfile,
+  AVContent,
 } from '@/lib/api/ai-teacher.api';
+import { GenerateAVButtons, AVPlayerModal } from '@/components/ai-teacher';
 import { traineeApi } from '@/lib/api/trainee.api';
 import { courses, getCourseById } from '@/data/courses';
 
@@ -126,11 +130,22 @@ interface Message {
   audioBase64?: string;
   attachments?: FileAttachment[];
   isPlaying?: boolean;
+  // AV Content reference for playable content in chat
+  avContent?: {
+    id: string;
+    type: 'lecture' | 'summary';
+    title: string;
+    titleAr?: string;
+    duration: number; // in seconds
+  };
 }
 
 export default function AITeacherPage() {
   const { t, isRTL, language } = useLanguage();
   const { lessonContext, clearLessonContext, hasLessonContext } = useLessonContext();
+
+  // Global Audio Manager (Singleton - prevents all audio overlap)
+  const audioManager = useAudioManager();
 
   // State
   const [profile, setProfile] = useState<TraineeProfile | null>(null);
@@ -165,23 +180,36 @@ export default function AITeacherPage() {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
-  const [autoPlayAudio, setAutoPlayAudio] = useState(true);
+  // Audio plays only when user clicks "Listen" button - no auto-play
   const [showSettings, setShowSettings] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [audioState, setAudioState] = useState<'idle' | 'loading' | 'playing' | 'paused'>('idle');
+
+  // AV Content Generation State
+  const [avContentId, setAVContentId] = useState<string | null>(null);
+  const [showAVPlayer, setShowAVPlayer] = useState(false);
+  const [isGeneratingAVContent, setIsGeneratingAVContent] = useState(false);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const initializationRef = useRef<boolean>(false);
-  const autoPlayAudioRef = useRef<boolean>(true);
+  const hasPlayedInitialAudioRef = useRef<boolean>(false);
 
-  // Keep autoPlayAudioRef in sync
+  // Setup audio manager events
   useEffect(() => {
-    autoPlayAudioRef.current = autoPlayAudio;
-  }, [autoPlayAudio]);
+    audioManager.setEvents({
+      onStateChange: setAudioState,
+      onError: (err) => console.error('[Audio Error]', err),
+    });
+
+    // Cleanup on unmount
+    return () => {
+      audioManager.stop();
+    };
+  }, [audioManager]);
 
   // Scroll to bottom when messages change
   const scrollToBottom = useCallback(() => {
@@ -192,28 +220,16 @@ export default function AITeacherPage() {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  // Play audio from base64 - stops any currently playing audio first
-  const playAudio = useCallback((base64Audio: string) => {
-    // Stop any currently playing audio
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current = null;
-    }
-
-    const audio = new Audio(`data:audio/mp3;base64,${base64Audio}`);
-    audioRef.current = audio;
-    audio.play().catch(console.error);
-  }, []);
+  // Play audio using global AudioManager (prevents all overlap)
+  // Only called when user clicks "Listen" button
+  const playAudio = useCallback((base64Audio: string, audioId?: string) => {
+    audioManager.play(base64Audio, audioId);
+  }, [audioManager]);
 
   // Stop any playing audio
   const stopAudio = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current = null;
-    }
-  }, []);
+    audioManager.stop();
+  }, [audioManager]);
 
   // Generate and play audio on demand
   const generateAndPlayAudio = useCallback(async (text: string) => {
@@ -224,14 +240,15 @@ export default function AITeacherPage() {
       const lang = isRTL ? 'ar' : 'en';
       const response = await aiTeacherApi.textToSpeech(text, lang as 'ar' | 'en');
       if (response.audio) {
-        playAudio(response.audio);
+        // Use 'manual' in ID to bypass auto-play check
+        audioManager.play(response.audio, `manual-${Date.now()}`);
       }
     } catch {
       // Audio generation failed - continue without audio
     } finally {
       setIsGeneratingAudio(false);
     }
-  }, [isRTL, playAudio, isGeneratingAudio]);
+  }, [isRTL, audioManager, isGeneratingAudio]);
 
   // Generate lesson summary
   const generateLessonSummary = useCallback(async () => {
@@ -388,6 +405,121 @@ Would you like a quick quiz to test your understanding?`;
     setQuizScore(null);
     setCurrentQuestionIndex(0);
   }, []);
+
+  // Generate AV Lecture
+  const handleGenerateAVLecture = useCallback(async () => {
+    if (isGeneratingAVContent) return;
+
+    setIsGeneratingAVContent(true);
+    try {
+      // Determine topic from lesson context or general
+      const topic = currentLessonContext
+        ? (isRTL ? currentLessonContext.lessonNameAr : currentLessonContext.lessonName)
+        : (isRTL ? 'أساسيات السوق العقاري السعودي' : 'Saudi Real Estate Market Basics');
+
+      const content = await avContentApi.generateLecture({
+        topic,
+        lessonContext: currentLessonContext?.lessonDescription,
+        courseId: currentLessonContext?.courseId,
+        duration: 10,
+        language: isRTL ? 'ar' : 'en',
+      });
+
+      // Add message about lecture generation with playable content
+      const lectureMessage: Message = {
+        id: `av-lecture-${Date.now()}`,
+        role: 'assistant',
+        content: isRTL
+          ? `🎬 تم إنشاء محاضرة فيديو: "${content.titleAr || content.title}"\n\nالمدة: ${Math.round(content.totalDuration / 60)} دقائق`
+          : `🎬 Video lecture created: "${content.title}"\n\nDuration: ${Math.round(content.totalDuration / 60)} minutes`,
+        timestamp: new Date(),
+        avContent: {
+          id: content.id,
+          type: 'lecture',
+          title: content.title,
+          titleAr: content.titleAr,
+          duration: content.totalDuration,
+        },
+      };
+      setMessages((prev) => [...prev, lectureMessage]);
+
+      // Automatically open the player
+      setAVContentId(content.id);
+      setShowAVPlayer(true);
+
+    } catch (err: any) {
+      const errorDetails = err?.message || 'Unknown error';
+      const errorMessage: Message = {
+        id: `error-${Date.now()}`,
+        role: 'assistant',
+        content: isRTL
+          ? `عذراً، حدث خطأ أثناء إنشاء المحاضرة: ${errorDetails}`
+          : `Sorry, an error occurred while generating the lecture: ${errorDetails}`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsGeneratingAVContent(false);
+    }
+  }, [currentLessonContext, isRTL, isGeneratingAVContent]);
+
+  // Generate AV Summary
+  const handleGenerateAVSummary = useCallback(async () => {
+    if (isGeneratingAVContent) return;
+
+    setIsGeneratingAVContent(true);
+    try {
+      const topic = currentLessonContext
+        ? (isRTL ? currentLessonContext.lessonNameAr : currentLessonContext.lessonName)
+        : (isRTL ? 'مراجعة شاملة' : 'Comprehensive Review');
+
+      // Get trainee weaknesses for adaptive content
+      const focusAreas = profile?.weaknesses || [];
+
+      const content = await avContentApi.generateSummary({
+        topic,
+        sourceText: currentLessonContext?.lessonDescription,
+        focusAreas,
+        language: isRTL ? 'ar' : 'en',
+      });
+
+      // Add message about summary generation with playable content
+      const summaryMessage: Message = {
+        id: `av-summary-${Date.now()}`,
+        role: 'assistant',
+        content: isRTL
+          ? `🎧 تم إنشاء ملخص صوتي تفاعلي: "${content.titleAr || content.title}"\n\nالمدة: ${Math.round(content.totalDuration / 60)} دقائق\n\nتم تخصيص المحتوى بناءً على نقاط ضعفك.`
+          : `🎧 Interactive audio summary created: "${content.title}"\n\nDuration: ${Math.round(content.totalDuration / 60)} minutes\n\nContent has been tailored to your weak areas.`,
+        timestamp: new Date(),
+        avContent: {
+          id: content.id,
+          type: 'summary',
+          title: content.title,
+          titleAr: content.titleAr,
+          duration: content.totalDuration,
+        },
+      };
+      setMessages((prev) => [...prev, summaryMessage]);
+
+      // Automatically open the player
+      setAVContentId(content.id);
+      setShowAVPlayer(true);
+
+    } catch (err: any) {
+      const errorDetails = err?.message || 'Unknown error';
+      const errorMessage: Message = {
+        id: `error-${Date.now()}`,
+        role: 'assistant',
+        content: isRTL
+          ? `عذراً، حدث خطأ أثناء إنشاء الملخص: ${errorDetails}`
+          : `Sorry, an error occurred while generating the summary: ${errorDetails}`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsGeneratingAVContent(false);
+    }
+  }, [currentLessonContext, profile, isRTL, isGeneratingAVContent]);
 
   // Calculate course progress for a specific course
   const getCourseProgressInfo = (courseId: string, completedIds: Set<string>) => {
@@ -623,15 +755,15 @@ ${lastLessonText}
           };
           setMessages([contextualWelcome]);
 
-          // Generate audio for contextual greeting
-          if (autoPlayAudioRef.current) {
+          // Pre-generate audio for welcome message (don't auto-play)
+          if (!hasPlayedInitialAudioRef.current && !document.hidden) {
+            hasPlayedInitialAudioRef.current = true;
             try {
               const lang = isRTL ? 'ar' : 'en';
               const response = await aiTeacherApi.textToSpeech(contextualGreeting, lang as 'ar' | 'en');
               if (response.audio) {
-                // Update message with audio
+                // Store audio with message - user can click to play
                 setMessages([{ ...contextualWelcome, audioBase64: response.audio }]);
-                playAudio(response.audio);
               }
             } catch {
               // Audio generation failed - continue without audio
@@ -649,14 +781,15 @@ ${lastLessonText}
           };
           setMessages([sidebarWelcome]);
 
-          // Generate audio for sidebar greeting
-          if (autoPlayAudioRef.current) {
+          // Pre-generate audio for welcome message (don't auto-play)
+          if (!hasPlayedInitialAudioRef.current && !document.hidden) {
+            hasPlayedInitialAudioRef.current = true;
             try {
               const lang = isRTL ? 'ar' : 'en';
               const response = await aiTeacherApi.textToSpeech(sidebarGreeting, lang as 'ar' | 'en');
               if (response.audio) {
+                // Store audio with message - user can click to play
                 setMessages([{ ...sidebarWelcome, audioBase64: response.audio }]);
-                playAudio(response.audio);
               }
             } catch {
               // Audio generation failed - continue without audio
@@ -672,16 +805,14 @@ ${lastLessonText}
 
     initialize();
 
-    // Cleanup: stop audio when component unmounts
+    // Cleanup: stop audio when component unmounts (AudioManager handles this globally)
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+      initializationRef.current = false;
+      hasPlayedInitialAudioRef.current = false;
     };
   }, [isRTL, playAudio, lessonContext]);
 
-  // Send message
+  // Send message with streaming support
   const sendMessage = async () => {
     if (!inputMessage.trim() && attachments.length === 0) return;
 
@@ -693,40 +824,81 @@ ${lastLessonText}
       attachments: attachments.length > 0 ? [...attachments] : undefined,
     };
 
+    const messageToSend = inputMessage;
+    const attachmentsToSend = [...attachments];
+
     setMessages((prev) => [...prev, userMessage]);
     setInputMessage('');
     setAttachments([]);
     setIsSending(true);
 
+    // Create placeholder for streaming response
+    const assistantMessageId = `assistant-${Date.now()}`;
+    const assistantMessage: Message = {
+      id: assistantMessageId,
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+    };
+
+    // Add empty assistant message immediately
+    setMessages((prev) => [...prev, assistantMessage]);
+
     try {
-      // Include lesson context in the message if available
-      const response = await aiTeacherApi.sendMessage(inputMessage, attachments, currentLessonContext || undefined);
+      // Use streaming API for real-time response
+      let fullContent = '';
+      let audioBase64: string | undefined;
 
-      const assistantMessage: Message = {
-        id: `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: response.message,
-        timestamp: new Date(),
-        audioBase64: response.audioBase64,
-      };
+      for await (const chunk of aiTeacherApi.sendMessageStream(
+        messageToSend,
+        attachmentsToSend,
+        currentLessonContext || undefined
+      )) {
+        if (chunk.type === 'chunk' && chunk.content) {
+          fullContent += chunk.content;
+          // Update message content in real-time
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantMessageId
+                ? { ...m, content: fullContent }
+                : m
+            )
+          );
+        } else if (chunk.type === 'done') {
+          // Final update with full message and audio
+          if (chunk.fullMessage) {
+            fullContent = chunk.fullMessage;
+          }
+          audioBase64 = chunk.audioBase64;
 
-      setMessages((prev) => [...prev, assistantMessage]);
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantMessageId
+                ? { ...m, content: fullContent, audioBase64 }
+                : m
+            )
+          );
 
-      // Auto-play response audio if available and enabled
-      if (response.audioBase64 && autoPlayAudio) {
-        playAudio(response.audioBase64);
+          // Audio is stored with message - user clicks button to play
+          // No auto-play
+        } else if (chunk.type === 'error') {
+          throw new Error(chunk.error || 'Streaming error');
+        }
       }
     } catch {
-      // Add error message
-      const errorMessage: Message = {
-        id: `error-${Date.now()}`,
-        role: 'assistant',
-        content: isRTL
-          ? 'عذراً، حدث خطأ. يرجى المحاولة مرة أخرى.'
-          : 'Sorry, an error occurred. Please try again.',
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      // Update the assistant message with error
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantMessageId
+            ? {
+                ...m,
+                content: isRTL
+                  ? 'عذراً، حدث خطأ. يرجى المحاولة مرة أخرى.'
+                  : 'Sorry, an error occurred. Please try again.',
+              }
+            : m
+        )
+      );
     } finally {
       setIsSending(false);
     }
@@ -916,26 +1088,6 @@ ${lastLessonText}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const newValue = !autoPlayAudio;
-                setAutoPlayAudio(newValue);
-                // Stop any playing audio when disabling
-                if (!newValue) {
-                  stopAudio();
-                }
-              }}
-              className="gap-2"
-            >
-              {autoPlayAudio ? (
-                <Volume2 className="h-4 w-4" />
-              ) : (
-                <VolumeX className="h-4 w-4" />
-              )}
-              {isRTL ? (autoPlayAudio ? 'صوت مفعل' : 'صوت معطل') : (autoPlayAudio ? 'Audio On' : 'Audio Off')}
-            </Button>
             <Button variant="outline" size="icon" onClick={() => setShowSettings(!showSettings)}>
               <Settings className="h-4 w-4" />
             </Button>
@@ -1029,29 +1181,78 @@ ${lastLessonText}
                     {/* Content */}
                     <p className="whitespace-pre-wrap leading-relaxed text-[15px]">{message.content}</p>
 
-                    {/* Audio playback button for assistant messages */}
-                    {message.role === 'assistant' && (
+                    {/* AV Content Play Button - for lectures and summaries */}
+                    {message.avContent && (
+                      <div className="mt-3 pt-3 border-t border-border/30">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className={cn(
+                            "w-full h-10 text-sm font-medium transition-all",
+                            message.avContent.type === 'lecture'
+                              ? "bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
+                              : "bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700"
+                          )}
+                          onClick={() => {
+                            setAVContentId(message.avContent!.id);
+                            setShowAVPlayer(true);
+                          }}
+                        >
+                          {message.avContent.type === 'lecture' ? (
+                            <Video className="h-4 w-4 me-2" />
+                          ) : (
+                            <Music className="h-4 w-4 me-2" />
+                          )}
+                          {message.avContent.type === 'lecture'
+                            ? (isRTL ? 'مشاهدة المحاضرة' : 'Watch Lecture')
+                            : (isRTL ? 'تشغيل الملخص' : 'Play Summary')
+                          }
+                          <span className="ms-2 text-xs opacity-75">
+                            ({Math.round(message.avContent.duration / 60)} {isRTL ? 'د' : 'min'})
+                          </span>
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Audio playback button for assistant messages (text-to-speech) */}
+                    {message.role === 'assistant' && !message.avContent && (
                       <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border/30">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-7 px-3 text-xs bg-violet-500/10 border-violet-500/30 text-violet-400 hover:text-violet-300 hover:bg-violet-500/20 hover:border-violet-500/50"
-                          disabled={isGeneratingAudio}
+                          className={cn(
+                            "h-7 px-3 text-xs transition-all",
+                            audioState === 'playing' && audioManager.getCurrentAudioId() === message.id
+                              ? "bg-violet-500/30 border-violet-500/50 text-violet-300"
+                              : "bg-violet-500/10 border-violet-500/30 text-violet-400 hover:text-violet-300 hover:bg-violet-500/20 hover:border-violet-500/50"
+                          )}
+                          disabled={isGeneratingAudio || audioState === 'loading'}
                           onClick={() => {
+                            // If this message is playing, stop it
+                            if (audioState === 'playing' && audioManager.getCurrentAudioId() === message.id) {
+                              stopAudio();
+                              return;
+                            }
+                            // Otherwise play this message
                             if (message.audioBase64) {
-                              playAudio(message.audioBase64);
+                              audioManager.play(message.audioBase64, message.id);
                             } else {
                               // Generate audio on demand if not available
                               generateAndPlayAudio(message.content);
                             }
                           }}
                         >
-                          {isGeneratingAudio ? (
+                          {isGeneratingAudio || (audioState === 'loading' && audioManager.getCurrentAudioId() === message.id) ? (
                             <Loader2 className="h-3.5 w-3.5 me-1.5 animate-spin" />
+                          ) : audioState === 'playing' && audioManager.getCurrentAudioId() === message.id ? (
+                            <VolumeX className="h-3.5 w-3.5 me-1.5" />
                           ) : (
                             <Volume2 className="h-3.5 w-3.5 me-1.5" />
                           )}
-                          {isRTL ? 'استمع للرسالة' : 'Listen'}
+                          {audioState === 'playing' && audioManager.getCurrentAudioId() === message.id
+                            ? (isRTL ? 'إيقاف' : 'Stop')
+                            : (isRTL ? 'استمع للرسالة' : 'Listen')
+                          }
                         </Button>
                       </div>
                     )}
@@ -1430,31 +1631,16 @@ ${lastLessonText}
                 {isRTL ? 'أدوات الذكاء الاصطناعي' : 'AI Content Tools'}
               </h3>
               <div className="space-y-2">
-                {/* Generate Audio Explanation */}
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-xs h-auto py-2 px-3 border-fuchsia-500/30 hover:bg-fuchsia-500/10"
-                  onClick={() => setInputMessage(isRTL
-                    ? 'أنشئ لي شرح صوتي مفصل عن الموضوع الحالي'
-                    : 'Generate a detailed audio explanation about the current topic'
-                  )}
-                >
-                  <Music className="h-3.5 w-3.5 me-2 text-fuchsia-500" />
-                  {isRTL ? 'شرح صوتي بالذكاء الاصطناعي' : 'AI Audio Explanation'}
-                </Button>
+                {/* AV Content Generation - Main Buttons */}
+                <GenerateAVButtons
+                  onGenerateLecture={handleGenerateAVLecture}
+                  onGenerateSummary={handleGenerateAVSummary}
+                  disabled={isGeneratingAVContent}
+                  language={isRTL ? 'ar' : 'en'}
+                />
 
-                {/* Generate Visual Content */}
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-xs h-auto py-2 px-3 border-pink-500/30 hover:bg-pink-500/10"
-                  onClick={() => setInputMessage(isRTL
-                    ? 'اشرح لي الموضوع بطريقة بصرية مع أمثلة توضيحية'
-                    : 'Explain the topic visually with illustrative examples'
-                  )}
-                >
-                  <ImageIcon className="h-3.5 w-3.5 me-2 text-pink-500" />
-                  {isRTL ? 'شرح بصري' : 'Visual Explanation'}
-                </Button>
+                {/* Divider */}
+                <div className="border-t border-border/50 my-2" />
 
                 {/* Generate Practice Scenarios */}
                 <Button
@@ -1499,6 +1685,17 @@ ${lastLessonText}
           </Card>
         </div>
       </div>
+
+      {/* AV Player Modal */}
+      <AVPlayerModal
+        contentId={avContentId}
+        isOpen={showAVPlayer}
+        onClose={() => {
+          setShowAVPlayer(false);
+          setAVContentId(null);
+        }}
+        language={isRTL ? 'ar' : 'en'}
+      />
 
       {/* Quiz Modal */}
       <Dialog open={showQuizModal} onOpenChange={setShowQuizModal}>

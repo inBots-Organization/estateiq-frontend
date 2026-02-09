@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * EstateIQ Trainee Layout
+ * INLEARN Trainee Layout
  *
  * Premium sidebar navigation with:
  * - Glassmorphism effects
@@ -168,7 +168,7 @@ export default function TraineeLayout({
         )}
         key={`sidebar-${language}`}
       >
-        {/* Logo - Premium EstateIQ Branding */}
+        {/* Logo - Premium INLEARN Branding */}
         <div className="h-20 flex items-center px-6 border-b border-border">
           <Link href="/dashboard" className="flex items-center gap-3.5 group" prefetch={true}>
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary via-emerald-500 to-estate-gold flex items-center justify-center shadow-soft group-hover:shadow-glow transition-shadow duration-300">

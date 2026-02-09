@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * EstateIQ Admin Layout
+ * INLEARN Admin Layout
  *
  * Premium admin dashboard navigation with:
  * - Violet accent color for admin distinction

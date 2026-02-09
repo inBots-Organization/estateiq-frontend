@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * EstateIQ Registration Page
+ * INLEARN Registration Page
  *
  * Multi-step organization onboarding experience:
  * - Step 1: Organization Details (name, industry type)
@@ -272,7 +272,7 @@ export default function RegisterPage() {
               <Building2 className="h-9 w-9 text-white" />
             </div>
             <div>
-              <span className="text-2xl font-bold text-white tracking-tight block">EstateIQ</span>
+              <span className="text-2xl font-bold text-white tracking-tight block">INLEARN</span>
               <span className="text-sm text-white/60 font-medium">
                 {isRTL ? 'منصة التدريب العقاري الذكية' : 'Intelligent Real Estate Training'}
               </span>
@@ -298,8 +298,8 @@ export default function RegisterPage() {
             </h1>
             <p className="text-lg text-white/75 leading-relaxed">
               {isRTL
-                ? 'انضم إلى أكثر من 50 مؤسسة عقارية تستخدم EstateIQ لتدريب فرقها وتحسين أدائها.'
-                : 'Join 50+ real estate organizations using EstateIQ to train their teams and boost performance.'}
+                ? 'انضم إلى أكثر من 50 مؤسسة عقارية تستخدم INLEARN لتدريب فرقها وتحسين أدائها.'
+                : 'Join 50+ real estate organizations using INLEARN to train their teams and boost performance.'}
             </p>
           </div>
 
@@ -364,7 +364,7 @@ export default function RegisterPage() {
             <div className="p-2.5 bg-primary/10 rounded-xl">
               <Building2 className="h-7 w-7 text-primary" />
             </div>
-            <span className="text-xl font-bold text-foreground tracking-tight">EstateIQ</span>
+            <span className="text-xl font-bold text-foreground tracking-tight">INLEARN</span>
           </div>
 
           {/* Progress Steps */}

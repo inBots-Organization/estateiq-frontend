@@ -36,8 +36,8 @@ export default function SettingsPage() {
   // Settings state
   const [settings, setSettings] = useState({
     // Platform Settings
-    platformName: 'EstateIQ',
-    supportEmail: 'support@estateiq.com',
+    platformName: 'INLEARN',
+    supportEmail: 'support@inlearn.ai',
     defaultLanguage: 'en',
     maintenanceMode: false,
 
