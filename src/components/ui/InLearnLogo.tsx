@@ -8,10 +8,10 @@ interface InLearnLogoProps {
 }
 
 const sizeMap = {
-  sm: { height: 32 },
-  md: { height: 40 },
-  lg: { height: 48 },
-  xl: { height: 64 },
+  sm: { height: 32, svg: 18 },
+  md: { height: 40, svg: 22 },
+  lg: { height: 48, svg: 26 },
+  xl: { height: 64, svg: 32 },
 };
 
 export function InLearnLogo({ size = 'md', className, variant = 'default' }: InLearnLogoProps) {

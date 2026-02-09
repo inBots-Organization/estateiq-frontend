@@ -97,19 +97,13 @@ export function EnhancedNavbar() {
                ══════════════════════════════════ */}
             <Link
               href="/"
-              className="flex items-center gap-2.5 group"
+              className="flex items-center group"
             >
               <div className="relative">
                 <InLearnLogo size="md" />
                 {/* Subtle glow on hover */}
                 <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
               </div>
-              <span className={cn(
-                "text-xl lg:text-2xl font-bold text-foreground font-heading tracking-tight transition-colors duration-300",
-                "group-hover:text-primary"
-              )}>
-                {t.landing.brandName}
-              </span>
             </Link>
 
             {/* ══════════════════════════════════
@@ -282,11 +276,8 @@ export function EnhancedNavbar() {
 
             {/* Footer branding */}
             <div className="p-6 border-t border-border/30">
-              <div className="flex items-center gap-2 opacity-40">
+              <div className="flex items-center justify-center opacity-40">
                 <InLearnLogo size="sm" />
-                <span className="text-xs font-medium text-muted-foreground font-body">
-                  {t.landing.brandName}
-                </span>
               </div>
             </div>
           </div>
