@@ -638,6 +638,139 @@ interface Translations {
     dataExport: string;
   };
 
+  // Quiz System
+  quiz: {
+    title: string;
+    quizzes: string;
+    quizzesDesc: string;
+    availableQuizzes: string;
+    myAttempts: string;
+    takeQuiz: string;
+    startQuiz: string;
+    submitQuiz: string;
+    retakeQuiz: string;
+    viewResults: string;
+    questions: string;
+    question: string;
+    of: string;
+    timeLimit: string;
+    noTimeLimit: string;
+    passingScore: string;
+    difficulty: string;
+    easy: string;
+    medium: string;
+    hard: string;
+    score: string;
+    passed: string;
+    failed: string;
+    correct: string;
+    incorrect: string;
+    unanswered: string;
+    explanation: string;
+    timeSpent: string;
+    attempts: string;
+    maxAttempts: string;
+    unlimited: string;
+    noQuizzesAvailable: string;
+    noAttemptsYet: string;
+    quizCompleted: string;
+    congratulations: string;
+    tryAgain: string;
+    reviewAnswers: string;
+    nextQuestion: string;
+    previousQuestion: string;
+    confirmSubmit: string;
+    confirmSubmitDesc: string;
+    manageQuizzes: string;
+    createQuiz: string;
+    editQuiz: string;
+    deleteQuiz: string;
+    publishQuiz: string;
+    unpublishQuiz: string;
+    published: string;
+    draft: string;
+    quizTitle: string;
+    quizDescription: string;
+    addQuestion: string;
+    removeQuestion: string;
+    addOption: string;
+    removeOption: string;
+    markCorrect: string;
+    questionText: string;
+    optionText: string;
+    generateWithAI: string;
+    generating: string;
+    topic: string;
+    numberOfQuestions: string;
+    viewAttempts: string;
+    traineeAttempts: string;
+    noAttempts: string;
+    questionCount: string;
+    attemptCount: string;
+    manual: string;
+    aiGenerated: string;
+    createdAt: string;
+    confirmDelete: string;
+    confirmDeleteDesc: string;
+  };
+
+  // Flashcard System
+  flashcard: {
+    title: string;
+    flashcards: string;
+    description: string;
+    decks: string;
+    cards: string;
+    front: string;
+    back: string;
+    hint: string;
+    deck: string;
+    card: string;
+    createDeck: string;
+    editDeck: string;
+    deleteDeck: string;
+    publishDeck: string;
+    unpublishDeck: string;
+    addCard: string;
+    editCard: string;
+    deleteCard: string;
+    manageDecks: string;
+    availableDecks: string;
+    study: string;
+    startStudy: string;
+    flipCard: string;
+    showAnswer: string;
+    rateRecall: string;
+    nextCard: string;
+    sessionComplete: string;
+    cardsReviewed: string;
+    dueToday: string;
+    mastered: string;
+    studying: string;
+    newCards: string;
+    progress: string;
+    totalCards: string;
+    studiedCards: string;
+    masteredCards: string;
+    noDecks: string;
+    noDueCards: string;
+    category: string;
+    generateWithAI: string;
+    aiGenerated: string;
+    manual: string;
+    topic: string;
+    numberOfCards: string;
+    generate: string;
+    quality0: string;
+    quality1: string;
+    quality2: string;
+    quality3: string;
+    quality4: string;
+    quality5: string;
+    confirmDelete: string;
+    confirmDeleteDesc: string;
+  };
+
   // Errors
   errors: {
     somethingWentWrong: string;
@@ -1294,6 +1427,137 @@ const TRANSLATIONS: Record<Language, Translations> = {
       dataExport: 'تصدير البيانات',
     },
 
+    quiz: {
+      title: 'الاختبارات',
+      quizzes: 'الاختبارات',
+      quizzesDesc: 'اختبر معرفتك',
+      availableQuizzes: 'الاختبارات المتاحة',
+      myAttempts: 'محاولاتي',
+      takeQuiz: 'ابدأ الاختبار',
+      startQuiz: 'ابدأ الاختبار',
+      submitQuiz: 'إرسال الاختبار',
+      retakeQuiz: 'إعادة الاختبار',
+      viewResults: 'عرض النتائج',
+      questions: 'الأسئلة',
+      question: 'سؤال',
+      of: 'من',
+      timeLimit: 'الوقت المحدد',
+      noTimeLimit: 'بدون وقت محدد',
+      passingScore: 'درجة النجاح',
+      difficulty: 'المستوى',
+      easy: 'سهل',
+      medium: 'متوسط',
+      hard: 'صعب',
+      score: 'الدرجة',
+      passed: 'ناجح',
+      failed: 'راسب',
+      correct: 'صحيح',
+      incorrect: 'خطأ',
+      unanswered: 'لم يتم الإجابة',
+      explanation: 'الشرح',
+      timeSpent: 'الوقت المستغرق',
+      attempts: 'المحاولات',
+      maxAttempts: 'الحد الأقصى للمحاولات',
+      unlimited: 'غير محدود',
+      noQuizzesAvailable: 'لا توجد اختبارات متاحة حالياً',
+      noAttemptsYet: 'لم تقم بأي محاولات بعد',
+      quizCompleted: 'تم إكمال الاختبار',
+      congratulations: 'تهانينا!',
+      tryAgain: 'حاول مرة أخرى',
+      reviewAnswers: 'مراجعة الإجابات',
+      nextQuestion: 'السؤال التالي',
+      previousQuestion: 'السؤال السابق',
+      confirmSubmit: 'تأكيد الإرسال',
+      confirmSubmitDesc: 'هل أنت متأكد من إرسال إجاباتك؟ لا يمكن التراجع بعد الإرسال.',
+      manageQuizzes: 'إدارة الاختبارات',
+      createQuiz: 'إنشاء اختبار',
+      editQuiz: 'تعديل الاختبار',
+      deleteQuiz: 'حذف الاختبار',
+      publishQuiz: 'نشر الاختبار',
+      unpublishQuiz: 'إلغاء النشر',
+      published: 'منشور',
+      draft: 'مسودة',
+      quizTitle: 'عنوان الاختبار',
+      quizDescription: 'وصف الاختبار',
+      addQuestion: 'إضافة سؤال',
+      removeQuestion: 'حذف السؤال',
+      addOption: 'إضافة خيار',
+      removeOption: 'حذف الخيار',
+      markCorrect: 'تحديد كإجابة صحيحة',
+      questionText: 'نص السؤال',
+      optionText: 'نص الخيار',
+      generateWithAI: 'إنشاء بالذكاء الاصطناعي',
+      generating: 'جاري الإنشاء...',
+      topic: 'الموضوع',
+      numberOfQuestions: 'عدد الأسئلة',
+      viewAttempts: 'عرض المحاولات',
+      traineeAttempts: 'محاولات المتدربين',
+      noAttempts: 'لا توجد محاولات',
+      questionCount: 'عدد الأسئلة',
+      attemptCount: 'عدد المحاولات',
+      manual: 'يدوي',
+      aiGenerated: 'ذكاء اصطناعي',
+      createdAt: 'تاريخ الإنشاء',
+      confirmDelete: 'تأكيد الحذف',
+      confirmDeleteDesc: 'هل أنت متأكد من حذف هذا الاختبار؟ لا يمكن التراجع.',
+    },
+
+    flashcard: {
+      title: 'البطاقات التعليمية',
+      flashcards: 'البطاقات التعليمية',
+      description: 'تعلم بالبطاقات التعليمية مع التكرار المتباعد',
+      decks: 'مجموعات البطاقات',
+      cards: 'البطاقات',
+      front: 'الأمام',
+      back: 'الخلف',
+      hint: 'تلميح',
+      deck: 'مجموعة',
+      card: 'بطاقة',
+      createDeck: 'إنشاء مجموعة',
+      editDeck: 'تعديل المجموعة',
+      deleteDeck: 'حذف المجموعة',
+      publishDeck: 'نشر المجموعة',
+      unpublishDeck: 'إلغاء النشر',
+      addCard: 'إضافة بطاقة',
+      editCard: 'تعديل البطاقة',
+      deleteCard: 'حذف البطاقة',
+      manageDecks: 'إدارة المجموعات',
+      availableDecks: 'المجموعات المتاحة',
+      study: 'دراسة',
+      startStudy: 'ابدأ الدراسة',
+      flipCard: 'اقلب البطاقة',
+      showAnswer: 'أظهر الإجابة',
+      rateRecall: 'قيّم تذكرك',
+      nextCard: 'البطاقة التالية',
+      sessionComplete: 'انتهت الجلسة',
+      cardsReviewed: 'بطاقات تمت مراجعتها',
+      dueToday: 'مستحقة اليوم',
+      mastered: 'متقنة',
+      studying: 'قيد الدراسة',
+      newCards: 'بطاقات جديدة',
+      progress: 'التقدم',
+      totalCards: 'إجمالي البطاقات',
+      studiedCards: 'بطاقات تمت دراستها',
+      masteredCards: 'بطاقات متقنة',
+      noDecks: 'لا توجد مجموعات بطاقات',
+      noDueCards: 'لا توجد بطاقات مستحقة للمراجعة',
+      category: 'الفئة',
+      generateWithAI: 'إنشاء بالذكاء الاصطناعي',
+      aiGenerated: 'ذكاء اصطناعي',
+      manual: 'يدوي',
+      topic: 'الموضوع',
+      numberOfCards: 'عدد البطاقات',
+      generate: 'إنشاء',
+      quality0: 'لا أعرف',
+      quality1: 'خطأ، تعرفت عليه',
+      quality2: 'خطأ، سهل التذكر',
+      quality3: 'صحيح، صعب',
+      quality4: 'صحيح، تردد',
+      quality5: 'مثالي',
+      confirmDelete: 'تأكيد الحذف',
+      confirmDeleteDesc: 'هل أنت متأكد من حذف هذه المجموعة؟ لا يمكن التراجع.',
+    },
+
     errors: {
       somethingWentWrong: 'حدث خطأ ما',
       pageNotFound: 'الصفحة غير موجودة',
@@ -1945,6 +2209,137 @@ const TRANSLATIONS: Record<Language, Translations> = {
       deleteAccount: 'Delete Account',
       privacy: 'Privacy',
       dataExport: 'Export Data',
+    },
+
+    quiz: {
+      title: 'Quizzes',
+      quizzes: 'Quizzes',
+      quizzesDesc: 'Test your knowledge',
+      availableQuizzes: 'Available Quizzes',
+      myAttempts: 'My Attempts',
+      takeQuiz: 'Take Quiz',
+      startQuiz: 'Start Quiz',
+      submitQuiz: 'Submit Quiz',
+      retakeQuiz: 'Retake Quiz',
+      viewResults: 'View Results',
+      questions: 'Questions',
+      question: 'Question',
+      of: 'of',
+      timeLimit: 'Time Limit',
+      noTimeLimit: 'No Time Limit',
+      passingScore: 'Passing Score',
+      difficulty: 'Difficulty',
+      easy: 'Easy',
+      medium: 'Medium',
+      hard: 'Hard',
+      score: 'Score',
+      passed: 'Passed',
+      failed: 'Failed',
+      correct: 'Correct',
+      incorrect: 'Incorrect',
+      unanswered: 'Unanswered',
+      explanation: 'Explanation',
+      timeSpent: 'Time Spent',
+      attempts: 'Attempts',
+      maxAttempts: 'Max Attempts',
+      unlimited: 'Unlimited',
+      noQuizzesAvailable: 'No quizzes available at the moment',
+      noAttemptsYet: 'You have not attempted any quizzes yet',
+      quizCompleted: 'Quiz Completed',
+      congratulations: 'Congratulations!',
+      tryAgain: 'Try Again',
+      reviewAnswers: 'Review Answers',
+      nextQuestion: 'Next Question',
+      previousQuestion: 'Previous Question',
+      confirmSubmit: 'Confirm Submission',
+      confirmSubmitDesc: 'Are you sure you want to submit your answers? This action cannot be undone.',
+      manageQuizzes: 'Manage Quizzes',
+      createQuiz: 'Create Quiz',
+      editQuiz: 'Edit Quiz',
+      deleteQuiz: 'Delete Quiz',
+      publishQuiz: 'Publish Quiz',
+      unpublishQuiz: 'Unpublish Quiz',
+      published: 'Published',
+      draft: 'Draft',
+      quizTitle: 'Quiz Title',
+      quizDescription: 'Quiz Description',
+      addQuestion: 'Add Question',
+      removeQuestion: 'Remove Question',
+      addOption: 'Add Option',
+      removeOption: 'Remove Option',
+      markCorrect: 'Mark as Correct',
+      questionText: 'Question Text',
+      optionText: 'Option Text',
+      generateWithAI: 'Generate with AI',
+      generating: 'Generating...',
+      topic: 'Topic',
+      numberOfQuestions: 'Number of Questions',
+      viewAttempts: 'View Attempts',
+      traineeAttempts: 'Trainee Attempts',
+      noAttempts: 'No attempts yet',
+      questionCount: 'Questions',
+      attemptCount: 'Attempts',
+      manual: 'Manual',
+      aiGenerated: 'AI Generated',
+      createdAt: 'Created',
+      confirmDelete: 'Confirm Delete',
+      confirmDeleteDesc: 'Are you sure you want to delete this quiz? This action cannot be undone.',
+    },
+
+    flashcard: {
+      title: 'Flashcards',
+      flashcards: 'Flashcards',
+      description: 'Learn with flashcards using spaced repetition',
+      decks: 'Decks',
+      cards: 'Cards',
+      front: 'Front',
+      back: 'Back',
+      hint: 'Hint',
+      deck: 'Deck',
+      card: 'Card',
+      createDeck: 'Create Deck',
+      editDeck: 'Edit Deck',
+      deleteDeck: 'Delete Deck',
+      publishDeck: 'Publish Deck',
+      unpublishDeck: 'Unpublish',
+      addCard: 'Add Card',
+      editCard: 'Edit Card',
+      deleteCard: 'Delete Card',
+      manageDecks: 'Manage Decks',
+      availableDecks: 'Available Decks',
+      study: 'Study',
+      startStudy: 'Start Study',
+      flipCard: 'Flip Card',
+      showAnswer: 'Show Answer',
+      rateRecall: 'Rate Your Recall',
+      nextCard: 'Next Card',
+      sessionComplete: 'Session Complete',
+      cardsReviewed: 'Cards Reviewed',
+      dueToday: 'Due Today',
+      mastered: 'Mastered',
+      studying: 'Studying',
+      newCards: 'New Cards',
+      progress: 'Progress',
+      totalCards: 'Total Cards',
+      studiedCards: 'Cards Studied',
+      masteredCards: 'Cards Mastered',
+      noDecks: 'No flashcard decks available',
+      noDueCards: 'No cards due for review',
+      category: 'Category',
+      generateWithAI: 'Generate with AI',
+      aiGenerated: 'AI Generated',
+      manual: 'Manual',
+      topic: 'Topic',
+      numberOfCards: 'Number of Cards',
+      generate: 'Generate',
+      quality0: 'Blackout',
+      quality1: 'Wrong, recognized',
+      quality2: 'Wrong, easy recall',
+      quality3: 'Correct, hard',
+      quality4: 'Correct, hesitation',
+      quality5: 'Perfect',
+      confirmDelete: 'Confirm Delete',
+      confirmDeleteDesc: 'Are you sure you want to delete this deck? This action cannot be undone.',
     },
 
     errors: {
