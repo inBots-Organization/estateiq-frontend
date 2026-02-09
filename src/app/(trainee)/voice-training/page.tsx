@@ -14,6 +14,7 @@ import { Phone, PhoneOff, Mic, ExternalLink, RefreshCw } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { SaudiAvatar } from '@/components/ui/SaudiAvatar';
 import { cn } from '@/lib/utils';
 
 // Helper function to get auth token from all possible sources
@@ -548,17 +549,21 @@ export default function VoiceTrainingPage() {
               )}
 
               <div className={cn(
-                'w-32 h-32 rounded-full flex items-center justify-center',
-                callStatus === 'active' ? 'bg-emerald-500' :
+                'w-32 h-32 rounded-full flex items-center justify-center relative',
                 callStatus === 'connecting' || callStatus === 'ending' || callStatus === 'analyzing' ? 'bg-amber-500' :
-                'bg-muted-foreground/20'
+                'bg-transparent'
               )}>
-                {callStatus === 'active' ? (
-                  <Mic className="w-16 h-16 text-white" />
-                ) : callStatus === 'connecting' || callStatus === 'ending' || callStatus === 'analyzing' ? (
+                {callStatus === 'connecting' || callStatus === 'ending' || callStatus === 'analyzing' ? (
                   <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <Phone className="w-16 h-16 text-muted-foreground" />
+                  <>
+                    <SaudiAvatar size="lg" isActive={callStatus === 'active'} />
+                    {callStatus === 'active' && (
+                      <div className="absolute bottom-2 right-2 bg-emerald-500 rounded-full p-2 shadow-lg border-2 border-background">
+                        <Mic className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
