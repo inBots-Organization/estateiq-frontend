@@ -102,9 +102,12 @@ interface AvailableTrainer {
 export default function GroupDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
   const { isRTL } = useLanguage();
   const groupId = params.id as string;
+
+  // Check if user is admin (org_admin) - trainers should not be able to add/remove
+  const isAdmin = user?.role === 'org_admin' || user?.role === 'saas_super_admin';
 
   const [isLoading, setIsLoading] = useState(true);
   const [group, setGroup] = useState<GroupDetail | null>(null);
@@ -416,9 +419,11 @@ export default function GroupDetailPage() {
           ) : (
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-foreground">{group.name}</h1>
-              <Button size="sm" variant="ghost" onClick={() => setIsEditing(true)}>
-                <Edit className="h-4 w-4" />
-              </Button>
+              {isAdmin && (
+                <Button size="sm" variant="ghost" onClick={() => setIsEditing(true)}>
+                  <Edit className="h-4 w-4" />
+                </Button>
+              )}
               {!group.isActive && (
                 <Badge variant="outline">{isRTL ? 'غير نشط' : 'Inactive'}</Badge>
               )}
@@ -484,19 +489,20 @@ export default function GroupDetailPage() {
               {activeTrainers.length} {isRTL ? 'مدرب معين' : 'trainers assigned'}
             </CardDescription>
           </div>
-          <Dialog
-            open={isAddTrainerOpen}
-            onOpenChange={(open) => {
-              setIsAddTrainerOpen(open);
-              if (open) fetchAvailableTrainers();
-            }}
-          >
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Plus className="h-4 w-4" />
-                {isRTL ? 'تعيين مدرب' : 'Assign Trainer'}
-              </Button>
-            </DialogTrigger>
+          {isAdmin && (
+            <Dialog
+              open={isAddTrainerOpen}
+              onOpenChange={(open) => {
+                setIsAddTrainerOpen(open);
+                if (open) fetchAvailableTrainers();
+              }}
+            >
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  {isRTL ? 'تعيين مدرب' : 'Assign Trainer'}
+                </Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>{isRTL ? 'تعيين مدرب' : 'Assign Trainer'}</DialogTitle>
@@ -538,6 +544,7 @@ export default function GroupDetailPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          )}
         </CardHeader>
         <CardContent>
           {activeTrainers.length > 0 ? (
@@ -559,14 +566,16 @@ export default function GroupDetailPage() {
                       <p className="text-sm text-muted-foreground">{assignment.trainer.email}</p>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => handleUnassignTrainer(assignment.trainer.id)}
-                  >
-                    <UserMinus className="h-4 w-4" />
-                  </Button>
+                  {isAdmin && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => handleUnassignTrainer(assignment.trainer.id)}
+                    >
+                      <UserMinus className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>
@@ -589,19 +598,20 @@ export default function GroupDetailPage() {
               {activeMembers.length} {isRTL ? 'متدرب' : 'trainees'}
             </CardDescription>
           </div>
-          <Dialog
-            open={isAddMemberOpen}
-            onOpenChange={(open) => {
-              setIsAddMemberOpen(open);
-              if (open) fetchAvailableTrainees();
-            }}
-          >
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <UserPlus className="h-4 w-4" />
-                {isRTL ? 'إضافة متدربين' : 'Add Trainees'}
-              </Button>
-            </DialogTrigger>
+          {isAdmin && (
+            <Dialog
+              open={isAddMemberOpen}
+              onOpenChange={(open) => {
+                setIsAddMemberOpen(open);
+                if (open) fetchAvailableTrainees();
+              }}
+            >
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  {isRTL ? 'إضافة متدربين' : 'Add Trainees'}
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader>
                 <DialogTitle>{isRTL ? 'إضافة متدربين' : 'Add Trainees'}</DialogTitle>
@@ -656,6 +666,7 @@ export default function GroupDetailPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          )}
         </CardHeader>
         <CardContent>
           {activeMembers.length > 0 ? (
@@ -683,14 +694,16 @@ export default function GroupDetailPage() {
                         {isRTL ? 'التقارير' : 'Reports'}
                       </Button>
                     </Link>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => handleRemoveMember(member.trainee.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {isAdmin && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => handleRemoveMember(member.trainee.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
