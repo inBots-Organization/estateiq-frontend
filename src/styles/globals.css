@@ -161,18 +161,24 @@
     -webkit-text-fill-color: transparent;
   }
 
-  /* RTL Support - Enhanced for Arabic with IBM Plex Sans Arabic */
+  /* RTL Support - Enhanced for Arabic with Cairo + Alexandria */
   [dir="rtl"] {
     text-align: right;
-    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    font-family: var(--font-cairo), 'Cairo', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
     font-size: 16px;
     line-height: 1.7;
     letter-spacing: 0;
     font-weight: 400;
   }
 
+  /* Alexandria for headings globally */
+  h1, h2, h3, h4, h5, h6, .font-heading {
+    font-family: var(--font-alexandria), 'Alexandria', var(--font-cairo), 'Cairo', system-ui, sans-serif;
+  }
+
   [dir="rtl"] h1,
   [dir="rtl"] h2 {
+    font-family: var(--font-alexandria), 'Alexandria', var(--font-cairo), 'Cairo', sans-serif;
     letter-spacing: 0;
     line-height: 1.5;
     font-weight: 700;
@@ -180,6 +186,7 @@
 
   [dir="rtl"] h3,
   [dir="rtl"] h4 {
+    font-family: var(--font-alexandria), 'Alexandria', var(--font-cairo), 'Cairo', sans-serif;
     letter-spacing: 0;
     line-height: 1.5;
     font-weight: 600;
@@ -210,24 +217,24 @@
   [dir="rtl"] input,
   [dir="rtl"] textarea,
   [dir="rtl"] select {
-    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    font-family: var(--font-cairo), 'Cairo', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
     font-size: 16px;
     line-height: 1.6;
   }
 
   [dir="rtl"] input::placeholder,
   [dir="rtl"] textarea::placeholder {
-    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    font-family: var(--font-cairo), 'Cairo', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
   }
 
   [dir="ltr"] {
     text-align: left;
-    font-family: var(--font-ibm-plex), 'IBM Plex Sans', 'Inter', system-ui, sans-serif;
+    font-family: var(--font-cairo), 'Cairo', 'Inter', system-ui, sans-serif;
   }
 
   /* Better Arabic Typography */
   .arabic-text {
-    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    font-family: var(--font-cairo), 'Cairo', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
     font-size: 16px;
     line-height: 1.7;
     letter-spacing: 0;
@@ -274,7 +281,7 @@
 @layer components {
   /* Arabic font class */
   .font-arabic {
-    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    font-family: var(--font-cairo), 'Cairo', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
     font-size: 16px;
     line-height: 1.7;
   }
@@ -815,6 +822,20 @@
     }
   }
 
+  /* Subtle bounce for avatar during active call */
+  .animate-subtle-bounce {
+    animation: subtle-bounce 1.5s ease-in-out infinite;
+  }
+
+  @keyframes subtle-bounce {
+    0%, 100% {
+      transform: scale(1) translateY(0);
+    }
+    50% {
+      transform: scale(1.02) translateY(-2px);
+    }
+  }
+
   /* Shadow glow animations for violet/teal buttons */
   .shadow-glow-violet {
     box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
@@ -823,4 +844,338 @@
   .shadow-glow-teal {
     box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
   }
+}
+
+/* ============================================
+   Premium Landing Page Animations
+   ============================================ */
+
+/* Scroll-triggered reveal animation */
+.reveal-up {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-up.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered reveal delays */
+.reveal-up-1 { transition-delay: 0.05s; }
+.reveal-up-2 { transition-delay: 0.12s; }
+.reveal-up-3 { transition-delay: 0.19s; }
+.reveal-up-4 { transition-delay: 0.26s; }
+.reveal-up-5 { transition-delay: 0.33s; }
+.reveal-up-6 { transition-delay: 0.4s; }
+
+/* Floating gradient orbs */
+.orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+  will-change: transform;
+}
+.orb-1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(5,150,105,0.18) 0%, transparent 70%);
+  animation: orbFloat1 18s ease-in-out infinite;
+}
+.orb-2 {
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%);
+  animation: orbFloat2 22s ease-in-out infinite;
+}
+.orb-3 {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(168,85,247,0.10) 0%, transparent 70%);
+  animation: orbFloat3 16s ease-in-out infinite;
+}
+
+@keyframes orbFloat1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -40px) scale(1.05); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+@keyframes orbFloat2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-40px, 30px) scale(0.95); }
+  66% { transform: translate(25px, -25px) scale(1.05); }
+}
+@keyframes orbFloat3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(20px, -30px) scale(1.1); }
+}
+
+/* Magnetic card hover effect */
+.magnetic-card {
+  transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1),
+              box-shadow 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.magnetic-card:hover {
+  transform: translateY(-6px) scale(1.015);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15),
+              0 0 0 1px rgba(5, 150, 105, 0.08);
+}
+.dark .magnetic-card:hover {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4),
+              0 0 30px rgba(5, 150, 105, 0.08);
+}
+
+/* Gradient line decoration */
+.gradient-line {
+  height: 3px;
+  background: linear-gradient(90deg, transparent, hsl(160,84%,39%), transparent);
+  border-radius: 999px;
+}
+
+/* Noise overlay texture */
+.noise-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Dot grid pattern */
+.dot-grid {
+  background-image: radial-gradient(circle, rgba(5,150,105,0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Section reveal on scroll */
+.section-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+}
+.section-reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Button shine sweep */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 20%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transform: skewX(-25deg);
+  transition: left 0.6s ease;
+}
+.btn-shine:hover::after {
+  left: 120%;
+}
+
+/* Step connector gradient line */
+.step-connector {
+  position: absolute;
+  top: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, hsl(160,84%,39%), hsl(262,83%,58%));
+  opacity: 0.4;
+}
+
+/* Decorative quotation marks */
+.quote-mark::before {
+  content: '\201C';
+  position: absolute;
+  top: -8px;
+  font-size: 4rem;
+  line-height: 1;
+  color: hsl(160,84%,39%);
+  opacity: 0.12;
+  font-family: Georgia, serif;
+}
+[dir="rtl"] .quote-mark::before {
+  right: 8px;
+}
+[dir="ltr"] .quote-mark::before {
+  left: 8px;
+}
+
+/* Popular pricing ring */
+.pricing-popular {
+  position: relative;
+}
+.pricing-popular::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 1.25rem;
+  background: linear-gradient(135deg, hsl(160,84%,39%), hsl(199,89%,48%), hsl(160,84%,39%));
+  z-index: -1;
+  opacity: 0.7;
+}
+
+/* Aurora background for login */
+.aurora-bg {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(5,150,105,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 60%, rgba(59,130,246,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 60% at 50% 20%, rgba(168,85,247,0.06) 0%, transparent 50%);
+}
+
+/* Scroll indicator bounce */
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(8px); opacity: 1; }
+}
+.scroll-indicator {
+  animation: scrollBounce 2s ease-in-out infinite;
+}
+
+/* Counter animation helper */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.count-up {
+  animation: countUp 0.6s ease-out forwards;
+}
+
+/* Navbar scroll state */
+.nav-scrolled {
+  background-color: hsl(var(--background) / 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid hsl(var(--border));
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Hero badge pulse */
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(5,150,105,0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(5,150,105,0); }
+}
+.badge-pulse {
+  animation: badgePulse 2.5s ease-in-out infinite;
+}
+
+/* ============================================
+   Login Page — "Luminous Knowledge" Design System
+   ============================================ */
+
+/* Mesh gradient — creates organic depth zones on dark panel */
+.login-mesh-gradient {
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 50%, rgba(5,150,105,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 85% 30%, rgba(20,184,166,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 50% 80%, rgba(59,130,246,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 50% at 70% 70%, rgba(168,85,247,0.03) 0%, transparent 50%);
+}
+
+/* Animated knowledge pathway lines — flowing curves */
+.login-pathway {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(5,150,105,0.06);
+  pointer-events: none;
+}
+
+.login-pathway-1 {
+  width: 800px;
+  height: 800px;
+  top: -200px;
+  left: -200px;
+  border-color: rgba(5,150,105,0.07);
+  animation: pathwayOrbit 30s linear infinite;
+}
+
+.login-pathway-2 {
+  width: 600px;
+  height: 600px;
+  bottom: -150px;
+  right: -100px;
+  border-color: rgba(20,184,166,0.05);
+  animation: pathwayOrbit 25s linear infinite reverse;
+}
+
+.login-pathway-3 {
+  width: 400px;
+  height: 400px;
+  top: 30%;
+  left: 40%;
+  border-color: rgba(59,130,246,0.04);
+  animation: pathwayOrbit 20s linear infinite;
+}
+
+@keyframes pathwayOrbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Floating luminous particles */
+.login-particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(5,150,105,0.5);
+  box-shadow: 0 0 8px rgba(5,150,105,0.3), 0 0 20px rgba(5,150,105,0.1);
+  pointer-events: none;
+  animation: particleFloat 8s ease-in-out infinite, particlePulse 3s ease-in-out infinite;
+}
+
+@keyframes particleFloat {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(15px, -25px); }
+  50% { transform: translate(-10px, -40px); }
+  75% { transform: translate(20px, -15px); }
+}
+
+@keyframes particlePulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.5); }
+}
+
+/* Grain texture overlay */
+.login-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* Gradient text for hero highlight word */
+.login-gradient-text {
+  background: linear-gradient(135deg, #34d399 0%, #06b6d4 40%, #818cf8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Enhanced Navbar Styles — Premium Editorial Design
+   ═══════════════════════════════════════════════════════════ */
+
+/* Nav action reveal animation */
+.nav-action-reveal {
+  animation: navActionReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.4s;
+  opacity: 0;
+}
+
+@keyframes navActionReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Active scale effect for buttons */
+.active\:scale-98:active {
+  transform: scale(0.98);
 }
