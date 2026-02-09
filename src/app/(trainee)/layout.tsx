@@ -34,6 +34,7 @@ import {
   GraduationCap,
   Sparkles,
   ClipboardCheck,
+  Layers,
 } from 'lucide-react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { FloatingAdminReturn } from '@/components/admin/ViewModeSwitcher';
@@ -61,9 +62,10 @@ export default function TraineeLayout({
     { href: '/simulation', label: t.nav.simulations, icon: MessageSquare, description: t.nav.simulationsDesc },
     { href: '/voice-training', label: t.nav.voicePractice, icon: Phone, description: t.nav.voicePracticeDesc },
     { href: '/quizzes', label: t.quiz.quizzes, icon: ClipboardCheck, description: t.quiz.quizzesDesc },
+    { href: '/flashcards', label: t.flashcard.flashcards, icon: Layers, description: t.flashcard.description },
     { href: '/ai-teacher', label: t.nav.aiTeacher, icon: GraduationCap, description: t.nav.aiTeacherDesc },
     { href: '/reports', label: t.nav.reports, icon: BarChart, description: t.nav.reportsDesc },
-  ], [t.nav, t.quiz]);
+  ], [t.nav, t.quiz, t.flashcard]);
 
   // Optimized navigation handler - instant UI update
   const handleNavClick = useCallback((href: string) => (e: React.MouseEvent) => {

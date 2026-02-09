@@ -714,6 +714,63 @@ interface Translations {
     confirmDeleteDesc: string;
   };
 
+  // Flashcard System
+  flashcard: {
+    title: string;
+    flashcards: string;
+    description: string;
+    decks: string;
+    cards: string;
+    front: string;
+    back: string;
+    hint: string;
+    deck: string;
+    card: string;
+    createDeck: string;
+    editDeck: string;
+    deleteDeck: string;
+    publishDeck: string;
+    unpublishDeck: string;
+    addCard: string;
+    editCard: string;
+    deleteCard: string;
+    manageDecks: string;
+    availableDecks: string;
+    study: string;
+    startStudy: string;
+    flipCard: string;
+    showAnswer: string;
+    rateRecall: string;
+    nextCard: string;
+    sessionComplete: string;
+    cardsReviewed: string;
+    dueToday: string;
+    mastered: string;
+    studying: string;
+    newCards: string;
+    progress: string;
+    totalCards: string;
+    studiedCards: string;
+    masteredCards: string;
+    noDecks: string;
+    noDueCards: string;
+    category: string;
+    generateWithAI: string;
+    aiGenerated: string;
+    manual: string;
+    topic: string;
+    numberOfCards: string;
+    generate: string;
+    quality0: string;
+    quality1: string;
+    quality2: string;
+    quality3: string;
+    quality4: string;
+    quality5: string;
+    confirmDelete: string;
+    confirmDeleteDesc: string;
+  };
+
   // Errors
   errors: {
     somethingWentWrong: string;
@@ -1445,6 +1502,62 @@ const TRANSLATIONS: Record<Language, Translations> = {
       confirmDeleteDesc: 'هل أنت متأكد من حذف هذا الاختبار؟ لا يمكن التراجع.',
     },
 
+    flashcard: {
+      title: 'البطاقات التعليمية',
+      flashcards: 'البطاقات التعليمية',
+      description: 'تعلم بالبطاقات التعليمية مع التكرار المتباعد',
+      decks: 'مجموعات البطاقات',
+      cards: 'البطاقات',
+      front: 'الأمام',
+      back: 'الخلف',
+      hint: 'تلميح',
+      deck: 'مجموعة',
+      card: 'بطاقة',
+      createDeck: 'إنشاء مجموعة',
+      editDeck: 'تعديل المجموعة',
+      deleteDeck: 'حذف المجموعة',
+      publishDeck: 'نشر المجموعة',
+      unpublishDeck: 'إلغاء النشر',
+      addCard: 'إضافة بطاقة',
+      editCard: 'تعديل البطاقة',
+      deleteCard: 'حذف البطاقة',
+      manageDecks: 'إدارة المجموعات',
+      availableDecks: 'المجموعات المتاحة',
+      study: 'دراسة',
+      startStudy: 'ابدأ الدراسة',
+      flipCard: 'اقلب البطاقة',
+      showAnswer: 'أظهر الإجابة',
+      rateRecall: 'قيّم تذكرك',
+      nextCard: 'البطاقة التالية',
+      sessionComplete: 'انتهت الجلسة',
+      cardsReviewed: 'بطاقات تمت مراجعتها',
+      dueToday: 'مستحقة اليوم',
+      mastered: 'متقنة',
+      studying: 'قيد الدراسة',
+      newCards: 'بطاقات جديدة',
+      progress: 'التقدم',
+      totalCards: 'إجمالي البطاقات',
+      studiedCards: 'بطاقات تمت دراستها',
+      masteredCards: 'بطاقات متقنة',
+      noDecks: 'لا توجد مجموعات بطاقات',
+      noDueCards: 'لا توجد بطاقات مستحقة للمراجعة',
+      category: 'الفئة',
+      generateWithAI: 'إنشاء بالذكاء الاصطناعي',
+      aiGenerated: 'ذكاء اصطناعي',
+      manual: 'يدوي',
+      topic: 'الموضوع',
+      numberOfCards: 'عدد البطاقات',
+      generate: 'إنشاء',
+      quality0: 'لا أعرف',
+      quality1: 'خطأ، تعرفت عليه',
+      quality2: 'خطأ، سهل التذكر',
+      quality3: 'صحيح، صعب',
+      quality4: 'صحيح، تردد',
+      quality5: 'مثالي',
+      confirmDelete: 'تأكيد الحذف',
+      confirmDeleteDesc: 'هل أنت متأكد من حذف هذه المجموعة؟ لا يمكن التراجع.',
+    },
+
     errors: {
       somethingWentWrong: 'حدث خطأ ما',
       pageNotFound: 'الصفحة غير موجودة',
@@ -2171,6 +2284,62 @@ const TRANSLATIONS: Record<Language, Translations> = {
       createdAt: 'Created',
       confirmDelete: 'Confirm Delete',
       confirmDeleteDesc: 'Are you sure you want to delete this quiz? This action cannot be undone.',
+    },
+
+    flashcard: {
+      title: 'Flashcards',
+      flashcards: 'Flashcards',
+      description: 'Learn with flashcards using spaced repetition',
+      decks: 'Decks',
+      cards: 'Cards',
+      front: 'Front',
+      back: 'Back',
+      hint: 'Hint',
+      deck: 'Deck',
+      card: 'Card',
+      createDeck: 'Create Deck',
+      editDeck: 'Edit Deck',
+      deleteDeck: 'Delete Deck',
+      publishDeck: 'Publish Deck',
+      unpublishDeck: 'Unpublish',
+      addCard: 'Add Card',
+      editCard: 'Edit Card',
+      deleteCard: 'Delete Card',
+      manageDecks: 'Manage Decks',
+      availableDecks: 'Available Decks',
+      study: 'Study',
+      startStudy: 'Start Study',
+      flipCard: 'Flip Card',
+      showAnswer: 'Show Answer',
+      rateRecall: 'Rate Your Recall',
+      nextCard: 'Next Card',
+      sessionComplete: 'Session Complete',
+      cardsReviewed: 'Cards Reviewed',
+      dueToday: 'Due Today',
+      mastered: 'Mastered',
+      studying: 'Studying',
+      newCards: 'New Cards',
+      progress: 'Progress',
+      totalCards: 'Total Cards',
+      studiedCards: 'Cards Studied',
+      masteredCards: 'Cards Mastered',
+      noDecks: 'No flashcard decks available',
+      noDueCards: 'No cards due for review',
+      category: 'Category',
+      generateWithAI: 'Generate with AI',
+      aiGenerated: 'AI Generated',
+      manual: 'Manual',
+      topic: 'Topic',
+      numberOfCards: 'Number of Cards',
+      generate: 'Generate',
+      quality0: 'Blackout',
+      quality1: 'Wrong, recognized',
+      quality2: 'Wrong, easy recall',
+      quality3: 'Correct, hard',
+      quality4: 'Correct, hesitation',
+      quality5: 'Perfect',
+      confirmDelete: 'Confirm Delete',
+      confirmDeleteDesc: 'Are you sure you want to delete this deck? This action cannot be undone.',
     },
 
     errors: {

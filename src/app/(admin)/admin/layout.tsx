@@ -41,6 +41,7 @@ import {
   CreditCard,
   GraduationCap,
   ClipboardCheck,
+  Layers,
 } from 'lucide-react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 
@@ -117,6 +118,15 @@ export default function AdminLayout({
         description: isRTL
           ? (isTrainer ? 'إدارة اختبارات طلابك' : 'إدارة الاختبارات')
           : (isTrainer ? 'Manage your quizzes' : 'Manage quizzes'),
+        showFor: ['trainer', 'org_admin'],
+      },
+      {
+        href: '/admin/flashcards',
+        label: isRTL ? 'البطاقات التعليمية' : 'Flashcards',
+        icon: Layers,
+        description: isRTL
+          ? (isTrainer ? 'إدارة البطاقات التعليمية' : 'إدارة البطاقات التعليمية')
+          : (isTrainer ? 'Manage your flashcards' : 'Manage flashcards'),
         showFor: ['trainer', 'org_admin'],
       },
       {
