@@ -130,6 +130,14 @@ interface Message {
   audioBase64?: string;
   attachments?: FileAttachment[];
   isPlaying?: boolean;
+  // AV Content reference for playable content in chat
+  avContent?: {
+    id: string;
+    type: 'lecture' | 'summary';
+    title: string;
+    titleAr?: string;
+    duration: number; // in seconds
+  };
 }
 
 export default function AITeacherPage() {
@@ -417,18 +425,25 @@ Would you like a quick quiz to test your understanding?`;
         language: isRTL ? 'ar' : 'en',
       });
 
-      // Add message about lecture generation
+      // Add message about lecture generation with playable content
       const lectureMessage: Message = {
         id: `av-lecture-${Date.now()}`,
         role: 'assistant',
         content: isRTL
-          ? `🎬 تم إنشاء محاضرة فيديو: "${content.titleAr || content.title}"\n\nالمدة: ${Math.round(content.totalDuration / 60)} دقائق\n\nانقر على الزر أدناه لمشاهدة المحاضرة.`
-          : `🎬 Video lecture created: "${content.title}"\n\nDuration: ${Math.round(content.totalDuration / 60)} minutes\n\nClick the button below to watch the lecture.`,
+          ? `🎬 تم إنشاء محاضرة فيديو: "${content.titleAr || content.title}"\n\nالمدة: ${Math.round(content.totalDuration / 60)} دقائق`
+          : `🎬 Video lecture created: "${content.title}"\n\nDuration: ${Math.round(content.totalDuration / 60)} minutes`,
         timestamp: new Date(),
+        avContent: {
+          id: content.id,
+          type: 'lecture',
+          title: content.title,
+          titleAr: content.titleAr,
+          duration: content.totalDuration,
+        },
       };
       setMessages((prev) => [...prev, lectureMessage]);
 
-      // Open the player
+      // Automatically open the player
       setAVContentId(content.id);
       setShowAVPlayer(true);
 
@@ -468,7 +483,7 @@ Would you like a quick quiz to test your understanding?`;
         language: isRTL ? 'ar' : 'en',
       });
 
-      // Add message about summary generation
+      // Add message about summary generation with playable content
       const summaryMessage: Message = {
         id: `av-summary-${Date.now()}`,
         role: 'assistant',
@@ -476,10 +491,17 @@ Would you like a quick quiz to test your understanding?`;
           ? `🎧 تم إنشاء ملخص صوتي تفاعلي: "${content.titleAr || content.title}"\n\nالمدة: ${Math.round(content.totalDuration / 60)} دقائق\n\nتم تخصيص المحتوى بناءً على نقاط ضعفك.`
           : `🎧 Interactive audio summary created: "${content.title}"\n\nDuration: ${Math.round(content.totalDuration / 60)} minutes\n\nContent has been tailored to your weak areas.`,
         timestamp: new Date(),
+        avContent: {
+          id: content.id,
+          type: 'summary',
+          title: content.title,
+          titleAr: content.titleAr,
+          duration: content.totalDuration,
+        },
       };
       setMessages((prev) => [...prev, summaryMessage]);
 
-      // Open the player
+      // Automatically open the player
       setAVContentId(content.id);
       setShowAVPlayer(true);
 
@@ -1159,8 +1181,41 @@ ${lastLessonText}
                     {/* Content */}
                     <p className="whitespace-pre-wrap leading-relaxed text-[15px]">{message.content}</p>
 
-                    {/* Audio playback button for assistant messages */}
-                    {message.role === 'assistant' && (
+                    {/* AV Content Play Button - for lectures and summaries */}
+                    {message.avContent && (
+                      <div className="mt-3 pt-3 border-t border-border/30">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className={cn(
+                            "w-full h-10 text-sm font-medium transition-all",
+                            message.avContent.type === 'lecture'
+                              ? "bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
+                              : "bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700"
+                          )}
+                          onClick={() => {
+                            setAVContentId(message.avContent!.id);
+                            setShowAVPlayer(true);
+                          }}
+                        >
+                          {message.avContent.type === 'lecture' ? (
+                            <Video className="h-4 w-4 me-2" />
+                          ) : (
+                            <Music className="h-4 w-4 me-2" />
+                          )}
+                          {message.avContent.type === 'lecture'
+                            ? (isRTL ? 'مشاهدة المحاضرة' : 'Watch Lecture')
+                            : (isRTL ? 'تشغيل الملخص' : 'Play Summary')
+                          }
+                          <span className="ms-2 text-xs opacity-75">
+                            ({Math.round(message.avContent.duration / 60)} {isRTL ? 'د' : 'min'})
+                          </span>
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Audio playback button for assistant messages (text-to-speech) */}
+                    {message.role === 'assistant' && !message.avContent && (
                       <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border/30">
                         <Button
                           variant="outline"
@@ -1576,31 +1631,16 @@ ${lastLessonText}
                 {isRTL ? 'أدوات الذكاء الاصطناعي' : 'AI Content Tools'}
               </h3>
               <div className="space-y-2">
-                {/* Generate Audio Explanation */}
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-xs h-auto py-2 px-3 border-fuchsia-500/30 hover:bg-fuchsia-500/10"
-                  onClick={() => setInputMessage(isRTL
-                    ? 'أنشئ لي شرح صوتي مفصل عن الموضوع الحالي'
-                    : 'Generate a detailed audio explanation about the current topic'
-                  )}
-                >
-                  <Music className="h-3.5 w-3.5 me-2 text-fuchsia-500" />
-                  {isRTL ? 'شرح صوتي بالذكاء الاصطناعي' : 'AI Audio Explanation'}
-                </Button>
+                {/* AV Content Generation - Main Buttons */}
+                <GenerateAVButtons
+                  onGenerateLecture={handleGenerateAVLecture}
+                  onGenerateSummary={handleGenerateAVSummary}
+                  disabled={isGeneratingAVContent}
+                  language={isRTL ? 'ar' : 'en'}
+                />
 
-                {/* Generate Visual Content */}
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-xs h-auto py-2 px-3 border-pink-500/30 hover:bg-pink-500/10"
-                  onClick={() => setInputMessage(isRTL
-                    ? 'اشرح لي الموضوع بطريقة بصرية مع أمثلة توضيحية'
-                    : 'Explain the topic visually with illustrative examples'
-                  )}
-                >
-                  <ImageIcon className="h-3.5 w-3.5 me-2 text-pink-500" />
-                  {isRTL ? 'شرح بصري' : 'Visual Explanation'}
-                </Button>
+                {/* Divider */}
+                <div className="border-t border-border/50 my-2" />
 
                 {/* Generate Practice Scenarios */}
                 <Button
@@ -1640,17 +1680,6 @@ ${lastLessonText}
                   <Zap className="h-3.5 w-3.5 me-2 text-cyan-500" />
                   {isRTL ? 'اختبار سريع' : 'Quick Knowledge Check'}
                 </Button>
-
-                {/* Divider */}
-                <div className="border-t border-border/50 my-3" />
-
-                {/* AV Content Generation */}
-                <GenerateAVButtons
-                  onGenerateLecture={handleGenerateAVLecture}
-                  onGenerateSummary={handleGenerateAVSummary}
-                  disabled={isGeneratingAVContent}
-                  language={isRTL ? 'ar' : 'en'}
-                />
               </div>
             </CardContent>
           </Card>
