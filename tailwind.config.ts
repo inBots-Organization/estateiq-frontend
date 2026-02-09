@@ -17,10 +17,11 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        // Premium enterprise fonts
-        sans: ['var(--font-ibm-plex)', 'var(--font-arabic)', 'system-ui', 'sans-serif'],
-        arabic: ['var(--font-arabic)', 'IBM Plex Sans Arabic', 'Segoe UI', 'Tahoma', 'sans-serif'],
-        heading: ['var(--font-ibm-plex)', 'var(--font-arabic)', 'system-ui', 'sans-serif'],
+        // Premium enterprise fonts - Cairo & Alexandria
+        sans: ['var(--font-cairo)', 'system-ui', 'sans-serif'],
+        body: ['var(--font-cairo)', 'system-ui', 'sans-serif'],
+        heading: ['var(--font-alexandria)', 'system-ui', 'sans-serif'],
+        arabic: ['var(--font-cairo)', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: 'hsl(var(--border))',
