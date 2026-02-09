@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Download, ThumbsUp, ThumbsDown, Star, Loader2 } from 'lucide-react';
+import { X, Download, ThumbsUp, ThumbsDown, Star, Loader2, AlertCircle, Play } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -38,12 +38,17 @@ export function AVPlayerModal({
   const [rating, setRating] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const player = useAVPlayer(content);
+  // Create audio element ref and pass it to the hook
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Pass the audioRef to the hook so it uses the same ref as the DOM element
+  const player = useAVPlayer(content, audioRef);
   useAVPlayerKeyboard(player);
 
   // Load content when modal opens
   useEffect(() => {
     if (isOpen && contentId) {
+      console.log('[AVPlayerModal] Loading content:', contentId);
       loadContent(contentId);
     }
   }, [isOpen, contentId]);
@@ -64,10 +69,38 @@ export function AVPlayerModal({
     setIsLoading(true);
     setError(null);
     try {
+      console.log('[AVPlayerModal] Fetching content from API...');
       const data = await avContentApi.getContent(id);
+      console.log('[AVPlayerModal] Content loaded:', {
+        id: data.id,
+        status: data.status,
+        hasAudioUrl: !!data.audioUrl,
+        audioUrlLength: data.audioUrl?.length || 0,
+        audioUrlPrefix: data.audioUrl?.substring(0, 100),
+        slidesCount: data.slides?.length || 0,
+        slides: data.slides?.map(s => ({
+          num: s.slideNumber,
+          title: s.titleAr || s.title,
+          start: s.audioStartTime,
+          end: s.audioEndTime
+        }))
+      });
+
+      if (!data.audioUrl) {
+        console.error('[AVPlayerModal] No audio URL in response');
+        setError(language === 'ar' ? 'لا يوجد ملف صوتي في المحتوى' : 'No audio file in content');
+        return;
+      }
+
+      if (data.status !== 'ready') {
+        console.error('[AVPlayerModal] Content not ready, status:', data.status);
+        setError(language === 'ar' ? 'المحتوى غير جاهز بعد' : 'Content not ready yet');
+        return;
+      }
+
       setContent(data);
-    } catch (err) {
-      console.error('Failed to load AV content:', err);
+    } catch (err: any) {
+      console.error('[AVPlayerModal] Failed to load AV content:', err);
       setError(language === 'ar' ? 'فشل تحميل المحتوى' : 'Failed to load content');
     } finally {
       setIsLoading(false);
@@ -83,6 +116,7 @@ export function AVPlayerModal({
       setShowFeedback(false);
       setFeedbackSubmitted(false);
       setRating(0);
+      setError(null);
     }, 300);
   }, [onClose, player]);
 
@@ -126,6 +160,22 @@ export function AVPlayerModal({
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
+  // Debug: Log player state
+  useEffect(() => {
+    if (content) {
+      console.log('[AVPlayerModal] Player state:', {
+        isPlaying: player.isPlaying,
+        isLoading: player.isLoading,
+        isAudioReady: player.isAudioReady,
+        error: player.error,
+        currentTime: player.currentTime,
+        duration: player.duration,
+        currentSlide: player.currentSlide,
+        hasAudioRef: !!audioRef.current,
+      });
+    }
+  }, [player.isPlaying, player.isLoading, player.isAudioReady, player.error, player.currentTime, player.duration, player.currentSlide, content]);
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
@@ -158,7 +208,7 @@ export function AVPlayerModal({
 
         {/* Loading State */}
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80">
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 z-20">
             <div className="text-center">
               <Loader2 className="h-12 w-12 animate-spin text-violet-400 mx-auto mb-4" />
               <p className="text-slate-300">
@@ -169,19 +219,37 @@ export function AVPlayerModal({
         )}
 
         {/* Error State */}
-        {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80">
+        {(error || player.error) && !isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 z-20">
+            <div className="text-center max-w-md">
+              <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+              <p className="text-red-400 mb-4">{error || player.error}</p>
+              <div className="flex gap-3 justify-center">
+                <Button onClick={() => contentId && loadContent(contentId)} variant="outline">
+                  {language === 'ar' ? 'إعادة المحاولة' : 'Retry'}
+                </Button>
+                <Button onClick={handleClose} variant="ghost">
+                  {language === 'ar' ? 'إغلاق' : 'Close'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Audio Loading Overlay */}
+        {content && !isLoading && !error && !player.error && player.isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-900/60 z-15">
             <div className="text-center">
-              <p className="text-red-400 mb-4">{error}</p>
-              <Button onClick={() => contentId && loadContent(contentId)}>
-                {language === 'ar' ? 'إعادة المحاولة' : 'Retry'}
-              </Button>
+              <Loader2 className="h-8 w-8 animate-spin text-violet-400 mx-auto mb-2" />
+              <p className="text-slate-400 text-sm">
+                {language === 'ar' ? 'جاري تحميل الصوت...' : 'Loading audio...'}
+              </p>
             </div>
           </div>
         )}
 
         {/* Main Content */}
-        {content && !isLoading && (
+        {content && !isLoading && !error && (
           <div className="flex h-full pt-16">
             {/* Slide Navigator (Left/Right based on language) */}
             <SlideNavigator
@@ -198,13 +266,25 @@ export function AVPlayerModal({
               language === 'ar' ? 'order-1' : 'order-2'
             )}>
               {/* Slide Display */}
-              <div className="flex-1 p-6 pb-0">
+              <div className="flex-1 p-6 pb-0 relative">
                 <SlideRenderer
                   slide={player.currentSlideData}
                   isPlaying={player.isPlaying}
                   language={language}
                   className="h-full"
                 />
+
+                {/* Click to play overlay when not playing and ready */}
+                {!player.isPlaying && player.isAudioReady && player.currentTime === 0 && !player.error && (
+                  <div
+                    className="absolute inset-0 flex items-center justify-center bg-slate-900/40 cursor-pointer"
+                    onClick={() => player.play()}
+                  >
+                    <div className="bg-violet-500/80 rounded-full p-6 hover:bg-violet-500 transition-colors">
+                      <Play className="h-12 w-12 text-white" />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Audio Controls */}
@@ -216,8 +296,12 @@ export function AVPlayerModal({
               />
             </div>
 
-            {/* Hidden Audio Element */}
-            <audio ref={player.audioRef} preload="auto" />
+            {/* Hidden Audio Element - CRITICAL: This must be rendered for the hook to work */}
+            <audio
+              ref={audioRef}
+              preload="auto"
+              style={{ display: 'none' }}
+            />
           </div>
         )}
 
