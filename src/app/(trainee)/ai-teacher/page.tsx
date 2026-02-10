@@ -241,7 +241,9 @@ export default function AITeacherPage() {
     setIsGeneratingAudio(true);
     try {
       const lang = isRTL ? 'ar' : 'en';
-      const response = await aiTeacherApi.textToSpeech(text, lang as 'ar' | 'en');
+      // Get the active teacher for persona-specific voice
+      const activeTeacher = useTeacherStore.getState().activeTeacher || useTeacherStore.getState().assignedTeacher;
+      const response = await aiTeacherApi.textToSpeech(text, lang as 'ar' | 'en', activeTeacher || undefined);
       if (response.audio) {
         // Use 'manual' in ID to bypass auto-play check
         audioManager.play(response.audio, `manual-${Date.now()}`);
@@ -796,7 +798,9 @@ ${lastLessonText}${skillSection}
             hasPlayedInitialAudioRef.current = true;
             try {
               const lang = isRTL ? 'ar' : 'en';
-              const response = await aiTeacherApi.textToSpeech(contextualGreeting, lang as 'ar' | 'en');
+              // Get the active teacher for persona-specific voice
+              const currentTeacher = useTeacherStore.getState().activeTeacher || useTeacherStore.getState().assignedTeacher;
+              const response = await aiTeacherApi.textToSpeech(contextualGreeting, lang as 'ar' | 'en', currentTeacher || undefined);
               if (response.audio) {
                 // Store audio with message - user can click to play
                 setMessages([{ ...contextualWelcome, audioBase64: response.audio }]);
@@ -822,7 +826,9 @@ ${lastLessonText}${skillSection}
             hasPlayedInitialAudioRef.current = true;
             try {
               const lang = isRTL ? 'ar' : 'en';
-              const response = await aiTeacherApi.textToSpeech(sidebarGreeting, lang as 'ar' | 'en');
+              // Get the active teacher for persona-specific voice
+              const currentTeacher = useTeacherStore.getState().activeTeacher || useTeacherStore.getState().assignedTeacher;
+              const response = await aiTeacherApi.textToSpeech(sidebarGreeting, lang as 'ar' | 'en', currentTeacher || undefined);
               if (response.audio) {
                 // Store audio with message - user can click to play
                 setMessages([{ ...sidebarWelcome, audioBase64: response.audio }]);
