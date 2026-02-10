@@ -796,6 +796,29 @@ interface Translations {
     confirmDeleteDesc: string;
   };
 
+  // AI Brain
+  brain: {
+    title: string;
+    subtitle: string;
+    uploadDocument: string;
+    documents: string;
+    noDocuments: string;
+    uploadFile: string;
+    dragOrClick: string;
+    acceptedFormats: string;
+    processing: string;
+    ready: string;
+    failed: string;
+    deleteDocument: string;
+    confirmDeleteDoc: string;
+    fileSize: string;
+    chunks: string;
+    uploadedOn: string;
+    systemDefault: string;
+    retryProcessing: string;
+    searchDocuments: string;
+  };
+
   // Errors
   errors: {
     somethingWentWrong: string;
@@ -1607,6 +1630,28 @@ const TRANSLATIONS: Record<Language, Translations> = {
       confirmDeleteDesc: 'هل أنت متأكد من حذف هذه المجموعة؟ لا يمكن التراجع.',
     },
 
+    brain: {
+      title: 'العقل الذكي',
+      subtitle: 'قاعدة المعرفة لتدريب الذكاء الاصطناعي',
+      uploadDocument: 'رفع مستند',
+      documents: 'المستندات',
+      noDocuments: 'لا توجد مستندات مرفوعة بعد',
+      uploadFile: 'رفع ملف',
+      dragOrClick: 'اسحب ملفاً هنا أو انقر للاختيار',
+      acceptedFormats: 'PDF, DOCX, TXT — حد أقصى 25 ميجابايت',
+      processing: 'قيد المعالجة',
+      ready: 'جاهز',
+      failed: 'فشلت المعالجة',
+      deleteDocument: 'حذف المستند',
+      confirmDeleteDoc: 'هل أنت متأكد من حذف هذا المستند؟ سيتم حذف جميع الأجزاء المفهرسة.',
+      fileSize: 'حجم الملف',
+      chunks: 'أجزاء',
+      uploadedOn: 'تاريخ الرفع',
+      systemDefault: 'افتراضي النظام',
+      retryProcessing: 'إعادة المعالجة',
+      searchDocuments: 'البحث في المستندات',
+    },
+
     errors: {
       somethingWentWrong: 'حدث خطأ ما',
       pageNotFound: 'الصفحة غير موجودة',
@@ -2413,6 +2458,28 @@ const TRANSLATIONS: Record<Language, Translations> = {
       quality5: 'Perfect',
       confirmDelete: 'Confirm Delete',
       confirmDeleteDesc: 'Are you sure you want to delete this deck? This action cannot be undone.',
+    },
+
+    brain: {
+      title: 'AI Brain',
+      subtitle: 'Knowledge base for AI training',
+      uploadDocument: 'Upload Document',
+      documents: 'Documents',
+      noDocuments: 'No documents uploaded yet',
+      uploadFile: 'Upload File',
+      dragOrClick: 'Drag a file here or click to browse',
+      acceptedFormats: 'PDF, DOCX, TXT — Max 25MB',
+      processing: 'Processing',
+      ready: 'Ready',
+      failed: 'Failed',
+      deleteDocument: 'Delete Document',
+      confirmDeleteDoc: 'Are you sure you want to delete this document? All indexed chunks will be removed.',
+      fileSize: 'File Size',
+      chunks: 'Chunks',
+      uploadedOn: 'Uploaded',
+      systemDefault: 'System Default',
+      retryProcessing: 'Retry Processing',
+      searchDocuments: 'Search documents',
     },
 
     errors: {

@@ -42,6 +42,7 @@ import {
   GraduationCap,
   ClipboardCheck,
   Layers,
+  Brain,
 } from 'lucide-react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 
@@ -128,6 +129,15 @@ export default function AdminLayout({
           ? (isTrainer ? 'إدارة البطاقات التعليمية' : 'إدارة البطاقات التعليمية')
           : (isTrainer ? 'Manage your flashcards' : 'Manage flashcards'),
         showFor: ['trainer', 'org_admin'],
+      },
+      {
+        href: '/admin/brain',
+        label: isRTL ? 'العقل الذكي' : 'AI Brain',
+        icon: Brain,
+        description: isRTL
+          ? 'إدارة قاعدة معرفة الذكاء الاصطناعي'
+          : 'Manage AI knowledge base',
+        showFor: ['org_admin'],
       },
       {
         href: '/admin/reports',
