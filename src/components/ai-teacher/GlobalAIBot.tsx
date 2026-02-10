@@ -19,6 +19,108 @@ interface BotMessage {
   audioBase64?: string;
 }
 
+// Detailed page context for smart guidance
+interface PageContextInfo {
+  key: string;
+  displayText: string;
+  aiPrompt: string; // What the bot should know about this page
+}
+
+function getDetailedPageContext(pathname: string, language: 'ar' | 'en'): PageContextInfo {
+  const isAr = language === 'ar';
+
+  if (pathname.includes('/dashboard') || pathname === '/') {
+    return {
+      key: 'dashboard',
+      displayText: isAr ? 'أنت في لوحة التحكم — اسألني عن تقدمك!' : "You're on the Dashboard — ask me about your progress!",
+      aiPrompt: isAr
+        ? 'المستخدم في لوحة التحكم الرئيسية. هنا يشوف ملخص تقدمه، نتائجه، وإحصائياته. ساعده يفهم أرقامه ووجهه للخطوة الجاية في رحلته التعليمية.'
+        : 'User is on the main dashboard. They can see their progress summary, scores, and stats. Help them understand their numbers and guide them to the next step in their learning journey.'
+    };
+  }
+
+  if (pathname.includes('/courses')) {
+    const isCoursePage = pathname.match(/\/courses\/[^/]+$/);
+    const isLessonPage = pathname.includes('/lessons/');
+
+    if (isLessonPage) {
+      return {
+        key: 'lesson',
+        displayText: isAr ? 'أنت في درس — اسألني عن أي شي ما فهمته!' : "You're in a lesson — ask me about anything you didn't understand!",
+        aiPrompt: isAr
+          ? 'المستخدم يشاهد درس. ساعده يفهم المحتوى، اشرحله المفاهيم الصعبة، وأعطيه أمثلة عملية من السوق السعودي.'
+          : 'User is watching a lesson. Help them understand the content, explain difficult concepts, and give practical examples from the Saudi market.'
+      };
+    }
+
+    if (isCoursePage) {
+      return {
+        key: 'course',
+        displayText: isAr ? 'أنت في دورة تدريبية — أقدر أساعدك تختار الدرس المناسب!' : "You're in a course — I can help you choose the right lesson!",
+        aiPrompt: isAr
+          ? 'المستخدم يتصفح دورة تدريبية. ساعده يفهم محتوى الدورة ورتبله الدروس حسب مستواه وأهدافه.'
+          : 'User is browsing a course. Help them understand the course content and organize lessons based on their level and goals.'
+      };
+    }
+
+    return {
+      key: 'courses',
+      displayText: isAr ? 'أنت في الدورات — خليني أرشحلك الأنسب لمستواك!' : "You're in Courses — let me recommend the best ones for your level!",
+      aiPrompt: isAr
+        ? 'المستخدم يتصفح قائمة الدورات. ساعده يختار الدورة المناسبة لمستواه ونقاط ضعفه. رشحله دورات محددة بناءً على احتياجاته.'
+        : 'User is browsing the courses list. Help them choose the right course for their level and weaknesses. Recommend specific courses based on their needs.'
+    };
+  }
+
+  if (pathname.includes('/simulation')) {
+    return {
+      key: 'simulation',
+      displayText: isAr ? 'أنت في المحاكاة — جاهز تتدرب على مواقف حقيقية!' : "You're in Simulation — ready to practice real scenarios!",
+      aiPrompt: isAr
+        ? 'المستخدم في قسم المحاكاة. هنا يتدرب على محادثات مع عملاء افتراضيين. ساعده يستعد للسيناريو وأعطيه نصائح قبل يبدأ.'
+        : 'User is in the simulation section. Here they practice conversations with virtual clients. Help them prepare for the scenario and give tips before starting.'
+    };
+  }
+
+  if (pathname.includes('/voice-training')) {
+    return {
+      key: 'voice',
+      displayText: isAr ? 'أنت في التدريب الصوتي — تدرب على المكالمات الحقيقية!' : "You're in Voice Training — practice real phone calls!",
+      aiPrompt: isAr
+        ? 'المستخدم في التدريب الصوتي. هنا يتدرب على مكالمات هاتفية مع عملاء. ساعده يحسن نبرة صوته وأسلوبه في الإقناع.'
+        : 'User is in voice training. Here they practice phone calls with clients. Help them improve their tone and persuasion style.'
+    };
+  }
+
+  if (pathname.includes('/reports')) {
+    return {
+      key: 'reports',
+      displayText: isAr ? 'أنت في التقارير — خليني أحللك أداءك!' : "You're in Reports — let me analyze your performance!",
+      aiPrompt: isAr
+        ? 'المستخدم يشاهد تقاريره. حلل أداءه، حدد نقاط القوة والضعف، واقترح خطة تحسين واضحة.'
+        : 'User is viewing their reports. Analyze their performance, identify strengths and weaknesses, and suggest a clear improvement plan.'
+    };
+  }
+
+  if (pathname.includes('/quizzes')) {
+    return {
+      key: 'quizzes',
+      displayText: isAr ? 'أنت في الاختبارات — اختبر معلوماتك!' : "You're in Quizzes — test your knowledge!",
+      aiPrompt: isAr
+        ? 'المستخدم في قسم الاختبارات. ساعده يستعد للاختبار وراجع معاه المواضيع المهمة.'
+        : 'User is in the quizzes section. Help them prepare for the quiz and review important topics.'
+    };
+  }
+
+  return {
+    key: 'general',
+    displayText: isAr ? 'كيف أقدر أساعدك اليوم؟' : 'How can I help you today?',
+    aiPrompt: isAr
+      ? 'المستخدم في صفحة عامة. كن مستعداً لمساعدته في أي سؤال عن العقارات أو استخدام المنصة.'
+      : 'User is on a general page. Be ready to help with any question about real estate or using the platform.'
+  };
+}
+
 function getPageContext(pathname: string, t: any): string {
   if (pathname.includes('/dashboard') || pathname === '/') return t.floatingBot.pageContext.dashboard;
   if (pathname.includes('/courses')) return t.floatingBot.pageContext.courses;
@@ -52,15 +154,53 @@ export function GlobalAIBot() {
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
   const [welcomePlayed, setWelcomePlayed] = useState(false);
   const [isLoadingWelcome, setIsLoadingWelcome] = useState(false);
+  const [autoPlayEnabled, setAutoPlayEnabled] = useState(true); // Auto-play responses
+  const [previousPathname, setPreviousPathname] = useState<string | null>(null);
 
   // Audio refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioQueueRef = useRef<string[]>([]); // Queue for auto-playing audio
 
   // Determine which teacher to use
   const currentTeacher = activeTeacher || assignedTeacher || 'abdullah';
   const teacher = TEACHERS[currentTeacher as TeacherName] || TEACHERS.abdullah;
+
+  // Get detailed page context
+  const pageContext = getDetailedPageContext(pathname, language);
+
+  // Auto-play audio helper
+  const autoPlayAudio = useCallback((audioBase64: string, messageId: string) => {
+    if (!autoPlayEnabled) return;
+
+    // Stop any current audio
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current = null;
+    }
+
+    const audio = new Audio(`data:audio/mpeg;base64,${audioBase64}`);
+    currentAudioRef.current = audio;
+    setPlayingMessageId(messageId);
+
+    audio.onended = () => {
+      setPlayingMessageId(null);
+      currentAudioRef.current = null;
+    };
+
+    audio.onerror = () => {
+      setPlayingMessageId(null);
+      currentAudioRef.current = null;
+    };
+
+    // Play with user interaction fallback
+    audio.play().catch(() => {
+      // Autoplay blocked - will need user interaction
+      setPlayingMessageId(null);
+      setAutoPlayEnabled(false); // Disable auto-play since browser blocked it
+    });
+  }, [autoPlayEnabled]);
 
   // Hide on specific pages
   const hiddenPaths = ['/ai-teacher', '/assessment'];
@@ -172,9 +312,57 @@ export function GlobalAIBot() {
     };
   }, []);
 
+  // Detect page changes and offer contextual help
+  useEffect(() => {
+    if (!isOpen || !hasCompletedAssessment || !welcomePlayed) return;
+    if (previousPathname === pathname) return;
+    if (previousPathname === null) {
+      // First load, just set the pathname
+      setPreviousPathname(pathname);
+      return;
+    }
+
+    // Page changed! Offer contextual guidance
+    setPreviousPathname(pathname);
+    const newPageContext = getDetailedPageContext(pathname, language);
+
+    // Don't add guidance for every tiny navigation
+    if (newPageContext.key === 'general') return;
+
+    // Add a contextual message from the teacher
+    const guidanceMsg: BotMessage = {
+      id: `guidance-${Date.now()}`,
+      role: 'assistant',
+      content: language === 'ar'
+        ? `📍 ${newPageContext.displayText}\n\nهل تحتاج مساعدة في هذه الصفحة؟`
+        : `📍 ${newPageContext.displayText}\n\nNeed help with this page?`,
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, guidanceMsg]);
+
+    // Get audio for the guidance (shorter version)
+    const shortGuidance = language === 'ar' ? newPageContext.displayText : newPageContext.displayText;
+    aiTeacherApi.textToSpeech(shortGuidance, language, currentTeacher)
+      .then(result => {
+        // Update the message with audio
+        setMessages(prev => prev.map(msg =>
+          msg.id === guidanceMsg.id ? { ...msg, audioBase64: result.audio } : msg
+        ));
+        // Auto-play the guidance
+        autoPlayAudio(result.audio, guidanceMsg.id);
+      })
+      .catch(() => {
+        // TTS failed, no audio
+      });
+  }, [pathname, previousPathname, isOpen, hasCompletedAssessment, welcomePlayed, language, currentTeacher, autoPlayAudio]);
+
   const handleSend = useCallback(async () => {
     const trimmed = input.trim();
     if (!trimmed || isLoading) return;
+
+    // Re-enable auto-play on user interaction (browser allows it after user interaction)
+    setAutoPlayEnabled(true);
 
     const userMsg: BotMessage = {
       id: `user-${Date.now()}`,
@@ -188,11 +376,16 @@ export function GlobalAIBot() {
     setIsLoading(true);
 
     try {
-      const response = await aiTeacherApi.sendMessage(trimmed, undefined, undefined, currentTeacher);
+      // Add page context to the message for smarter responses
+      const contextualMessage = `[سياق الصفحة: ${pageContext.aiPrompt}]\n\nسؤال المستخدم: ${trimmed}`;
 
-      // Get audio for response
+      const response = await aiTeacherApi.sendMessage(contextualMessage, undefined, undefined, currentTeacher);
+
+      const assistantMsgId = `assistant-${Date.now()}`;
+
+      // Get audio for response (increased limit for better experience)
       let audioBase64: string | undefined;
-      if (response.message.length < 500) {
+      if (response.message.length < 800) {
         try {
           const ttsResult = await aiTeacherApi.textToSpeech(response.message, language, currentTeacher);
           audioBase64 = ttsResult.audio;
@@ -202,13 +395,18 @@ export function GlobalAIBot() {
       }
 
       const assistantMsg: BotMessage = {
-        id: `assistant-${Date.now()}`,
+        id: assistantMsgId,
         role: 'assistant',
         content: response.message,
         timestamp: new Date(),
         audioBase64,
       };
       setMessages(prev => [...prev, assistantMsg]);
+
+      // Auto-play the response audio
+      if (audioBase64) {
+        autoPlayAudio(audioBase64, assistantMsgId);
+      }
     } catch {
       const errorMsg: BotMessage = {
         id: `error-${Date.now()}`,
@@ -220,7 +418,7 @@ export function GlobalAIBot() {
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, currentTeacher, language]);
+  }, [input, isLoading, currentTeacher, language, pageContext.aiPrompt, autoPlayAudio]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -473,9 +671,10 @@ export function GlobalAIBot() {
         </div>
       </div>
 
-      {/* Context Banner */}
-      <div className="px-3 py-2 bg-muted/50 text-xs text-muted-foreground border-b">
-        {getPageContext(pathname, t)}
+      {/* Context Banner - Smart guidance */}
+      <div className="px-3 py-2 bg-muted/50 text-xs text-muted-foreground border-b flex items-center gap-2">
+        <span className="text-base">📍</span>
+        <span>{pageContext.displayText}</span>
       </div>
 
       {/* Messages */}
