@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDiagnosticStore } from '@/stores/diagnostic.store';
+import { useTeacherStore } from '@/stores/teacher.store';
 import { diagnosticApi, type EvaluatorReport } from '@/lib/api/diagnostic.api';
 import { cn } from '@/lib/utils';
 import type { SkillReport } from '@/types/diagnostic';
@@ -53,6 +54,12 @@ export default function AssessmentPage() {
       setEvaluatorStatus(result.evaluatorStatus);
       if (result.evaluatorReport) {
         setEvaluatorReport(result.evaluatorReport);
+        // Store assigned teacher in Zustand
+        if (result.evaluatorReport.teacherAssignment?.teacherName) {
+          useTeacherStore.getState().setAssignedTeacher(
+            result.evaluatorReport.teacherAssignment.teacherName as any
+          );
+        }
         // Stop polling once completed
         if (pollingRef.current) {
           clearInterval(pollingRef.current);

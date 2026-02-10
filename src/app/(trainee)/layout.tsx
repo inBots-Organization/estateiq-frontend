@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { FloatingAdminReturn } from '@/components/admin/ViewModeSwitcher';
+import { GlobalAIBot } from '@/components/ai-teacher/GlobalAIBot';
 
 export default function TraineeLayout({
   children,
@@ -470,6 +471,9 @@ export default function TraineeLayout({
 
       {/* Floating Admin Return Button - Shows when admin is viewing as trainee */}
       <FloatingAdminReturn />
+
+      {/* Floating AI Teacher Bot */}
+      <GlobalAIBot />
     </div>
   );
 }

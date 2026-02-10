@@ -858,6 +858,35 @@ interface Translations {
     downloaded: string;
     uploaded: string;
   };
+
+  // Teacher Personas
+  teacher: {
+    selectTeacher: string;
+    assignedTeacher: string;
+    growthMentor: string;
+    primary: string;
+    mentor: string;
+    switchTeacher: string;
+    chatWith: string;
+    openFullChat: string;
+    alwaysAvailable: string;
+  };
+
+  // Floating Bot
+  floatingBot: {
+    quickChat: string;
+    askAnything: string;
+    greeting: string;
+    send: string;
+    thinking: string;
+    pageContext: {
+      dashboard: string;
+      courses: string;
+      simulations: string;
+      reports: string;
+      general: string;
+    };
+  };
 }
 
 const TRANSLATIONS: Record<Language, Translations> = {
@@ -1703,6 +1732,33 @@ const TRANSLATIONS: Record<Language, Translations> = {
       downloaded: 'تم التحميل',
       uploaded: 'تم الرفع',
     },
+
+    teacher: {
+      selectTeacher: 'اختر معلمك',
+      assignedTeacher: 'معلمك المخصص',
+      growthMentor: 'مرشد النمو',
+      primary: 'أساسي',
+      mentor: 'مرشد',
+      switchTeacher: 'تغيير المعلم',
+      chatWith: 'تحدث مع',
+      openFullChat: 'فتح المحادثة الكاملة',
+      alwaysAvailable: 'متاح دائماً',
+    },
+
+    floatingBot: {
+      quickChat: 'محادثة سريعة',
+      askAnything: 'اسألني أي شيء...',
+      greeting: 'كيف أقدر أساعدك؟',
+      send: 'إرسال',
+      thinking: 'يفكر...',
+      pageContext: {
+        dashboard: 'أنت في لوحة التحكم — اسألني عن تقدمك!',
+        courses: 'أنت في الدورات — اسألني عن أي درس!',
+        simulations: 'أنت في المحاكاة — اسألني عن أي سيناريو!',
+        reports: 'أنت في التقارير — اسألني عن أداءك!',
+        general: 'اسألني أي شيء عن العقارات!',
+      },
+    },
   },
 
   en: {
@@ -2546,6 +2602,33 @@ const TRANSLATIONS: Record<Language, Translations> = {
       copied: 'Copied to clipboard',
       downloaded: 'Downloaded successfully',
       uploaded: 'Uploaded successfully',
+    },
+
+    teacher: {
+      selectTeacher: 'Choose Your Teacher',
+      assignedTeacher: 'Your Assigned Teacher',
+      growthMentor: 'Growth Mentor',
+      primary: 'Primary',
+      mentor: 'Mentor',
+      switchTeacher: 'Switch Teacher',
+      chatWith: 'Chat with',
+      openFullChat: 'Open Full Chat',
+      alwaysAvailable: 'Always Available',
+    },
+
+    floatingBot: {
+      quickChat: 'Quick Chat',
+      askAnything: 'Ask me anything...',
+      greeting: 'How can I help?',
+      send: 'Send',
+      thinking: 'Thinking...',
+      pageContext: {
+        dashboard: "You're on the Dashboard — ask me about your progress!",
+        courses: "You're on Courses — ask me about any lesson!",
+        simulations: "You're on Simulations — ask me about any scenario!",
+        reports: "You're on Reports — ask me about your performance!",
+        general: 'Ask me anything about real estate!',
+      },
     },
   },
 };

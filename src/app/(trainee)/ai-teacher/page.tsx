@@ -65,7 +65,8 @@ import {
   TraineeProfile,
   AVContent,
 } from '@/lib/api/ai-teacher.api';
-import { GenerateAVButtons, AVPlayerModal } from '@/components/ai-teacher';
+import { GenerateAVButtons, AVPlayerModal, TeacherSelector, TeacherAvatar } from '@/components/ai-teacher';
+import { useTeacherStore } from '@/stores/teacher.store';
 import { traineeApi } from '@/lib/api/trainee.api';
 import { diagnosticApi } from '@/lib/api/diagnostic.api';
 import type { SkillReport } from '@/types/diagnostic';
@@ -884,10 +885,12 @@ ${lastLessonText}${skillSection}
       let fullContent = '';
       let audioBase64: string | undefined;
 
+      const activeTeacher = useTeacherStore.getState().activeTeacher;
       for await (const chunk of aiTeacherApi.sendMessageStream(
         messageToSend,
         attachmentsToSend,
-        currentLessonContext || undefined
+        currentLessonContext || undefined,
+        activeTeacher || undefined
       )) {
         if (chunk.type === 'chunk' && chunk.content) {
           fullContent += chunk.content;
@@ -1130,6 +1133,9 @@ ${lastLessonText}${skillSection}
         </div>
       </div>
 
+      {/* Teacher Selector */}
+      <TeacherSelector className="mb-3" />
+
       <div className="grid lg:grid-cols-4 gap-3">
         {/* Main Chat Area */}
         <div className="lg:col-span-3">
@@ -1177,20 +1183,18 @@ ${lastLessonText}${skillSection}
                   )}
                 >
                   {/* Avatar */}
-                  <div
-                    className={cn(
+                  {message.role === 'assistant' ? (
+                    <div className="shrink-0">
+                      <TeacherAvatar teacherName={(useTeacherStore.getState().activeTeacher || 'abdullah') as any} size="md" />
+                    </div>
+                  ) : (
+                    <div className={cn(
                       'w-10 h-10 rounded-full flex items-center justify-center shrink-0',
-                      message.role === 'assistant'
-                        ? 'bg-gradient-to-br from-violet-500 to-purple-600'
-                        : 'bg-gradient-to-br from-primary to-teal-500'
-                    )}
-                  >
-                    {message.role === 'assistant' ? (
-                      <GraduationCap className="h-5 w-5 text-white" />
-                    ) : (
+                      'bg-gradient-to-br from-primary to-teal-500'
+                    )}>
                       <MessageSquare className="h-5 w-5 text-white" />
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {/* Message Bubble */}
                   <div
@@ -1306,8 +1310,8 @@ ${lastLessonText}${skillSection}
               {/* Typing indicator */}
               {isSending && (
                 <div className="flex gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                    <GraduationCap className="h-5 w-5 text-white" />
+                  <div className="shrink-0">
+                    <TeacherAvatar teacherName={(useTeacherStore.getState().activeTeacher || 'abdullah') as any} size="md" showPulse />
                   </div>
                   <div className="bg-muted/50 rounded-2xl px-4 py-3">
                     <div className="flex gap-1">

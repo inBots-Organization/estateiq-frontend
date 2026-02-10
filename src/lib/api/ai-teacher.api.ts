@@ -226,12 +226,13 @@ export const aiTeacherApi = {
   },
 
   // Chat endpoints
-  getWelcome: async (): Promise<WelcomeResponse> => {
-    return apiClient.get<WelcomeResponse>('/ai-teacher/welcome');
+  getWelcome: async (teacherName?: string): Promise<WelcomeResponse> => {
+    const params = teacherName ? `?teacherName=${teacherName}` : '';
+    return apiClient.get<WelcomeResponse>(`/ai-teacher/welcome${params}`);
   },
 
-  sendMessage: async (message: string, attachments?: FileAttachment[], lessonContext?: LessonContextPayload): Promise<ChatResponse> => {
-    return apiClient.post<ChatResponse>('/ai-teacher/chat', { message, attachments, lessonContext });
+  sendMessage: async (message: string, attachments?: FileAttachment[], lessonContext?: LessonContextPayload, teacherName?: string): Promise<ChatResponse> => {
+    return apiClient.post<ChatResponse>('/ai-teacher/chat', { message, attachments, lessonContext, teacherName });
   },
 
   /**
@@ -241,7 +242,8 @@ export const aiTeacherApi = {
   sendMessageStream: async function* (
     message: string,
     attachments?: FileAttachment[],
-    lessonContext?: LessonContextPayload
+    lessonContext?: LessonContextPayload,
+    teacherName?: string
   ): AsyncGenerator<StreamingChatResponse, void, unknown> {
     const token = localStorage.getItem('auth-storage');
     let authToken = '';
@@ -262,7 +264,7 @@ export const aiTeacherApi = {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`,
         },
-        body: JSON.stringify({ message, attachments, lessonContext }),
+        body: JSON.stringify({ message, attachments, lessonContext, teacherName }),
       }
     );
 
@@ -316,9 +318,16 @@ export const aiTeacherApi = {
     }
   },
 
-  getHistory: async (limit?: number): Promise<TeacherSession[]> => {
-    const params = limit ? `?limit=${limit}` : '';
-    return apiClient.get<TeacherSession[]>(`/ai-teacher/history${params}`);
+  getHistory: async (limit?: number, teacherName?: string): Promise<TeacherSession[]> => {
+    const params = new URLSearchParams();
+    if (limit) params.set('limit', limit.toString());
+    if (teacherName) params.set('teacherName', teacherName);
+    const qs = params.toString();
+    return apiClient.get<TeacherSession[]>(`/ai-teacher/history${qs ? `?${qs}` : ''}`);
+  },
+
+  getAssignedTeacher: async (): Promise<{ assignedTeacher: string | null; assignedTeacherAt: string | null }> => {
+    return apiClient.get('/ai-teacher/assigned-teacher');
   },
 
   // Voice endpoints
