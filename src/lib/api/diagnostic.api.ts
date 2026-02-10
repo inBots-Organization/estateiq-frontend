@@ -45,4 +45,39 @@ export const diagnosticApi = {
     if (days) params.days = String(days);
     return apiClient.get('/diagnostics/report/history', params);
   },
+
+  /** Get evaluator report (Bot 5) */
+  getEvaluatorReport: async (): Promise<{
+    evaluatorReport: EvaluatorReport | null;
+    evaluatorStatus: string;
+    assignedTeacher: string | null;
+  }> => {
+    return apiClient.get('/diagnostics/evaluator-report');
+  },
 };
+
+// Evaluator report types
+export interface EvaluatorReport {
+  skillAnalyses: Array<{
+    skillName: string;
+    score: number;
+    level: 'weak' | 'developing' | 'competent' | 'strong' | 'excellent';
+    analysis: { ar: string; en: string };
+    improvementTips: Array<{ ar: string; en: string }>;
+  }>;
+  overallNarrative: { ar: string; en: string };
+  improvementPlan: {
+    shortTerm: Array<{ ar: string; en: string }>;
+    mediumTerm: Array<{ ar: string; en: string }>;
+    longTerm: Array<{ ar: string; en: string }>;
+  };
+  teacherAssignment: {
+    teacherName: string;
+    teacherDisplayName: { ar: string; en: string };
+    teacherDescription: { ar: string; en: string };
+    assignmentReason: { ar: string; en: string };
+  };
+  generatedAt: string;
+  modelUsed: string;
+  brainContextUsed: boolean;
+}

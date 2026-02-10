@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDiagnosticStore } from '@/stores/diagnostic.store';
+import { diagnosticApi, type EvaluatorReport } from '@/lib/api/diagnostic.api';
 import { cn } from '@/lib/utils';
 import type { SkillReport } from '@/types/diagnostic';
 import {
@@ -21,16 +22,64 @@ import {
   TrendingDown,
   SkipForward,
   ClipboardCheck,
+  GraduationCap,
+  ChevronDown,
+  ChevronUp,
+  BookOpen,
+  Calendar,
+  Brain,
 } from 'lucide-react';
 
 export default function AssessmentPage() {
   const router = useRouter();
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL, language } = useLanguage();
   const store = useDiagnosticStore();
   const [report, setReport] = useState<SkillReport | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Evaluator state
+  const [evaluatorReport, setEvaluatorReport] = useState<EvaluatorReport | null>(null);
+  const [evaluatorStatus, setEvaluatorStatus] = useState<string>('pending');
+  const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'shortTerm' | 'mediumTerm' | 'longTerm'>('shortTerm');
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
+
+  // Poll for evaluator report
+  const pollEvaluatorReport = useCallback(async () => {
+    try {
+      const result = await diagnosticApi.getEvaluatorReport();
+      setEvaluatorStatus(result.evaluatorStatus);
+      if (result.evaluatorReport) {
+        setEvaluatorReport(result.evaluatorReport);
+        // Stop polling once completed
+        if (pollingRef.current) {
+          clearInterval(pollingRef.current);
+          pollingRef.current = null;
+        }
+      }
+    } catch {
+      // Silently fail polling — report may not exist yet
+    }
+  }, []);
+
+  // Start polling when we enter "done" phase
+  useEffect(() => {
+    if (store.assessmentPhase === 'done' && !evaluatorReport) {
+      // Initial fetch
+      pollEvaluatorReport();
+      // Poll every 3 seconds
+      pollingRef.current = setInterval(pollEvaluatorReport, 3000);
+    }
+
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+  }, [store.assessmentPhase, evaluatorReport, pollEvaluatorReport]);
 
   // Auto-advance based on phase
   useEffect(() => {
@@ -77,8 +126,7 @@ export default function AssessmentPage() {
   };
 
   const handleStartVoice = () => {
-    store.skipVoice(); // Actually skip since we go straight to voice_complete -> completing
-    // Override: set to voice_pending to redirect
+    store.skipVoice();
     useDiagnosticStore.setState({ assessmentPhase: 'voice_pending', skippedVoice: false });
   };
 
@@ -117,6 +165,45 @@ export default function AssessmentPage() {
       closingTechnique: { ar: 'تقنيات الإغلاق', en: 'Closing Technique' },
     };
     return isRTL ? labels[key]?.ar || key : labels[key]?.en || key;
+  };
+
+  const getSkillLevelLabel = (level: string) => {
+    const key = level as keyof Pick<typeof t.diagnostic, 'weak' | 'developing' | 'competent' | 'strong' | 'excellent'>;
+    return t.diagnostic[key] || level;
+  };
+
+  const getSkillLevelColor = (level: string) => {
+    const colors: Record<string, string> = {
+      weak: 'text-red-500 bg-red-50 dark:bg-red-900/20',
+      developing: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20',
+      competent: 'text-amber-500 bg-amber-50 dark:bg-amber-900/20',
+      strong: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20',
+      excellent: 'text-green-500 bg-green-50 dark:bg-green-900/20',
+    };
+    return colors[level] || 'text-muted-foreground bg-muted';
+  };
+
+  const getTeacherColor = (name: string) => {
+    const colors: Record<string, string> = {
+      ahmed: 'from-blue-500 to-blue-600',
+      noura: 'from-purple-500 to-purple-600',
+      anas: 'from-emerald-500 to-emerald-600',
+    };
+    return colors[name] || 'from-primary to-primary';
+  };
+
+  const getTeacherInitial = (name: string) => {
+    const initials: Record<string, string> = {
+      ahmed: 'أ',
+      noura: 'ن',
+      anas: 'أ',
+    };
+    return isRTL ? (initials[name] || name[0]) : name[0]?.toUpperCase() || '?';
+  };
+
+  const bilingual = (obj: { ar: string; en: string } | undefined) => {
+    if (!obj) return '';
+    return language === 'ar' ? obj.ar : obj.en;
   };
 
   // --- PHASE: Completing (loading) ---
@@ -166,6 +253,38 @@ export default function AssessmentPage() {
             <p className="text-lg font-medium text-foreground">{getLevelLabel(displayReport.level)}</p>
           </CardContent>
         </Card>
+
+        {/* Teacher Assignment Card */}
+        {evaluatorReport?.teacherAssignment && (
+          <Card className="mb-6 overflow-hidden">
+            <div className={cn("h-2 bg-gradient-to-r", getTeacherColor(evaluatorReport.teacherAssignment.teacherName))} />
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <GraduationCap className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-foreground">{t.diagnostic.assignedTeacher}</h3>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className={cn(
+                  "w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl bg-gradient-to-br",
+                  getTeacherColor(evaluatorReport.teacherAssignment.teacherName)
+                )}>
+                  {getTeacherInitial(evaluatorReport.teacherAssignment.teacherName)}
+                </div>
+                <div className="flex-1">
+                  <p className="text-lg font-semibold text-foreground">
+                    {bilingual(evaluatorReport.teacherAssignment.teacherDisplayName)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {bilingual(evaluatorReport.teacherAssignment.teacherDescription)}
+                  </p>
+                </div>
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground border-t pt-3">
+                {bilingual(evaluatorReport.teacherAssignment.assignmentReason)}
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Skill Scores */}
         <Card className="mb-6">
@@ -227,6 +346,135 @@ export default function AssessmentPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Evaluator Report Section */}
+        {evaluatorStatus !== 'completed' && evaluatorStatus !== 'failed' && (
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">{t.diagnostic.evaluatorGenerating}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {isRTL ? 'سيظهر التقييم التفصيلي هنا خلال لحظات...' : 'Detailed evaluation will appear here shortly...'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Overall Narrative */}
+        {evaluatorReport?.overallNarrative && (
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Brain className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-foreground">{t.diagnostic.overallNarrative}</h3>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {bilingual(evaluatorReport.overallNarrative)}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Detailed Skill Analysis */}
+        {evaluatorReport?.skillAnalyses && evaluatorReport.skillAnalyses.length > 0 && (
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Target className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-foreground">{t.diagnostic.detailedAnalysis}</h3>
+              </div>
+              <div className="space-y-2">
+                {evaluatorReport.skillAnalyses.map((skill) => (
+                  <div key={skill.skillName} className="border rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => setExpandedSkill(expandedSkill === skill.skillName ? null : skill.skillName)}
+                      className="w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-medium text-foreground">{getSkillLabel(skill.skillName)}</span>
+                        <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", getSkillLevelColor(skill.level))}>
+                          {getSkillLevelLabel(skill.level)}
+                        </span>
+                      </div>
+                      {expandedSkill === skill.skillName ? (
+                        <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </button>
+                    {expandedSkill === skill.skillName && (
+                      <div className="px-3 pb-3 space-y-3 border-t">
+                        <p className="text-sm text-muted-foreground pt-3">{bilingual(skill.analysis)}</p>
+                        {skill.improvementTips.length > 0 && (
+                          <div>
+                            <p className="text-xs font-semibold text-foreground mb-1.5">
+                              {isRTL ? 'نصائح للتحسين:' : 'Tips for improvement:'}
+                            </p>
+                            <ul className="space-y-1">
+                              {skill.improvementTips.map((tip, i) => (
+                                <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                                  <span className="text-primary mt-0.5">&#x2022;</span>
+                                  {bilingual(tip)}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Improvement Plan */}
+        {evaluatorReport?.improvementPlan && (
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Calendar className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-foreground">{t.diagnostic.improvementPlan}</h3>
+              </div>
+              {/* Tabs */}
+              <div className="flex gap-1 mb-4 bg-muted rounded-lg p-1">
+                {(['shortTerm', 'mediumTerm', 'longTerm'] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={cn(
+                      "flex-1 text-xs font-medium py-2 px-3 rounded-md transition-colors",
+                      activeTab === tab
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {t.diagnostic[tab]}
+                  </button>
+                ))}
+              </div>
+              {/* Tab Content */}
+              <ul className="space-y-2">
+                {evaluatorReport.improvementPlan[activeTab]?.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <BookOpen className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    {bilingual(item)}
+                  </li>
+                ))}
+                {(!evaluatorReport.improvementPlan[activeTab] || evaluatorReport.improvementPlan[activeTab].length === 0) && (
+                  <p className="text-sm text-muted-foreground">
+                    {isRTL ? 'لا توجد توصيات لهذه الفترة' : 'No recommendations for this period'}
+                  </p>
+                )}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Continue Button */}
         <Button

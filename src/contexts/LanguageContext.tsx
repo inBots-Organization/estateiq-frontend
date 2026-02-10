@@ -327,6 +327,20 @@ interface Translations {
     recommendedForYou: string;
     basedOnAssessment: string;
     stepOf: string;
+    evaluatorGenerating: string;
+    assignedTeacher: string;
+    detailedAnalysis: string;
+    improvementPlan: string;
+    shortTerm: string;
+    mediumTerm: string;
+    longTerm: string;
+    overallNarrative: string;
+    yourTeacher: string;
+    weak: string;
+    developing: string;
+    competent: string;
+    strong: string;
+    excellent: string;
   };
 
   // Dashboard
@@ -1174,6 +1188,20 @@ const TRANSLATIONS: Record<Language, Translations> = {
       recommendedForYou: 'مُوصى به لك',
       basedOnAssessment: 'بناءً على تقييم مهاراتك',
       stepOf: 'الخطوة',
+      evaluatorGenerating: 'جاري إنشاء التقييم التفصيلي...',
+      assignedTeacher: 'المعلم المخصص لك',
+      detailedAnalysis: 'تحليل المهارات التفصيلي',
+      improvementPlan: 'خطة التطوير',
+      shortTerm: 'قصير المدى (1-2 أسبوع)',
+      mediumTerm: 'متوسط المدى (1-2 شهر)',
+      longTerm: 'طويل المدى (3+ أشهر)',
+      overallNarrative: 'التقييم العام',
+      yourTeacher: 'معلمك',
+      weak: 'ضعيف',
+      developing: 'قيد التطوير',
+      competent: 'مؤهل',
+      strong: 'قوي',
+      excellent: 'ممتاز',
     },
 
     dashboard: {
@@ -2004,6 +2032,20 @@ const TRANSLATIONS: Record<Language, Translations> = {
       recommendedForYou: 'Recommended for You',
       basedOnAssessment: 'Based on your skill assessment',
       stepOf: 'Step',
+      evaluatorGenerating: 'Generating detailed evaluation...',
+      assignedTeacher: 'Your Assigned Teacher',
+      detailedAnalysis: 'Detailed Skill Analysis',
+      improvementPlan: 'Improvement Plan',
+      shortTerm: 'Short-term (1-2 weeks)',
+      mediumTerm: 'Medium-term (1-2 months)',
+      longTerm: 'Long-term (3+ months)',
+      overallNarrative: 'Overall Evaluation',
+      yourTeacher: 'Your Teacher',
+      weak: 'Weak',
+      developing: 'Developing',
+      competent: 'Competent',
+      strong: 'Strong',
+      excellent: 'Excellent',
     },
 
     dashboard: {
