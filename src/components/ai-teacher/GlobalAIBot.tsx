@@ -9,7 +9,7 @@ import { useTeacherStore } from '@/stores/teacher.store';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { aiTeacherApi } from '@/lib/api/ai-teacher.api';
-import { TeacherAvatar } from './TeacherAvatar';
+import { TalkingAvatar } from './TalkingAvatar';
 
 interface BotMessage {
   id: string;
@@ -409,14 +409,19 @@ export function GlobalAIBot() {
       // Mobile: full width
       'max-sm:w-[calc(100%-3rem)] max-sm:left-6 max-sm:right-6'
     )}>
-      {/* Header */}
+      {/* Header with Talking Avatar */}
       <div className={cn(
         'flex items-center justify-between px-4 py-3 border-b',
         'bg-gradient-to-r text-white',
         teacher.gradient
       )}>
         <div className="flex items-center gap-3">
-          <TeacherAvatar teacherName={currentTeacher as TeacherName} size="md" />
+          <TalkingAvatar
+            teacherName={currentTeacher as TeacherName}
+            size="lg"
+            isSpeaking={playingMessageId !== null}
+            audioElement={currentAudioRef.current}
+          />
           <div>
             <p className="font-semibold">{teacher.displayName[language]}</p>
             <p className="text-xs opacity-80">{teacher.shortDescription[language]}</p>
