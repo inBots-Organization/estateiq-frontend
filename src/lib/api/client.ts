@@ -82,6 +82,11 @@ class ApiClient {
       throw new ApiError(response.status, error.message || error.error, error.code);
     }
 
+    // Handle 204 No Content (empty response body)
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
     return response.json();
   }
 
