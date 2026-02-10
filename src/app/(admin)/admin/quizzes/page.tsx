@@ -64,6 +64,9 @@ export default function AdminQuizzesPage() {
   };
 
   const handleDelete = async (quizId: string) => {
+    // Prevent double-click: exit if already deleting
+    if (deletingId) return;
+
     setDeletingId(quizId);
     try {
       await quizApi.deleteQuiz(quizId);
