@@ -27,8 +27,9 @@ function getPageContext(pathname: string, t: any): string {
   return t.floatingBot.pageContext.general;
 }
 
-// Session storage key for welcome played flag
+// Session storage keys
 const WELCOME_PLAYED_KEY = 'globalbot_welcome_played';
+const AUTO_OPENED_KEY = 'globalbot_auto_opened';
 
 export function GlobalAIBot() {
   const pathname = usePathname();
@@ -36,7 +37,9 @@ export function GlobalAIBot() {
   const { t, language, isRTL } = useLanguage();
   const { activeTeacher, assignedTeacher } = useTeacherStore();
 
+  // Start closed, then check if should auto-open on client
   const [isOpen, setIsOpen] = useState(false);
+  const [hasCheckedAutoOpen, setHasCheckedAutoOpen] = useState(false);
   const [messages, setMessages] = useState<BotMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -78,6 +81,19 @@ export function GlobalAIBot() {
     }
   }, [isOpen]);
 
+  // Auto-open on first visit (client-side only)
+  useEffect(() => {
+    if (!hasCheckedAutoOpen && hasCompletedAssessment) {
+      const wasAutoOpened = sessionStorage.getItem(AUTO_OPENED_KEY);
+      if (!wasAutoOpened) {
+        // First visit - auto open the bot
+        setIsOpen(true);
+        sessionStorage.setItem(AUTO_OPENED_KEY, 'true');
+      }
+      setHasCheckedAutoOpen(true);
+    }
+  }, [hasCheckedAutoOpen, hasCompletedAssessment]);
+
   // Play welcome audio on first open
   useEffect(() => {
     if (isOpen && hasCompletedAssessment && !welcomePlayed && messages.length === 0) {
@@ -103,7 +119,7 @@ export function GlobalAIBot() {
           };
           setMessages([welcomeMsg]);
 
-          // Play audio
+          // Play audio automatically
           if (result.audio) {
             const audio = new Audio(`data:audio/mpeg;base64,${result.audio}`);
             currentAudioRef.current = audio;
@@ -114,7 +130,9 @@ export function GlobalAIBot() {
               currentAudioRef.current = null;
             };
 
-            audio.play().catch(() => {
+            // Try to play - may be blocked by browser autoplay policy
+            audio.play().catch((e) => {
+              console.log('Autoplay blocked, user interaction required:', e);
               setPlayingMessageId(null);
             });
           }
