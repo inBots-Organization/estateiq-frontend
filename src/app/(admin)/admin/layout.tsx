@@ -21,6 +21,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { CompactSettings } from '@/components/ui/LanguageToggle';
 import { ViewModeSwitcher, FloatingAdminReturn } from '@/components/admin/ViewModeSwitcher';
 import { AdminRoleProvider } from '@/contexts/AdminRoleContext';
+import { GlobalAIBot } from '@/components/ai-teacher/GlobalAIBot';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -630,6 +631,9 @@ export default function AdminLayout({
 
       {/* Floating button for navigation to trainee page */}
       <FloatingAdminReturn />
+
+      {/* Floating AI Teacher Bot */}
+      <GlobalAIBot />
     </div>
   );
 }

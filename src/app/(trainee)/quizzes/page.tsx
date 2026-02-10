@@ -23,6 +23,8 @@ import {
   Sparkles,
   BookOpen,
   History,
+  Loader2,
+  Wand2,
 } from 'lucide-react';
 
 export default function QuizzesPage() {
@@ -34,6 +36,7 @@ export default function QuizzesPage() {
   const [history, setHistory] = useState<TraineeAttemptHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'available' | 'history'>('available');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,6 +102,30 @@ export default function QuizzesPage() {
 
   const ChevronIcon = isRTL ? ChevronLeft : ChevronRight;
 
+  const handleGenerateQuiz = async () => {
+    setIsGenerating(true);
+    try {
+      // Generate a quiz based on trainee's level (AI will determine difficulty)
+      const newQuiz = await quizApi.generateQuiz({
+        topic: isRTL ? 'العقارات السعودية' : 'Saudi Real Estate',
+        numberOfQuestions: 5,
+        questionTypes: ['multiple_choice', 'true_false'],
+      });
+
+      // Refresh the quiz list
+      const quizzesRes = await quizApi.getAvailableQuizzes();
+      setQuizzes(quizzesRes.quizzes);
+
+      // Navigate to the new quiz
+      router.push(`/quizzes/${newQuiz.id}`);
+    } catch (err) {
+      console.error('Failed to generate quiz:', err);
+      alert(isRTL ? 'فشل إنشاء الاختبار. حاول مرة أخرى.' : 'Failed to generate quiz. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-6 space-y-6">
@@ -123,6 +150,23 @@ export default function QuizzesPage() {
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">{t.quiz.quizzesDesc}</p>
         </div>
+        <Button
+          onClick={handleGenerateQuiz}
+          disabled={isGenerating}
+          className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white gap-2"
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              {isRTL ? 'جاري الإنشاء...' : 'Generating...'}
+            </>
+          ) : (
+            <>
+              <Wand2 className="w-4 h-4" />
+              {isRTL ? 'اختبار ذكي جديد' : 'AI Smart Quiz'}
+            </>
+          )}
+        </Button>
       </div>
 
       {/* Tabs */}

@@ -16,6 +16,7 @@ import {
   Clock,
   Loader2,
   Sparkles,
+  Wand2,
 } from 'lucide-react';
 
 export default function FlashcardsPage() {
@@ -25,6 +26,7 @@ export default function FlashcardsPage() {
   const [decks, setDecks] = useState<DeckListItemWithProgress[]>([]);
   const [progress, setProgress] = useState<FlashcardProgress | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,6 +52,29 @@ export default function FlashcardsPage() {
     return Math.round((p.masteredCards / p.totalCards) * 100);
   };
 
+  const handleGenerateDeck = async () => {
+    setIsGenerating(true);
+    try {
+      // Generate a flashcard deck based on trainee's level
+      const newDeck = await flashcardApi.generateDeck({
+        topic: isRTL ? 'العقارات السعودية' : 'Saudi Real Estate',
+        numberOfCards: 10,
+      });
+
+      // Refresh the deck list
+      const decksData = await flashcardApi.getAvailableDecks();
+      setDecks(decksData.decks);
+
+      // Navigate to study the new deck
+      router.push(`/flashcards/${newDeck.id}/study`);
+    } catch (err) {
+      console.error('Failed to generate deck:', err);
+      alert(isRTL ? 'فشل إنشاء البطاقات. حاول مرة أخرى.' : 'Failed to generate deck. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -61,12 +86,31 @@ export default function FlashcardsPage() {
   return (
     <div className={cn('p-6 space-y-6 max-w-5xl mx-auto', isRTL && 'text-right')}>
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <Layers className="w-7 h-7 text-amber-500" />
-          {t.flashcard.flashcards}
-        </h1>
-        <p className="text-gray-500 mt-1">{t.flashcard.description}</p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <Layers className="w-7 h-7 text-amber-500" />
+            {t.flashcard.flashcards}
+          </h1>
+          <p className="text-gray-500 mt-1">{t.flashcard.description}</p>
+        </div>
+        <Button
+          onClick={handleGenerateDeck}
+          disabled={isGenerating}
+          className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white gap-2"
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              {isRTL ? 'جاري الإنشاء...' : 'Generating...'}
+            </>
+          ) : (
+            <>
+              <Wand2 className="w-4 h-4" />
+              {isRTL ? 'بطاقات ذكية جديدة' : 'AI Smart Cards'}
+            </>
+          )}
+        </Button>
       </div>
 
       {/* Progress Stats */}
