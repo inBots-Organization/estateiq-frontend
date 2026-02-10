@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,7 @@ export default function AdminQuizzesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const isDeleting = useRef(false);
 
   const fetchQuizzes = async () => {
     try {
@@ -64,18 +65,20 @@ export default function AdminQuizzesPage() {
   };
 
   const handleDelete = async (quizId: string) => {
-    // Prevent double-click: exit if already deleting
-    if (deletingId) return;
+    // Prevent double-click using ref (sync check) + state
+    if (isDeleting.current || deletingId) return;
+    isDeleting.current = true;
 
     setDeletingId(quizId);
+    setShowDeleteConfirm(null); // Close dialog immediately to prevent re-click
     try {
       await quizApi.deleteQuiz(quizId);
       setQuizzes((prev) => prev.filter((q) => q.id !== quizId));
-      setShowDeleteConfirm(null);
     } catch (err) {
       console.error('Failed to delete quiz:', err);
     } finally {
       setDeletingId(null);
+      isDeleting.current = false;
     }
   };
 
