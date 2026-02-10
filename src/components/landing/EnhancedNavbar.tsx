@@ -16,7 +16,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { SettingsDropdown } from '@/components/ui/LanguageToggle';
+import { CompactSettings } from '@/components/ui/LanguageToggle';
 import { InLearnLogo } from '@/components/ui/InLearnLogo';
 import { cn } from '@/lib/utils';
 import { Menu, X, ArrowRight, ArrowLeft, ChevronRight } from 'lucide-react';
@@ -39,7 +39,7 @@ export function EnhancedNavbar() {
         return;
       }
 
-      const sections = ['features', 'how-it-works', 'testimonials'];
+      const sections = ['features', 'how-it-works', 'pricing', 'testimonials'];
       const current = sections.find(id => {
         const element = document.getElementById(id);
         if (element) {
@@ -69,6 +69,7 @@ export function EnhancedNavbar() {
     { href: '#hero', label: isRTL ? 'الرئيسية' : 'Home', id: 'hero' },
     { href: '#features', label: t.landing.nav.features, id: 'features' },
     { href: '#how-it-works', label: t.landing.nav.howItWorks, id: 'how-it-works' },
+    { href: '#pricing', label: t.landing.nav.pricing, id: 'pricing' },
     { href: '#testimonials', label: t.landing.nav.testimonials, id: 'testimonials' },
   ];
 
@@ -147,9 +148,9 @@ export function EnhancedNavbar() {
                 Actions — CTA + Settings
                ══════════════════════════════════ */}
             <div className="flex items-center gap-2 lg:gap-3">
-              {/* Settings Dropdown */}
+              {/* Settings */}
               <div className="nav-action-reveal">
-                <SettingsDropdown />
+                <CompactSettings />
               </div>
 
               {/* Sign In — Desktop only */}

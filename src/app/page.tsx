@@ -1,12 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { SettingsDropdown } from '@/components/ui/LanguageToggle';
+import { EnhancedNavbar } from '@/components/landing/EnhancedNavbar';
 import { cn } from '@/lib/utils';
 import {
   Building2,
@@ -26,114 +25,19 @@ import {
   Target,
   Phone,
   Globe,
-  Menu,
-  X
 } from 'lucide-react';
 
 export default function HomePage() {
   const { t, isRTL } = useLanguage();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // RTL-aware arrow
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      {/* Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center">
-                <Building2 className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-foreground">{t.landing.brandName}</span>
-            </div>
+      <EnhancedNavbar />
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.features}</a>
-              <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.howItWorks}</a>
-              <a href="#testimonials" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.testimonials}</a>
-            </nav>
-
-            {/* Actions Container - Desktop and Mobile */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Settings - Always visible */}
-              <SettingsDropdown />
-
-              {/* Desktop Actions - Hidden on mobile */}
-              <Link href="/login" className="hidden md:block">
-                <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
-                  {t.landing.nav.signIn}
-                </Button>
-              </Link>
-              <Link href="/register" className="hidden md:block">
-                <Button className="btn-gradient shadow-lg">
-                  {t.landing.nav.getStarted}
-                </Button>
-              </Link>
-
-              {/* Mobile Menu Button - Hidden on desktop */}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-lg hover:bg-muted/60 transition-colors"
-                aria-label="Toggle menu"
-              >
-                {mobileMenuOpen ? (
-                  <X className="h-6 w-6 text-foreground" />
-                ) : (
-                  <Menu className="h-6 w-6 text-foreground" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Mobile Menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden py-4 border-t border-border animate-fade-in">
-              <nav className="flex flex-col gap-4 mb-4">
-                <a
-                  href="#features"
-                  className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t.landing.nav.features}
-                </a>
-                <a
-                  href="#how-it-works"
-                  className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t.landing.nav.howItWorks}
-                </a>
-                <a
-                  href="#testimonials"
-                  className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t.landing.nav.testimonials}
-                </a>
-              </nav>
-              <div className="flex flex-col gap-3 pt-4 border-t border-border">
-                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="outline" className="w-full">
-                    {t.landing.nav.signIn}
-                  </Button>
-                </Link>
-                <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
-                  <Button className="w-full btn-gradient">
-                    {t.landing.nav.getStarted}
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
-      </header>
-
-      <main className="flex-grow pt-16">
+      <main className="flex-grow pt-20">
         {/* Hero Section */}
         <section className="relative overflow-hidden bg-gradient-to-b from-muted/50 to-background py-16 sm:py-20 lg:py-32">
           {/* Background decorations */}
