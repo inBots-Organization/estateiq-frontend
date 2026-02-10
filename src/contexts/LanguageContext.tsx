@@ -304,6 +304,16 @@ interface Translations {
     };
   };
 
+  // Diagnostic
+  diagnostic: {
+    assessmentNeeded: string;
+    assessmentNeededDesc: string;
+    runAssessment: string;
+    skillProfile: string;
+    overallScore: string;
+    refresh: string;
+  };
+
   // Dashboard
   dashboard: {
     title: string;
@@ -1104,6 +1114,15 @@ const TRANSLATIONS: Record<Language, Translations> = {
       },
     },
 
+    diagnostic: {
+      assessmentNeeded: 'تقييم المهارات مطلوب',
+      assessmentNeededDesc: 'قم بتحليل أدائك لتحصل على توصيات تعليمية مخصصة',
+      runAssessment: 'تحليل مستواي',
+      skillProfile: 'ملف المهارات',
+      overallScore: 'النتيجة الإجمالية',
+      refresh: 'تحديث',
+    },
+
     dashboard: {
       title: 'لوحة التحكم',
       subtitle: 'نظرة عامة على تقدمك التدريبي',
@@ -1886,6 +1905,15 @@ const TRANSLATIONS: Record<Language, Translations> = {
         cookies: 'Cookie Policy',
         allRightsReserved: 'All rights reserved',
       },
+    },
+
+    diagnostic: {
+      assessmentNeeded: 'Skill Assessment Needed',
+      assessmentNeededDesc: 'Analyze your performance to get personalized learning recommendations',
+      runAssessment: 'Analyze My Level',
+      skillProfile: 'Skill Profile',
+      overallScore: 'Overall Score',
+      refresh: 'Refresh',
     },
 
     dashboard: {

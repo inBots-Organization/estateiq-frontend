@@ -28,6 +28,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { traineeApi, DashboardStats } from '@/lib/api/trainee.api';
 import { courses } from '@/data/courses';
+import { DiagnosticBanner } from '@/components/trainee/DiagnosticBanner';
 
 export default function DashboardPage() {
   const { t, isRTL, language } = useLanguage();
@@ -224,6 +225,9 @@ export default function DashboardPage() {
         </div>
         <p className="text-muted-foreground">{t.dashboard.continueJourney}</p>
       </div>
+
+      {/* Diagnostic Skill Banner */}
+      <DiagnosticBanner />
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
