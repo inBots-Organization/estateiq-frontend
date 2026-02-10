@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Send, X, Maximize2, Loader2 } from 'lucide-react';
+import { Send, X, Maximize2, Loader2, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TEACHERS, type TeacherName } from '@/config/teachers';
 import { useTeacherStore } from '@/stores/teacher.store';
@@ -47,8 +47,8 @@ export function GlobalAIBot() {
   const hiddenPaths = ['/ai-teacher', '/assessment'];
   const shouldHide = hiddenPaths.some(p => pathname.includes(p));
 
-  // Hide if no assigned teacher (assessment not complete)
-  const isAvailable = assignedTeacher !== null;
+  // Check if assessment is complete (has assigned teacher)
+  const hasCompletedAssessment = assignedTeacher !== null;
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -106,9 +106,86 @@ export function GlobalAIBot() {
     }
   };
 
-  if (shouldHide || !isAvailable) return null;
+  if (shouldHide) return null;
 
-  // Collapsed state — floating button
+  // If no assessment completed, show "assessment required" bot
+  if (!hasCompletedAssessment) {
+    if (!isOpen) {
+      return (
+        <button
+          onClick={() => setIsOpen(true)}
+          className={cn(
+            'fixed bottom-6 z-50 w-14 h-14 rounded-full shadow-lg',
+            'bg-gradient-to-br from-amber-500 to-orange-500 text-white flex items-center justify-center',
+            'hover:scale-110 transition-transform duration-200',
+            'ring-4 ring-white/20',
+            isRTL ? 'left-6' : 'right-6'
+          )}
+          aria-label={language === 'ar' ? 'تحديد المستوى مطلوب' : 'Assessment Required'}
+        >
+          <ClipboardCheck className="h-6 w-6" />
+          {/* Pulse */}
+          <span className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 animate-ping opacity-20" />
+        </button>
+      );
+    }
+
+    // Expanded assessment required panel
+    return (
+      <div className={cn(
+        'fixed bottom-6 z-50',
+        'w-[320px] bg-card border border-border rounded-2xl shadow-2xl',
+        'flex flex-col overflow-hidden',
+        isRTL ? 'left-6' : 'right-6'
+      )}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+              <ClipboardCheck className="h-4 w-4" />
+            </div>
+            <span className="font-semibold text-sm">
+              {language === 'ar' ? 'مرحباً بك!' : 'Welcome!'}
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20"
+            onClick={() => setIsOpen(false)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Content */}
+        <div className="p-4 space-y-4">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
+              <ClipboardCheck className="h-8 w-8 text-amber-600" />
+            </div>
+            <h3 className="font-semibold text-foreground mb-2">
+              {language === 'ar' ? 'لنبدأ رحلتك التدريبية!' : "Let's Start Your Training Journey!"}
+            </h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {language === 'ar'
+                ? 'قبل أن نبدأ، نحتاج تحديد مستواك لنختار لك المعلم الأنسب. الاختبار سريع ويساعدنا نفهم نقاط قوتك.'
+                : "Before we begin, we need to assess your level to match you with the right teacher. The assessment is quick and helps us understand your strengths."}
+            </p>
+          </div>
+
+          <Button
+            onClick={() => router.push('/assessment')}
+            className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+          >
+            {language === 'ar' ? 'ابدأ تحديد المستوى' : 'Start Assessment'}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Collapsed state — floating button (assessment completed)
   if (!isOpen) {
     return (
       <button
