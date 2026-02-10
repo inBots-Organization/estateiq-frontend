@@ -112,6 +112,16 @@ function getDetailedPageContext(pathname: string, language: 'ar' | 'en'): PageCo
     };
   }
 
+  if (pathname.includes('/flashcards')) {
+    return {
+      key: 'flashcards',
+      displayText: isAr ? 'أنت في البطاقات التعليمية — راجع معلوماتك بطريقة ذكية!' : "You're in Flashcards — review your knowledge smartly!",
+      aiPrompt: isAr
+        ? 'المستخدم في قسم البطاقات التعليمية. ساعده يراجع المفاهيم المهمة ويحفظها. اشرحله طريقة استخدام البطاقات بفعالية.'
+        : 'User is in the flashcards section. Help them review and memorize important concepts. Explain how to use flashcards effectively.'
+    };
+  }
+
   return {
     key: 'general',
     displayText: isAr ? 'كيف أقدر أساعدك اليوم؟' : 'How can I help you today?',
