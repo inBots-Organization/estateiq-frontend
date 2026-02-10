@@ -6,6 +6,8 @@
 
 export type TeacherName = 'ahmed' | 'noura' | 'anas' | 'abdullah';
 
+export type TeacherPersonality = 'professional' | 'friendly' | 'wise' | 'challenging';
+
 export interface TeacherConfig {
   name: TeacherName;
   displayName: { ar: string; en: string };
@@ -17,6 +19,7 @@ export interface TeacherConfig {
   textColor: string;
   iconName: 'GraduationCap' | 'Target' | 'Brain' | 'Star';
   isAlwaysAvailable: boolean;
+  personality: TeacherPersonality;
 }
 
 export const TEACHERS: Record<TeacherName, TeacherConfig> = {
@@ -37,6 +40,7 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
     textColor: 'text-blue-600',
     iconName: 'GraduationCap',
     isAlwaysAvailable: false,
+    personality: 'friendly',
   },
   noura: {
     name: 'noura',
@@ -55,6 +59,7 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
     textColor: 'text-purple-600',
     iconName: 'Target',
     isAlwaysAvailable: false,
+    personality: 'challenging',
   },
   anas: {
     name: 'anas',
@@ -73,6 +78,7 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
     textColor: 'text-emerald-600',
     iconName: 'Brain',
     isAlwaysAvailable: false,
+    personality: 'professional',
   },
   abdullah: {
     name: 'abdullah',
@@ -91,6 +97,7 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
     textColor: 'text-amber-600',
     iconName: 'Star',
     isAlwaysAvailable: true,
+    personality: 'wise',
   },
 };
 

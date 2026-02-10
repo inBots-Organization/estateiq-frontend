@@ -331,8 +331,18 @@ export const aiTeacherApi = {
   },
 
   // Voice endpoints
-  textToSpeech: async (text: string, language: 'ar' | 'en'): Promise<{ audio: string }> => {
-    return apiClient.post<{ audio: string }>('/ai-teacher/tts', { text, language });
+  textToSpeech: async (text: string, language: 'ar' | 'en', teacherName?: string): Promise<{ audio: string }> => {
+    return apiClient.post<{ audio: string }>('/ai-teacher/tts', { text, language, teacherName });
+  },
+
+  /**
+   * Get welcome audio for a teacher persona
+   * Uses pre-defined welcome messages for instant response
+   */
+  getWelcomeAudio: async (teacherName: string, language: 'ar' | 'en'): Promise<{ message: string; audio: string }> => {
+    return apiClient.get<{ message: string; audio: string }>(
+      `/ai-teacher/tts/welcome?teacherName=${teacherName}&language=${language}`
+    );
   },
 
   speechToText: async (audioBlob: Blob, language: 'ar' | 'en'): Promise<{ text: string }> => {

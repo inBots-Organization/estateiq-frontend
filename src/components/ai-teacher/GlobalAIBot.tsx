@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Send, X, Maximize2, Loader2, ClipboardCheck } from 'lucide-react';
+import { Send, X, Maximize2, Loader2, ClipboardCheck, Mic, Volume2, VolumeX, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TEACHERS, type TeacherName } from '@/config/teachers';
 import { useTeacherStore } from '@/stores/teacher.store';
@@ -16,6 +16,7 @@ interface BotMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  audioBase64?: string;
 }
 
 function getPageContext(pathname: string, t: any): string {
@@ -25,6 +26,9 @@ function getPageContext(pathname: string, t: any): string {
   if (pathname.includes('/reports')) return t.floatingBot.pageContext.reports;
   return t.floatingBot.pageContext.general;
 }
+
+// Session storage key for welcome played flag
+const WELCOME_PLAYED_KEY = 'globalbot_welcome_played';
 
 export function GlobalAIBot() {
   const pathname = usePathname();
@@ -38,6 +42,18 @@ export function GlobalAIBot() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Voice features state
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
+  const [welcomePlayed, setWelcomePlayed] = useState(false);
+  const [isLoadingWelcome, setIsLoadingWelcome] = useState(false);
+
+  // Audio refs
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Determine which teacher to use
   const currentTeacher = activeTeacher || assignedTeacher || 'abdullah';
@@ -62,6 +78,82 @@ export function GlobalAIBot() {
     }
   }, [isOpen]);
 
+  // Play welcome audio on first open
+  useEffect(() => {
+    if (isOpen && hasCompletedAssessment && !welcomePlayed && messages.length === 0) {
+      // Check session storage
+      const played = sessionStorage.getItem(`${WELCOME_PLAYED_KEY}_${currentTeacher}`);
+      if (played) {
+        setWelcomePlayed(true);
+        return;
+      }
+
+      const playWelcome = async () => {
+        setIsLoadingWelcome(true);
+        try {
+          const result = await aiTeacherApi.getWelcomeAudio(currentTeacher, language);
+
+          // Add welcome message to chat
+          const welcomeMsg: BotMessage = {
+            id: `welcome-${Date.now()}`,
+            role: 'assistant',
+            content: result.message,
+            timestamp: new Date(),
+            audioBase64: result.audio,
+          };
+          setMessages([welcomeMsg]);
+
+          // Play audio
+          if (result.audio) {
+            const audio = new Audio(`data:audio/mpeg;base64,${result.audio}`);
+            currentAudioRef.current = audio;
+            setPlayingMessageId(welcomeMsg.id);
+
+            audio.onended = () => {
+              setPlayingMessageId(null);
+              currentAudioRef.current = null;
+            };
+
+            audio.play().catch(() => {
+              setPlayingMessageId(null);
+            });
+          }
+
+          // Mark as played
+          sessionStorage.setItem(`${WELCOME_PLAYED_KEY}_${currentTeacher}`, 'true');
+          setWelcomePlayed(true);
+        } catch (error) {
+          console.error('Failed to load welcome audio:', error);
+          // Show text-only welcome
+          const fallbackMsg: BotMessage = {
+            id: `welcome-${Date.now()}`,
+            role: 'assistant',
+            content: language === 'ar'
+              ? `أهلاً وسهلاً! أنا ${teacher.displayName.ar}، كيف أقدر أساعدك اليوم؟`
+              : `Welcome! I'm ${teacher.displayName.en}, how can I help you today?`,
+            timestamp: new Date(),
+          };
+          setMessages([fallbackMsg]);
+          setWelcomePlayed(true);
+        } finally {
+          setIsLoadingWelcome(false);
+        }
+      };
+
+      playWelcome();
+    }
+  }, [isOpen, hasCompletedAssessment, welcomePlayed, currentTeacher, language, messages.length, teacher.displayName]);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current = null;
+      }
+    };
+  }, []);
+
   const handleSend = useCallback(async () => {
     const trimmed = input.trim();
     if (!trimmed || isLoading) return;
@@ -79,11 +171,24 @@ export function GlobalAIBot() {
 
     try {
       const response = await aiTeacherApi.sendMessage(trimmed, undefined, undefined, currentTeacher);
+
+      // Get audio for response
+      let audioBase64: string | undefined;
+      if (response.message.length < 500) {
+        try {
+          const ttsResult = await aiTeacherApi.textToSpeech(response.message, language, currentTeacher);
+          audioBase64 = ttsResult.audio;
+        } catch {
+          // TTS failed, continue without audio
+        }
+      }
+
       const assistantMsg: BotMessage = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
         content: response.message,
         timestamp: new Date(),
+        audioBase64,
       };
       setMessages(prev => [...prev, assistantMsg]);
     } catch {
@@ -103,6 +208,90 @@ export function GlobalAIBot() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  // Voice recording handlers
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        stream.getTracks().forEach(track => track.stop());
+
+        // Transcribe
+        setIsTranscribing(true);
+        try {
+          const result = await aiTeacherApi.speechToText(audioBlob, language);
+          if (result.text) {
+            setInput(prev => prev + (prev ? ' ' : '') + result.text);
+          }
+        } catch (error) {
+          console.error('Transcription failed:', error);
+        } finally {
+          setIsTranscribing(false);
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Failed to start recording:', error);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  // Audio playback handlers
+  const playMessageAudio = (message: BotMessage) => {
+    if (!message.audioBase64) return;
+
+    // Stop current audio if playing
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current = null;
+
+      // If clicking same message, just stop
+      if (playingMessageId === message.id) {
+        setPlayingMessageId(null);
+        return;
+      }
+    }
+
+    const audio = new Audio(`data:audio/mpeg;base64,${message.audioBase64}`);
+    currentAudioRef.current = audio;
+    setPlayingMessageId(message.id);
+
+    audio.onended = () => {
+      setPlayingMessageId(null);
+      currentAudioRef.current = null;
+    };
+
+    audio.play().catch(() => {
+      setPlayingMessageId(null);
+    });
+  };
+
+  const stopAudio = () => {
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current = null;
+      setPlayingMessageId(null);
     }
   };
 
@@ -214,7 +403,7 @@ export function GlobalAIBot() {
   return (
     <div className={cn(
       'fixed bottom-6 z-50',
-      'w-[360px] max-h-[480px] bg-card border border-border rounded-2xl shadow-2xl',
+      'w-[400px] max-h-[520px] bg-card border border-border rounded-2xl shadow-2xl',
       'flex flex-col overflow-hidden',
       isRTL ? 'left-6' : 'right-6',
       // Mobile: full width
@@ -226,19 +415,20 @@ export function GlobalAIBot() {
         'bg-gradient-to-r text-white',
         teacher.gradient
       )}>
-        <div className="flex items-center gap-2">
-          <TeacherAvatar teacherName={currentTeacher as TeacherName} size="sm" />
+        <div className="flex items-center gap-3">
+          <TeacherAvatar teacherName={currentTeacher as TeacherName} size="md" />
           <div>
-            <p className="font-semibold text-sm">{teacher.displayName[language]}</p>
-            <p className="text-[10px] opacity-80">{teacher.shortDescription[language]}</p>
+            <p className="font-semibold">{teacher.displayName[language]}</p>
+            <p className="text-xs opacity-80">{teacher.shortDescription[language]}</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20"
+            className="h-8 w-8 text-white/80 hover:text-white hover:bg-white/20"
             onClick={() => {
+              stopAudio();
               setIsOpen(false);
               router.push('/ai-teacher');
             }}
@@ -249,8 +439,11 @@ export function GlobalAIBot() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20"
-            onClick={() => setIsOpen(false)}
+            className="h-8 w-8 text-white/80 hover:text-white hover:bg-white/20"
+            onClick={() => {
+              stopAudio();
+              setIsOpen(false);
+            }}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -263,8 +456,16 @@ export function GlobalAIBot() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 min-h-[200px] max-h-[300px]">
-        {messages.length === 0 && (
+      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 min-h-[220px] max-h-[320px]">
+        {isLoadingWelcome && (
+          <div className="flex items-center justify-center h-full">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm">{language === 'ar' ? 'جاري التحميل...' : 'Loading...'}</span>
+            </div>
+          </div>
+        )}
+        {!isLoadingWelcome && messages.length === 0 && (
           <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
             {t.floatingBot.greeting}
           </div>
@@ -273,10 +474,10 @@ export function GlobalAIBot() {
           <div
             key={msg.id}
             className={cn(
-              'flex',
+              'flex flex-col gap-1',
               msg.role === 'user'
-                ? (isRTL ? 'justify-start' : 'justify-end')
-                : (isRTL ? 'justify-end' : 'justify-start')
+                ? (isRTL ? 'items-start' : 'items-end')
+                : (isRTL ? 'items-end' : 'items-start')
             )}
           >
             <div className={cn(
@@ -287,6 +488,30 @@ export function GlobalAIBot() {
             )}>
               <p className="whitespace-pre-wrap break-words leading-relaxed">{msg.content}</p>
             </div>
+            {/* Audio button for assistant messages */}
+            {msg.role === 'assistant' && msg.audioBase64 && (
+              <button
+                onClick={() => playMessageAudio(msg)}
+                className={cn(
+                  'flex items-center gap-1 text-xs px-2 py-1 rounded-md transition-colors',
+                  playingMessageId === msg.id
+                    ? 'text-primary bg-primary/10'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                )}
+              >
+                {playingMessageId === msg.id ? (
+                  <>
+                    <VolumeX className="h-3 w-3" />
+                    <span>{language === 'ar' ? 'إيقاف' : 'Stop'}</span>
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="h-3 w-3" />
+                    <span>{language === 'ar' ? 'استمع' : 'Listen'}</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         ))}
         {isLoading && (
@@ -301,28 +526,55 @@ export function GlobalAIBot() {
       </div>
 
       {/* Input */}
-      <div className="px-3 py-2 border-t bg-background">
+      <div className="px-3 py-3 border-t bg-background">
         <div className="flex items-center gap-2">
+          {/* Voice Recording Button */}
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={isRecording ? stopRecording : startRecording}
+            disabled={isLoading || isTranscribing}
+            className={cn(
+              'h-9 w-9 rounded-lg shrink-0',
+              isRecording && 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
+            )}
+            title={isRecording
+              ? (language === 'ar' ? 'إيقاف التسجيل' : 'Stop recording')
+              : (language === 'ar' ? 'تسجيل صوتي' : 'Voice recording')
+            }
+          >
+            {isTranscribing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : isRecording ? (
+              <Square className="h-4 w-4" />
+            ) : (
+              <Mic className="h-4 w-4" />
+            )}
+          </Button>
+
           <input
             ref={inputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={t.floatingBot.askAnything}
+            placeholder={isTranscribing
+              ? (language === 'ar' ? 'جاري تحويل الصوت...' : 'Transcribing...')
+              : t.floatingBot.askAnything
+            }
             className={cn(
               'flex-1 bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm',
               'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
               'placeholder:text-muted-foreground',
               isRTL && 'text-right'
             )}
-            disabled={isLoading}
+            disabled={isLoading || isTranscribing}
           />
           <Button
             size="icon"
             onClick={handleSend}
-            disabled={!input.trim() || isLoading}
-            className={cn('h-9 w-9 rounded-lg bg-gradient-to-br', teacher.gradient)}
+            disabled={!input.trim() || isLoading || isTranscribing}
+            className={cn('h-9 w-9 rounded-lg bg-gradient-to-br shrink-0', teacher.gradient)}
           >
             <Send className={cn('h-4 w-4', isRTL && 'rotate-180')} />
           </Button>
