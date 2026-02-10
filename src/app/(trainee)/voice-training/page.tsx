@@ -9,9 +9,11 @@
 
 import { useCallback, useState, useEffect } from 'react';
 import { useConversation } from '@elevenlabs/react';
-import { useRouter } from 'next/navigation';
-import { Phone, PhoneOff, Mic, ExternalLink, RefreshCw } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Phone, PhoneOff, Mic, ExternalLink, RefreshCw, SkipForward, ClipboardCheck, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
+import { useDiagnosticStore } from '@/stores/diagnostic.store';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SaudiAvatar } from '@/components/ui/SaudiAvatar';
@@ -209,12 +211,17 @@ function SetupInstructions({ onRetry }: { onRetry: () => void }) {
 
 export default function VoiceTrainingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { t, isRTL } = useLanguage();
+  const diagnosticStore = useDiagnosticStore();
+  const isDiagnosticMode = searchParams.get('diagnostic') === 'true';
   const [callStatus, setCallStatus] = useState<CallStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<PerformanceAnalysis | null>(null);
   const [callDuration, setCallDuration] = useState(0);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
 
   const storeToken = useAuthStore((state) => state.token);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -369,6 +376,7 @@ export default function VoiceTrainingPage() {
 
         const result: SavedSession = await response.json();
         setAnalysis(result.analysis);
+        setSavedSessionId(result.sessionId);
         setCallStatus('complete');
       } else {
         setCallStatus('idle');
@@ -397,10 +405,24 @@ export default function VoiceTrainingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground" dir="rtl">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Diagnostic Banner */}
+        {isDiagnosticMode && (
+          <div className="mb-6 p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-center gap-3">
+            <ClipboardCheck className="h-5 w-5 text-primary shrink-0" />
+            <p className="text-sm font-medium text-primary">
+              {t.diagnostic.stepOf} 2/2: {t.diagnostic.step2Title}
+            </p>
+          </div>
+        )}
+
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-foreground">تدريب المكالمات الصوتية</h1>
-          <p className="text-muted-foreground">تحدث مع العميل السعودي الافتراضي لتحسين مهاراتك في المبيعات</p>
+          <h1 className="text-3xl font-bold mb-2 text-foreground">
+            {isRTL ? 'تدريب المكالمات الصوتية' : 'Voice Call Training'}
+          </h1>
+          <p className="text-muted-foreground">
+            {isRTL ? 'تحدث مع العميل السعودي الافتراضي لتحسين مهاراتك في المبيعات' : 'Practice with a virtual Saudi client to improve your sales skills'}
+          </p>
         </div>
 
         {/* Error Display */}
@@ -431,7 +453,25 @@ export default function VoiceTrainingPage() {
 
         {/* Main Content */}
         {callStatus === 'setup_required' ? (
-          <SetupInstructions onRetry={handleNewSession} />
+          isDiagnosticMode ? (
+            <Card className="p-6 max-w-md mx-auto text-center space-y-4">
+              <p className="text-muted-foreground">
+                {isRTL ? 'التدريب الصوتي غير متاح حالياً. يمكنك تخطي هذه الخطوة.' : 'Voice training is not available right now. You can skip this step.'}
+              </p>
+              <Button
+                onClick={() => {
+                  diagnosticStore.skipVoice();
+                  router.push('/assessment');
+                }}
+                size="lg"
+              >
+                <SkipForward className="w-4 h-4 me-2" />
+                {t.diagnostic.skipVoice}
+              </Button>
+            </Card>
+          ) : (
+            <SetupInstructions onRetry={handleNewSession} />
+          )
         ) : callStatus === 'complete' && analysis ? (
           /* Analysis Results */
           <div className="space-y-6">
@@ -519,13 +559,33 @@ export default function VoiceTrainingPage() {
 
             {/* Actions */}
             <div className="flex justify-center gap-4">
-              <Button onClick={handleNewSession} size="lg">
-                <RefreshCw className="w-4 h-4 me-2" />
-                مكالمة جديدة
-              </Button>
-              <Button variant="outline" onClick={() => router.push('/dashboard')} size="lg">
-                العودة للوحة التحكم
-              </Button>
+              {isDiagnosticMode ? (
+                <Button
+                  size="lg"
+                  className="btn-gradient px-8"
+                  onClick={() => {
+                    if (savedSessionId) {
+                      diagnosticStore.setVoiceComplete(savedSessionId);
+                    } else {
+                      diagnosticStore.skipVoice();
+                    }
+                    router.push('/assessment');
+                  }}
+                >
+                  {t.diagnostic.continueAssessment}
+                  {isRTL ? <ArrowLeft className="w-4 h-4 mr-2" /> : <ArrowRight className="w-4 h-4 ml-2" />}
+                </Button>
+              ) : (
+                <>
+                  <Button onClick={handleNewSession} size="lg">
+                    <RefreshCw className="w-4 h-4 me-2" />
+                    مكالمة جديدة
+                  </Button>
+                  <Button variant="outline" onClick={() => router.push('/dashboard')} size="lg">
+                    العودة للوحة التحكم
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         ) : (
@@ -605,19 +665,34 @@ export default function VoiceTrainingPage() {
             {/* Call Controls */}
             <div className="flex gap-4">
               {callStatus === 'idle' && (
-                <Button
-                  onClick={handleStartCall}
-                  disabled={!isHydrated}
-                  size="lg"
-                  className="px-8"
-                >
-                  {!isHydrated ? (
-                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <Phone className="w-6 h-6 me-2" />
+                <>
+                  <Button
+                    onClick={handleStartCall}
+                    disabled={!isHydrated}
+                    size="lg"
+                    className="px-8"
+                  >
+                    {!isHydrated ? (
+                      <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Phone className="w-6 h-6 me-2" />
+                    )}
+                    {isHydrated ? (isRTL ? 'ابدأ المكالمة' : 'Start Call') : (isRTL ? 'جاري التحميل...' : 'Loading...')}
+                  </Button>
+                  {isDiagnosticMode && (
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={() => {
+                        diagnosticStore.skipVoice();
+                        router.push('/assessment');
+                      }}
+                    >
+                      <SkipForward className="w-4 h-4 me-2" />
+                      {t.diagnostic.skipVoice}
+                    </Button>
                   )}
-                  {isHydrated ? 'ابدأ المكالمة' : 'جاري التحميل...'}
-                </Button>
+                </>
               )}
 
               {callStatus === 'active' && (
@@ -628,7 +703,7 @@ export default function VoiceTrainingPage() {
                   className="px-8"
                 >
                   <PhoneOff className="w-6 h-6 me-2" />
-                  إنهاء المكالمة
+                  {isRTL ? 'إنهاء المكالمة' : 'End Call'}
                 </Button>
               )}
             </div>

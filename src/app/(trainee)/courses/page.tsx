@@ -17,6 +17,8 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { traineeApi } from '@/lib/api/trainee.api';
+import { diagnosticApi } from '@/lib/api/diagnostic.api';
+import type { SkillReport } from '@/types/diagnostic';
 import {
   BookOpen,
   Clock,
@@ -30,8 +32,19 @@ import {
   Sparkles,
   ArrowLeft,
   ArrowRight,
-  CheckCircle
+  CheckCircle,
+  Target,
 } from 'lucide-react';
+
+// Skill-to-category mapping for weakness prioritization
+const SKILL_TO_CATEGORIES: Record<string, string[]> = {
+  communication: ['Client Relations', 'Fundamentals'],
+  negotiation: ['Sales Skills'],
+  objectionHandling: ['Sales Skills'],
+  relationshipBuilding: ['Client Relations'],
+  productKnowledge: ['Fundamentals', 'Specialization'],
+  closingTechnique: ['Sales Skills'],
+};
 
 export default function CoursesPage() {
   const { t, isRTL } = useLanguage();
@@ -40,21 +53,39 @@ export default function CoursesPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set());
+  const [diagnosticReport, setDiagnosticReport] = useState<SkillReport | null>(null);
+  const [recommendedCategories, setRecommendedCategories] = useState<Set<string>>(new Set());
 
-  // Fetch completed lessons from backend
+  // Fetch completed lessons and diagnostic report
   useEffect(() => {
-    const fetchCompletedLessons = async () => {
+    const fetchData = async () => {
       try {
-        const profile = await traineeApi.getProfile();
-        if (profile.progress?.completedLectureIds) {
+        const [profile, diagnosticStatus] = await Promise.all([
+          traineeApi.getProfile().catch(() => null),
+          diagnosticApi.getStatus().catch(() => null),
+        ]);
+        if (profile?.progress?.completedLectureIds) {
           setCompletedLessonIds(new Set(profile.progress.completedLectureIds));
         }
+        if (diagnosticStatus?.currentReport) {
+          setDiagnosticReport(diagnosticStatus.currentReport);
+          // Build recommended categories from weaknesses
+          const weakCategories = new Set<string>();
+          const scores = diagnosticStatus.currentReport.skillScores;
+          for (const [skill, score] of Object.entries(scores)) {
+            if (score < 60) {
+              const cats = SKILL_TO_CATEGORIES[skill];
+              if (cats) cats.forEach(c => weakCategories.add(c));
+            }
+          }
+          setRecommendedCategories(weakCategories);
+        }
       } catch (err) {
-        console.error('Failed to fetch completed lessons:', err);
+        console.error('Failed to fetch data:', err);
       }
     };
 
-    fetchCompletedLessons();
+    fetchData();
   }, []);
 
   // Calculate progress for each course
@@ -88,7 +119,7 @@ export default function CoursesPage() {
   ], [isRTL]);
 
   const filteredCourses = useMemo(() => {
-    return courses.filter(course => {
+    const filtered = courses.filter(course => {
       const title = getCourseTitle(course, isRTL).toLowerCase();
       const description = getCourseDescription(course, isRTL).toLowerCase();
       const query = searchQuery.toLowerCase();
@@ -98,7 +129,18 @@ export default function CoursesPage() {
       const matchesDifficulty = selectedDifficulty === 'All' || course.difficulty === selectedDifficulty;
       return matchesSearch && matchesCategory && matchesDifficulty;
     });
-  }, [searchQuery, selectedCategory, selectedDifficulty, isRTL]);
+
+    // Sort recommended courses to top if we have diagnostic data
+    if (recommendedCategories.size > 0) {
+      filtered.sort((a, b) => {
+        const aRec = recommendedCategories.has(a.category) ? 1 : 0;
+        const bRec = recommendedCategories.has(b.category) ? 1 : 0;
+        return bRec - aRec;
+      });
+    }
+
+    return filtered;
+  }, [searchQuery, selectedCategory, selectedDifficulty, isRTL, recommendedCategories]);
 
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -278,6 +320,28 @@ export default function CoursesPage() {
           </div>
         </div>
 
+        {/* Diagnostic Recommendation Banner */}
+        {recommendedCategories.size > 0 && (
+          <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 flex items-center gap-3">
+            <Target className="h-5 w-5 text-primary shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-primary">{t.diagnostic.basedOnAssessment}</p>
+              <p className="text-xs text-muted-foreground">
+                {isRTL
+                  ? `ننصحك بالتركيز على: ${Array.from(recommendedCategories).map(c => {
+                      const cat = categories.find(cat => cat.id === c);
+                      return cat?.label || c;
+                    }).join('، ')}`
+                  : `Focus on: ${Array.from(recommendedCategories).map(c => {
+                      const cat = categories.find(cat => cat.id === c);
+                      return cat?.label || c;
+                    }).join(', ')}`
+                }
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Course Grid */}
         {filteredCourses.length === 0 ? (
           <div className="text-center py-16">
@@ -336,6 +400,12 @@ export default function CoursesPage() {
                       <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         {getCategoryLabel(course.category)}
                       </span>
+                      {recommendedCategories.has(course.category) && (
+                        <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] px-1.5 py-0">
+                          <Sparkles className="h-2.5 w-2.5 mr-0.5" />
+                          {t.diagnostic.recommendedForYou}
+                        </Badge>
+                      )}
                     </div>
 
                     {/* Title & Description */}

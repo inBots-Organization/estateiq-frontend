@@ -312,6 +312,21 @@ interface Translations {
     skillProfile: string;
     overallScore: string;
     refresh: string;
+    assessmentGateway: string;
+    assessmentGatewayDesc: string;
+    startAssessment: string;
+    step1Title: string;
+    step1Desc: string;
+    step2Title: string;
+    step2Desc: string;
+    continueAssessment: string;
+    skipVoice: string;
+    generating: string;
+    reportReady: string;
+    continueToDashboard: string;
+    recommendedForYou: string;
+    basedOnAssessment: string;
+    stepOf: string;
   };
 
   // Dashboard
@@ -1121,6 +1136,21 @@ const TRANSLATIONS: Record<Language, Translations> = {
       skillProfile: 'ملف المهارات',
       overallScore: 'النتيجة الإجمالية',
       refresh: 'تحديث',
+      assessmentGateway: 'التقييم اليومي للمهارات',
+      assessmentGatewayDesc: 'أكمل تقييماً سريعاً لتخصيص تدريبك',
+      startAssessment: 'ابدأ التقييم',
+      step1Title: 'المحاكاة النصية',
+      step1Desc: 'محادثة مع عميل افتراضي',
+      step2Title: 'المكالمة الصوتية',
+      step2Desc: 'تدريب على مكالمة هاتفية فورية',
+      continueAssessment: 'متابعة التقييم',
+      skipVoice: 'تخطي التدريب الصوتي',
+      generating: 'جاري إنشاء تقرير مهاراتك...',
+      reportReady: 'تقرير مهاراتك جاهز!',
+      continueToDashboard: 'متابعة للوحة التحكم',
+      recommendedForYou: 'مُوصى به لك',
+      basedOnAssessment: 'بناءً على تقييم مهاراتك',
+      stepOf: 'الخطوة',
     },
 
     dashboard: {
@@ -1914,6 +1944,21 @@ const TRANSLATIONS: Record<Language, Translations> = {
       skillProfile: 'Skill Profile',
       overallScore: 'Overall Score',
       refresh: 'Refresh',
+      assessmentGateway: 'Daily Skill Assessment',
+      assessmentGatewayDesc: 'Complete a quick assessment to personalize your training',
+      startAssessment: 'Start Assessment',
+      step1Title: 'Chat Simulation',
+      step1Desc: 'Have a conversation with a virtual client',
+      step2Title: 'Voice Call',
+      step2Desc: 'Practice a real-time phone call',
+      continueAssessment: 'Continue Assessment',
+      skipVoice: 'Skip Voice Training',
+      generating: 'Generating your skill report...',
+      reportReady: 'Your Skill Report is Ready!',
+      continueToDashboard: 'Continue to Dashboard',
+      recommendedForYou: 'Recommended for You',
+      basedOnAssessment: 'Based on your skill assessment',
+      stepOf: 'Step',
     },
 
     dashboard: {

@@ -15,6 +15,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuthStore } from '@/stores/auth.store';
+import { useDiagnosticStore } from '@/stores/diagnostic.store';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { CompactSettings } from '@/components/ui/LanguageToggle';
 import { cn } from '@/lib/utils';
@@ -47,6 +48,7 @@ export default function TraineeLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout, token, isAuthenticated } = useAuthStore();
+  const diagnosticStore = useDiagnosticStore();
   const { t, isRTL, language } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -136,6 +138,30 @@ export default function TraineeLayout({
       router.push('/super-admin');
     }
   }, [isHydrated, token, isAuthenticated, router, user?.role]);
+
+  // Diagnostic guard: redirect to assessment if daily diagnostic is needed
+  useEffect(() => {
+    if (!isHydrated || !token) return;
+    // Exempt super admin and org admin from diagnostic
+    if (user?.role === 'saas_super_admin' || user?.role === 'org_admin' || user?.role === 'trainer') return;
+
+    // Exempt assessment page and pages being used during diagnostic flow
+    if (pathname === '/assessment') return;
+    const phase = diagnosticStore.assessmentPhase;
+    if ((pathname === '/simulation' || pathname === '/voice-training') &&
+        phase !== 'idle' && phase !== 'done') return;
+
+    // If store says assessment required and not done, redirect
+    if (diagnosticStore.assessmentRequired && phase !== 'done') {
+      router.push('/assessment');
+      return;
+    }
+
+    // API check (throttled to once per 60s)
+    if (!diagnosticStore.lastCheckTimestamp || Date.now() - diagnosticStore.lastCheckTimestamp > 60000) {
+      diagnosticStore.checkAndSetStatus();
+    }
+  }, [isHydrated, token, pathname, user?.role, diagnosticStore, router]);
 
   // Show loading while checking auth
   if (!isHydrated) {

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,9 +10,10 @@ import { SimulationChat } from '@/components/simulation/SimulationChat';
 import { LiveClientCall } from '@/components/simulation/LiveClientCall';
 import { ResultsSummary } from '@/components/simulation/ResultsSummary';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useDiagnosticStore } from '@/stores/diagnostic.store';
 import { cn } from '@/lib/utils';
 import type { SimulationScenarioType, DifficultyLevel } from '@/types';
-import { MessageSquare, Play, ArrowLeft, ArrowRight, Phone, X, Loader2, Brain, Sparkles } from 'lucide-react';
+import { MessageSquare, Play, ArrowLeft, ArrowRight, Phone, X, Loader2, Brain, Sparkles, ClipboardCheck } from 'lucide-react';
 
 type SimulationMode = 'chat' | 'voice' | null;
 
@@ -41,8 +42,14 @@ interface SessionData {
 
 export default function SimulationPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t, isRTL } = useLanguage();
-  const [selectedScenario, setSelectedScenario] = useState<SimulationScenarioType | null>(null);
+  const diagnosticStore = useDiagnosticStore();
+  const isDiagnosticMode = searchParams.get('diagnostic') === 'true';
+  const diagnosticAutoStarted = useRef(false);
+  const [selectedScenario, setSelectedScenario] = useState<SimulationScenarioType | null>(
+    isDiagnosticMode ? 'objection_handling' : null
+  );
   const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel>('medium');
   const [showModeSelector, setShowModeSelector] = useState(false);
   const [simulationMode, setSimulationMode] = useState<SimulationMode>(null);
@@ -79,6 +86,20 @@ export default function SimulationPage() {
 
   // Track session start time
   const sessionStartTimeRef = useRef<string>(new Date().toISOString());
+
+  // Auto-start chat mode in diagnostic mode
+  useEffect(() => {
+    if (isDiagnosticMode && !diagnosticAutoStarted.current && status === 'idle') {
+      diagnosticAutoStarted.current = true;
+      setSimulationMode('chat');
+      sessionStartTimeRef.current = new Date().toISOString();
+      startSimulation({
+        scenarioType: 'objection_handling',
+        difficultyLevel: 'medium',
+        recordSession: false,
+      });
+    }
+  }, [isDiagnosticMode, status, startSimulation]);
 
   const handleStartClick = () => {
     if (!selectedScenario) return;
@@ -213,6 +234,44 @@ export default function SimulationPage() {
   }
 
   if (status === 'completed' && analysis) {
+    // Diagnostic mode: store session ID and redirect back to assessment
+    if (isDiagnosticMode && sessionId) {
+      return (
+        <div className="container mx-auto py-8 px-4 max-w-4xl">
+          {/* Diagnostic banner */}
+          <div className="mb-6 p-4 rounded-xl bg-primary/5 border border-primary/20 flex items-center gap-3">
+            <ClipboardCheck className="h-5 w-5 text-primary shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-primary">
+                {t.diagnostic.stepOf} 1/2: {t.diagnostic.step1Title}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {isRTL ? 'تم إكمال المحاكاة النصية بنجاح!' : 'Chat simulation completed successfully!'}
+              </p>
+            </div>
+          </div>
+          <ResultsSummary
+            analysis={analysis}
+            onViewFullReport={() => {}}
+            onPracticeAgain={() => {}}
+            sessionData={buildSessionData()}
+          />
+          <div className="mt-6 flex justify-center">
+            <Button
+              className="btn-gradient h-12 px-8 text-lg"
+              onClick={() => {
+                diagnosticStore.setChatComplete(sessionId);
+                router.push('/assessment');
+              }}
+            >
+              {t.diagnostic.continueAssessment}
+              {isRTL ? <ArrowLeft className="h-5 w-5 mr-2" /> : <ArrowRight className="h-5 w-5 ml-2" />}
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="container mx-auto py-8 px-4 max-w-4xl">
         <div className="mb-6">
@@ -251,6 +310,14 @@ export default function SimulationPage() {
   if ((status === 'ready' || status === 'in_progress') && simulationMode === 'chat') {
     return (
       <div className="container mx-auto py-8 px-4 max-w-4xl">
+        {isDiagnosticMode && (
+          <div className="mb-4 p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-center gap-3">
+            <ClipboardCheck className="h-5 w-5 text-primary shrink-0" />
+            <p className="text-sm font-medium text-primary">
+              {t.diagnostic.stepOf} 1/2: {t.diagnostic.step1Title}
+            </p>
+          </div>
+        )}
         <SimulationChat
           onSendMessage={sendMessage}
           onEndSimulation={endSimulation}

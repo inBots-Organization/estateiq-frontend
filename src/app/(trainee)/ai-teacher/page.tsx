@@ -67,6 +67,8 @@ import {
 } from '@/lib/api/ai-teacher.api';
 import { GenerateAVButtons, AVPlayerModal } from '@/components/ai-teacher';
 import { traineeApi } from '@/lib/api/trainee.api';
+import { diagnosticApi } from '@/lib/api/diagnostic.api';
+import type { SkillReport } from '@/types/diagnostic';
 import { courses, getCourseById } from '@/data/courses';
 
 // Storage key for last studied lesson
@@ -610,7 +612,8 @@ What would you like to start with?`.trim().replace(/\n{3,}/g, '\n\n');
   const generateSidebarWelcome = (
     profileData: TraineeProfile | null,
     completedIds: Set<string>,
-    lastLessonData: LastLessonData | null
+    lastLessonData: LastLessonData | null,
+    diagnosticReport?: SkillReport | null
   ): string => {
     const name = profileData?.firstName || '';
 
@@ -636,6 +639,37 @@ What would you like to start with?`.trim().replace(/\n{3,}/g, '\n\n');
           : `\n📖 Last lesson you studied: "${lastLessonData.lessonName}"`)
       : '';
 
+    // Build skill profile section from diagnostic report
+    let skillSection = '';
+    if (diagnosticReport) {
+      const levelLabels: Record<string, { ar: string; en: string }> = {
+        beginner: { ar: 'مبتدئ', en: 'Beginner' },
+        intermediate: { ar: 'متوسط', en: 'Intermediate' },
+        advanced: { ar: 'متقدم', en: 'Advanced' },
+      };
+      const levelLabel = isRTL
+        ? levelLabels[diagnosticReport.level]?.ar || diagnosticReport.level
+        : levelLabels[diagnosticReport.level]?.en || diagnosticReport.level;
+
+      if (isRTL) {
+        skillSection = `
+
+🎯 **ملف مهاراتك:**
+• المستوى: ${levelLabel}
+• النتيجة: ${diagnosticReport.overallScore}%
+• نقاط القوة: ${diagnosticReport.strengths.slice(0, 2).join('، ')}
+• نقاط التحسين: ${diagnosticReport.weaknesses.slice(0, 2).join('، ')}`;
+      } else {
+        skillSection = `
+
+🎯 **Your Skill Profile:**
+• Level: ${levelLabel}
+• Score: ${diagnosticReport.overallScore}%
+• Strengths: ${diagnosticReport.strengths.slice(0, 2).join(', ')}
+• Areas to improve: ${diagnosticReport.weaknesses.slice(0, 2).join(', ')}`;
+      }
+    }
+
     if (isRTL) {
       return `مرحباً ${name}! 🎓
 
@@ -647,7 +681,7 @@ What would you like to start with?`.trim().replace(/\n{3,}/g, '\n\n');
 • جلسات التدريب: ${sessions}
 • متوسط الدرجات: ${avgScore > 0 ? avgScore + '%' : 'لم تبدأ بعد'}
 • سلسلة الأيام: ${streak} ${streak === 1 ? 'يوم' : 'أيام'}
-${lastLessonText}
+${lastLessonText}${skillSection}
 
 💡 كيف أقدر أساعدك اليوم؟
 • اسألني عن أي موضوع عقاري
@@ -664,7 +698,7 @@ I'm your AI Teacher, your personal guide on your real estate learning journey.
 • Training Sessions: ${sessions}
 • Average Score: ${avgScore > 0 ? avgScore + '%' : 'Not started yet'}
 • Current Streak: ${streak} ${streak === 1 ? 'day' : 'days'}
-${lastLessonText}
+${lastLessonText}${skillSection}
 
 💡 How can I help you today?
 • Ask me about any real estate topic
@@ -720,10 +754,11 @@ ${lastLessonText}
         setIsLoading(false);
         setIsLoadingWelcome(true);
 
-        // Fetch profile and completed lessons in parallel
-        const [profileData, traineeData] = await Promise.all([
+        // Fetch profile, completed lessons, and diagnostic status in parallel
+        const [profileData, traineeData, diagnosticStatus] = await Promise.all([
           aiTeacherApi.getProfile().catch(() => null),
           traineeApi.getProfile().catch(() => null),
+          diagnosticApi.getStatus().catch(() => null),
         ]);
 
         if (profileData) {
@@ -771,7 +806,7 @@ ${lastLessonText}
           }
         } else {
           // Coming from sidebar - generate sidebar welcome with full progress
-          const sidebarGreeting = generateSidebarWelcome(profileData, completedIds, lastLessonData);
+          const sidebarGreeting = generateSidebarWelcome(profileData, completedIds, lastLessonData, diagnosticStatus?.currentReport);
 
           const sidebarWelcome: Message = {
             id: 'welcome-sidebar',
