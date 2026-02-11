@@ -229,12 +229,23 @@ export function GlobalAIBot() {
   useEffect(() => {
     if (user?.id && storedUserId && storedUserId !== user.id) {
       console.log('[GlobalAIBot] Different user detected, resetting teacher store');
+      console.log('[GlobalAIBot] Current user:', user.id, 'Stored user:', storedUserId);
       resetTeacherStore();
     }
   }, [user?.id, storedUserId, resetTeacherStore]);
 
   // Check if assessment is complete (has assigned teacher AND it belongs to this user)
-  const hasCompletedAssessment = assignedTeacher !== null && (!storedUserId || storedUserId === user?.id);
+  // If storedUserId is null but assignedTeacher exists, this is OLD data from before userId tracking
+  // We treat this as NEW user (reset required)
+  const hasCompletedAssessment = assignedTeacher !== null && storedUserId === user?.id;
+
+  // Debug: log assessment status
+  console.log('[GlobalAIBot] Assessment Check:', {
+    assignedTeacher,
+    storedUserId,
+    currentUserId: user?.id,
+    hasCompletedAssessment
+  });
 
   // Hide on specific pages (but allow welcome bot for new trainees on /assessment)
   const isOnAssessmentPage = pathname.includes('/assessment');
@@ -252,6 +263,10 @@ export function GlobalAIBot() {
   // Combined hide condition - BUT never hide for new trainees on assessment page!
   const shouldHide = isAdminUser || (shouldHideOnPath && hasCompletedAssessment);
 
+  // Wait for user data to load before showing the bot for new trainees
+  // This prevents flickering and incorrect state
+  const userLoaded = !!user?.id;
+
   // Debug log
   console.log('[GlobalAIBot] State:', {
     pathname,
@@ -259,8 +274,11 @@ export function GlobalAIBot() {
     assignedTeacher,
     isAdminUser,
     userRole: user?.role,
+    userId: user?.id,
+    storedUserId,
     shouldHide,
-    isOnAssessmentPage
+    isOnAssessmentPage,
+    userLoaded
   });
 
   // Scroll to bottom on new messages
@@ -279,6 +297,12 @@ export function GlobalAIBot() {
   useEffect(() => {
     // Only run once on mount
     if (hasCheckedAutoOpen) return;
+
+    // MUST wait for user data to load first!
+    if (!userLoaded) {
+      console.log('[GlobalAIBot] Waiting for user data to load...');
+      return;
+    }
 
     // Wait a tick to ensure we have user data
     const timer = setTimeout(() => {
@@ -300,10 +324,10 @@ export function GlobalAIBot() {
         }
       }
       setHasCheckedAutoOpen(true);
-    }, 300); // Increased delay to ensure user data is loaded
+    }, 100); // Short delay now since we already waited for user data
 
     return () => clearTimeout(timer);
-  }, [hasCheckedAutoOpen, hasCompletedAssessment, isAdminUser]);
+  }, [hasCheckedAutoOpen, hasCompletedAssessment, isAdminUser, userLoaded]);
 
   // Play welcome audio on first open
   useEffect(() => {
@@ -610,6 +634,12 @@ export function GlobalAIBot() {
       setPlayingMessageId(null);
     }
   };
+
+  // Don't render until user data is loaded (prevents incorrect state)
+  if (!userLoaded) {
+    console.log('[GlobalAIBot] Not rendering - waiting for user data');
+    return null;
+  }
 
   if (shouldHide) return null;
 
