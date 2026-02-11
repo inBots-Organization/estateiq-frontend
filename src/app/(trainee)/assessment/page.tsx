@@ -361,18 +361,34 @@ export default function AssessmentPage() {
           </Card>
         </div>
 
-        {/* Evaluator Report Section */}
+        {/* Evaluator Report Section - More Prominent */}
         {evaluatorStatus !== 'completed' && evaluatorStatus !== 'failed' && (
-          <Card className="mb-6">
+          <Card className="mb-6 border-2 border-primary/30 bg-primary/5">
             <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <div className="flex flex-col items-center text-center space-y-4">
+                {/* Animated Icon */}
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Brain className="h-8 w-8 text-primary animate-pulse" />
+                  </div>
+                  <div className="absolute -top-1 -right-1">
+                    <Sparkles className="h-5 w-5 text-yellow-500 animate-bounce" />
+                  </div>
+                </div>
+                {/* Text */}
                 <div>
-                  <p className="text-sm font-medium text-foreground">{t.diagnostic.evaluatorGenerating}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {isRTL ? 'سيظهر التقييم التفصيلي هنا خلال لحظات...' : 'Detailed evaluation will appear here shortly...'}
+                  <p className="text-base font-semibold text-foreground">{t.diagnostic.evaluatorGenerating}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {isRTL ? 'جاري إنشاء التقييم التفصيلي... يرجى عدم مغادرة هذه الصفحة' : 'Generating detailed evaluation... Please do not leave this page'}
                   </p>
                 </div>
+                {/* Loading Bar */}
+                <div className="w-full max-w-xs">
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: '60%' }} />
+                  </div>
+                </div>
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
               </div>
             </CardContent>
           </Card>

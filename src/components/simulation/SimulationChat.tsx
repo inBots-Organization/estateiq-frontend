@@ -12,6 +12,8 @@ import type { Sentiment } from '@/types/entities';
 interface SimulationChatProps {
   onSendMessage: (message: string) => Promise<unknown>;
   onEndSimulation: (reason: 'completed' | 'abandoned') => Promise<unknown>;
+  isDiagnosticMode?: boolean;
+  minMessagesRequired?: number;
 }
 
 // Helper to detect if text contains Arabic characters
@@ -20,10 +22,15 @@ const isArabicText = (text: string): boolean => {
   return arabicRegex.test(text);
 };
 
-export function SimulationChat({ onSendMessage, onEndSimulation }: SimulationChatProps) {
+const MIN_DIAGNOSTIC_MESSAGES = 5; // Minimum trainee messages for diagnostic
+
+export function SimulationChat({ onSendMessage, onEndSimulation, isDiagnosticMode = false, minMessagesRequired }: SimulationChatProps) {
   const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Calculate minimum messages needed
+  const minMessages = minMessagesRequired ?? (isDiagnosticMode ? MIN_DIAGNOSTIC_MESSAGES : 0);
 
   const {
     clientPersona,
@@ -41,6 +48,11 @@ export function SimulationChat({ onSendMessage, onEndSimulation }: SimulationCha
 
   // Detect if content is Arabic based on client persona name
   const isArabicSession = clientPersona?.name ? isArabicText(clientPersona.name) : false;
+
+  // Count trainee messages
+  const traineeMessageCount = messages.filter(m => m.speaker === 'trainee').length;
+  const canEndSimulation = traineeMessageCount >= minMessages;
+  const messagesRemaining = Math.max(0, minMessages - traineeMessageCount);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -145,15 +157,28 @@ export function SimulationChat({ onSendMessage, onEndSimulation }: SimulationCha
             <span>{turnNumber}</span>
           </div>
           {isActive && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onEndSimulation('completed')}
-              className="text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-800 dark:hover:bg-rose-900/20"
-            >
-              <StopCircle className="w-4 h-4 mr-1.5" />
-              {isArabicSession ? 'إنهاء' : 'End'}
-            </Button>
+            <>
+              {/* Show progress for diagnostic mode */}
+              {isDiagnosticMode && messagesRemaining > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  {isArabicSession ? `${messagesRemaining} رسائل متبقية` : `${messagesRemaining} messages left`}
+                </span>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEndSimulation('completed')}
+                disabled={!canEndSimulation}
+                className={cn(
+                  "text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-800 dark:hover:bg-rose-900/20",
+                  !canEndSimulation && "opacity-50 cursor-not-allowed"
+                )}
+                title={!canEndSimulation ? (isArabicSession ? `أرسل ${messagesRemaining} رسائل إضافية` : `Send ${messagesRemaining} more messages`) : ''}
+              >
+                <StopCircle className="w-4 h-4 mr-1.5" />
+                {isArabicSession ? 'إنهاء' : 'End'}
+              </Button>
+            </>
           )}
         </div>
       </div>

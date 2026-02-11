@@ -321,6 +321,7 @@ export default function SimulationPage() {
         <SimulationChat
           onSendMessage={sendMessage}
           onEndSimulation={endSimulation}
+          isDiagnosticMode={isDiagnosticMode}
         />
       </div>
     );
