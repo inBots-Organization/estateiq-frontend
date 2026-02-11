@@ -408,28 +408,23 @@ export default function AITeachersPage() {
               <CardContent className="p-5">
                 {/* Header with Avatar and Status */}
                 <div className="flex items-start justify-between mb-4">
-                  {teacher.avatarUrl ? (
-                    <div className="h-16 w-16 rounded-full border-2 border-border shadow-soft overflow-hidden bg-gradient-to-br from-violet-500 to-purple-600">
+                  <div className="h-16 w-16 rounded-full border-2 border-border shadow-soft overflow-hidden flex items-center justify-center">
+                    {teacher.avatarUrl ? (
                       <img
                         src={teacher.avatarUrl}
                         alt={teacher.displayNameEn}
                         className="h-full w-full object-cover"
-                        onError={(e) => {
-                          // On error, hide image and show fallback
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                        loading="eager"
                       />
-                    </div>
-                  ) : (
-                    <Avatar className="h-16 w-16 border-2 border-border shadow-soft">
-                      <AvatarFallback className={cn(
-                        "text-white text-xl font-bold bg-gradient-to-br",
+                    ) : (
+                      <div className={cn(
+                        "h-full w-full flex items-center justify-center text-white text-xl font-bold bg-gradient-to-br",
                         getGradient(index)
                       )}>
                         {teacher.displayNameEn.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
+                      </div>
+                    )}
+                  </div>
                   <div
                     className="flex items-center gap-2"
                     onClick={(e) => e.stopPropagation()}
