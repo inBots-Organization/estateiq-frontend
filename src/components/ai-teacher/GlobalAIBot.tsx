@@ -249,18 +249,16 @@ export function GlobalAIBot() {
   // Auto-open on first visit (client-side only)
   useEffect(() => {
     if (!hasCheckedAutoOpen) {
-      // Auto-open for:
-      // 1. New trainees without assessment (on assessment page) - show welcome bot
-      // 2. Trainees with completed assessment - show regular bot
-      const shouldAutoOpen = !hasCompletedAssessment && isOnAssessmentPage || hasCompletedAssessment;
-
-      if (shouldAutoOpen) {
-        const storageKey = hasCompletedAssessment ? AUTO_OPENED_KEY : `${AUTO_OPENED_KEY}_welcome`;
-        const wasAutoOpened = sessionStorage.getItem(storageKey);
+      // For new trainees on assessment page - ALWAYS open the bot (mandatory)
+      if (!hasCompletedAssessment && isOnAssessmentPage) {
+        setIsOpen(true);
+      }
+      // For trainees with completed assessment - check sessionStorage
+      else if (hasCompletedAssessment) {
+        const wasAutoOpened = sessionStorage.getItem(AUTO_OPENED_KEY);
         if (!wasAutoOpened) {
-          // First visit - auto open the bot
           setIsOpen(true);
-          sessionStorage.setItem(storageKey, 'true');
+          sessionStorage.setItem(AUTO_OPENED_KEY, 'true');
         }
       }
       setHasCheckedAutoOpen(true);
@@ -353,24 +351,19 @@ export function GlobalAIBot() {
     }
   }, [hasCompletedAssessment, isOnAssessmentPage, user?.role, router]);
 
-  // Play onboarding welcome audio for new trainees (Sara's voice)
+  // Play onboarding welcome audio for new trainees (Sara's voice) - plays EVERY time bot opens
   useEffect(() => {
-    if (!hasCompletedAssessment && isOpen && !onboardingWelcomePlayed && isOnAssessmentPage) {
-      // Check if already played this session
-      const playedKey = 'onboarding_welcome_played';
-      const alreadyPlayed = sessionStorage.getItem(playedKey);
-      if (alreadyPlayed) {
-        setOnboardingWelcomePlayed(true);
-        return;
-      }
-
+    // Must be: new trainee + bot is open + on assessment page + not currently playing
+    if (!hasCompletedAssessment && isOpen && isOnAssessmentPage && !isPlayingOnboardingWelcome && !onboardingWelcomePlayed) {
       const playOnboardingWelcome = async () => {
         setIsPlayingOnboardingWelcome(true);
+        setOnboardingWelcomePlayed(true); // Mark immediately to prevent double calls
+
         try {
           // Generate welcome audio using Sara's voice
           const welcomeText = language === 'ar'
-            ? 'يا هلا والله! أنا سارة، مرشدتك للبداية. سعيدة إنك معانا! خلينا نبدأ رحلتك ونكتشف مستواك عشان نختارلك أفضل معلم يناسبك.'
-            : "Hello and welcome! I'm Sara, your onboarding guide. So happy you're here! Let's start your journey and discover your level to match you with the best teacher.";
+            ? 'يا هلا والله! أنا سارة، مرشدتك للبداية. سعيدة إنك معانا! قبل ما نبدأ رحلتك في عالم العقارات، لازم نعرف مستواك الحالي. الاختبار بسيط وسريع، بس 5 دقائق! بعدها هنختارلك أفضل معلم يناسب مستواك. يلا نبدأ!'
+            : "Hello and welcome! I'm Sara, your onboarding guide. So happy you're here! Before we start your real estate journey, we need to know your current level. The assessment is quick and simple, just 5 minutes! After that, we'll match you with the perfect teacher for your level. Let's begin!";
 
           const result = await aiTeacherApi.textToSpeech(welcomeText, language, 'sara');
 
@@ -388,26 +381,25 @@ export function GlobalAIBot() {
               setIsPlayingOnboardingWelcome(false);
             };
 
-            // Try to play
+            // Try to play - needs user interaction in some browsers
             audio.play().catch((e) => {
-              console.log('Onboarding autoplay blocked:', e);
+              console.log('Onboarding autoplay blocked by browser:', e);
               setIsPlayingOnboardingWelcome(false);
             });
+          } else {
+            setIsPlayingOnboardingWelcome(false);
           }
-
-          // Mark as played
-          sessionStorage.setItem(playedKey, 'true');
-          setOnboardingWelcomePlayed(true);
         } catch (error) {
           console.error('Failed to play onboarding welcome:', error);
           setIsPlayingOnboardingWelcome(false);
-          setOnboardingWelcomePlayed(true);
         }
       };
 
-      playOnboardingWelcome();
+      // Small delay to ensure component is fully mounted
+      const timer = setTimeout(playOnboardingWelcome, 500);
+      return () => clearTimeout(timer);
     }
-  }, [hasCompletedAssessment, isOpen, onboardingWelcomePlayed, isOnAssessmentPage, language]);
+  }, [hasCompletedAssessment, isOpen, isOnAssessmentPage, isPlayingOnboardingWelcome, onboardingWelcomePlayed, language]);
 
   // Detect page changes and offer contextual help
   useEffect(() => {
