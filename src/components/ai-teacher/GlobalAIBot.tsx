@@ -8,6 +8,7 @@ import { TEACHERS, type TeacherName } from '@/config/teachers';
 import { useTeacherStore } from '@/stores/teacher.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useDiagnosticStore } from '@/stores/diagnostic.store';
 import { cn } from '@/lib/utils';
 import { aiTeacherApi } from '@/lib/api/ai-teacher.api';
 import { TalkingAvatar } from './TalkingAvatar';
@@ -150,6 +151,7 @@ export function GlobalAIBot() {
   const { t, language, isRTL } = useLanguage();
   const { activeTeacher, assignedTeacher } = useTeacherStore();
   const { user } = useAuthStore();
+  const diagnosticStore = useDiagnosticStore();
 
   // Start closed, then check if should auto-open on client
   const [isOpen, setIsOpen] = useState(false);
@@ -705,9 +707,19 @@ export function GlobalAIBot() {
                 setIsPlayingOnboardingWelcome(true);
                 try {
                   const welcomeText = language === 'ar'
-                    ? 'يا هلا والله! أنا مرشدك للبداية، سعيد إنك معانا! قبل ما نبدأ رحلتك في عالم العقارات، لازم نعرف مستواك الحالي. الاختبار بسيط وسريع، بس 5 دقائق! بعدها هنختارلك أفضل معلم يناسب مستواك. يلا نبدأ!'
-                    : "Hello and welcome! I'm your onboarding guide. So happy you're here! Before we start your real estate journey, we need to know your current level. The assessment is quick and simple, just 5 minutes! After that, we'll match you with the perfect teacher for your level. Let's begin!";
-                  const result = await aiTeacherApi.textToSpeech(welcomeText, language, 'sara');
+                    ? 'يا هلا والله! أنا مرشدتك للبداية، سعيدة إنك معانا! قبل ما نبدأ رحلتك في عالم العقارات، لازم نعرف مستواك الحالي. الاختبار بسيط وسريع، بس 5 دقائق! بعدها نختارلك أفضل معلم يناسب مستواك. يلا نبدأ!'
+                    : "Hello and welcome! I'm Sara, your onboarding guide. So happy you're here! Before we start your real estate journey, we need to know your current level. The assessment is quick and simple, just 5 minutes! After that, we'll match you with the perfect teacher for your level. Let's begin!";
+
+                  // Try sara voice first, fallback to noura (female) if sara not available
+                  let result;
+                  try {
+                    result = await aiTeacherApi.textToSpeech(welcomeText, language, 'sara');
+                  } catch {
+                    // Sara not available, try noura (female voice)
+                    console.log('Sara voice not available, trying noura...');
+                    result = await aiTeacherApi.textToSpeech(welcomeText, language, 'noura');
+                  }
+
                   if (result.audio) {
                     const audio = new Audio(`data:audio/mpeg;base64,${result.audio}`);
                     currentAudioRef.current = audio;
@@ -737,7 +749,16 @@ export function GlobalAIBot() {
           )}
 
           <Button
-            onClick={() => router.push('/assessment')}
+            onClick={async () => {
+              // Start the assessment via the diagnostic store
+              try {
+                await diagnosticStore.startAssessment();
+                // Close the bot after starting
+                setIsOpen(false);
+              } catch (error) {
+                console.error('Failed to start assessment:', error);
+              }
+            }}
             className="w-full h-12 text-base font-semibold bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 hover:from-teal-600 hover:via-emerald-600 hover:to-green-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <span className="mr-2">🚀</span>
