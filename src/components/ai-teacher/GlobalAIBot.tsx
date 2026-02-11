@@ -259,15 +259,17 @@ export function GlobalAIBot() {
 
     // Wait a tick to ensure we have user data
     const timer = setTimeout(() => {
-      // For new trainees - ALWAYS open the bot immediately (mandatory onboarding)
-      if (!hasCompletedAssessment && user?.role === 'trainee') {
+      // For new trainees (no assessment) - ALWAYS open the bot immediately
+      // Don't check role - just check if assessment is not completed
+      if (!hasCompletedAssessment && !isAdminUser) {
+        console.log('[GlobalAIBot] Auto-opening for new trainee (no assessment)');
         setIsOpen(true);
         setHasCheckedAutoOpen(true);
         return;
       }
 
       // For trainees with completed assessment - check sessionStorage
-      if (hasCompletedAssessment) {
+      if (hasCompletedAssessment && !isAdminUser) {
         const wasAutoOpened = sessionStorage.getItem(AUTO_OPENED_KEY);
         if (!wasAutoOpened) {
           setIsOpen(true);
@@ -275,10 +277,10 @@ export function GlobalAIBot() {
         }
       }
       setHasCheckedAutoOpen(true);
-    }, 100);
+    }, 300); // Increased delay to ensure user data is loaded
 
     return () => clearTimeout(timer);
-  }, [hasCheckedAutoOpen, hasCompletedAssessment, user?.role]);
+  }, [hasCheckedAutoOpen, hasCompletedAssessment, isAdminUser]);
 
   // Play welcome audio on first open
   useEffect(() => {
@@ -362,28 +364,30 @@ export function GlobalAIBot() {
   // Only redirect ONCE - use a ref to track if we've already redirected
   const hasRedirectedRef = useRef(false);
   useEffect(() => {
-    // Only redirect if: new trainee + not on assessment + haven't redirected yet
-    if (!hasCompletedAssessment && !isOnAssessmentPage && user?.role === 'trainee' && !hasRedirectedRef.current) {
+    // Only redirect if: new trainee + not on assessment + not admin + haven't redirected yet
+    if (!hasCompletedAssessment && !isOnAssessmentPage && !isAdminUser && !hasRedirectedRef.current) {
       hasRedirectedRef.current = true; // Prevent infinite redirects
+      console.log('[GlobalAIBot] Redirecting new trainee to assessment page');
       router.replace('/assessment');
     }
-  }, [hasCompletedAssessment, isOnAssessmentPage, user?.role, router]);
+  }, [hasCompletedAssessment, isOnAssessmentPage, isAdminUser, router]);
 
   // Ref to prevent duplicate onboarding welcome calls
   const onboardingWelcomeTriggeredRef = useRef(false);
 
   // Play onboarding welcome audio for new trainees (Sara's voice) - plays ONCE when bot opens
   useEffect(() => {
-    // Must be: new trainee + bot is open + haven't triggered yet
-    if (!hasCompletedAssessment && isOpen && !onboardingWelcomeTriggeredRef.current && user?.role === 'trainee') {
+    // Must be: new trainee + bot is open + haven't triggered yet + not admin
+    if (!hasCompletedAssessment && isOpen && !onboardingWelcomeTriggeredRef.current && !isAdminUser) {
       // Mark as triggered IMMEDIATELY to prevent any race conditions
       onboardingWelcomeTriggeredRef.current = true;
+      console.log('[GlobalAIBot] Onboarding welcome triggered for new trainee');
 
       // Don't auto-play audio - browsers block it. User must click the "Listen" button
       // Just set the flag so we show the welcome UI
       setOnboardingWelcomePlayed(false); // Reset so button shows
     }
-  }, [hasCompletedAssessment, isOpen, user?.role]);
+  }, [hasCompletedAssessment, isOpen, isAdminUser]);
 
   // Detect page changes and offer contextual help
   useEffect(() => {
