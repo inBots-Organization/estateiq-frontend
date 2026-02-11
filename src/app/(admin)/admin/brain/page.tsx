@@ -546,12 +546,12 @@ export default function AdminBrainPage() {
             {/* Target Persona (optional) */}
             <div className="space-y-2">
               <Label>{isRTL ? 'المعلم المستهدف (اختياري)' : 'Target Teacher (Optional)'}</Label>
-              <Select value={selectedPersona} onValueChange={setSelectedPersona}>
+              <Select value={selectedPersona || '_all_'} onValueChange={(v) => setSelectedPersona(v === '_all_' ? '' : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder={isRTL ? 'اختر معلم...' : 'Select teacher...'} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{isRTL ? 'كل المعلمين' : 'All Teachers'}</SelectItem>
+                  <SelectItem value="_all_">{isRTL ? 'كل المعلمين' : 'All Teachers'}</SelectItem>
                   {teachers.length > 0 ? (
                     teachers.map(t => (
                       <SelectItem key={t.id} value={t.name}>
