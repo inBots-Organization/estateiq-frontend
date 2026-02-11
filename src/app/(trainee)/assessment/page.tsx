@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDiagnosticStore } from '@/stores/diagnostic.store';
 import { useTeacherStore } from '@/stores/teacher.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { diagnosticApi, type EvaluatorReport } from '@/lib/api/diagnostic.api';
 import { cn } from '@/lib/utils';
 import type { SkillReport } from '@/types/diagnostic';
@@ -35,6 +36,7 @@ export default function AssessmentPage() {
   const router = useRouter();
   const { t, isRTL, language } = useLanguage();
   const store = useDiagnosticStore();
+  const { user } = useAuthStore();
   const [report, setReport] = useState<SkillReport | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,11 +56,16 @@ export default function AssessmentPage() {
       setEvaluatorStatus(result.evaluatorStatus);
       if (result.evaluatorReport) {
         setEvaluatorReport(result.evaluatorReport);
-        // Store assigned teacher in Zustand
+        // Store assigned teacher in Zustand WITH userId to track ownership
         if (result.evaluatorReport.teacherAssignment?.teacherName) {
-          useTeacherStore.getState().setAssignedTeacher(
+          const teacherStore = useTeacherStore.getState();
+          teacherStore.setAssignedTeacher(
             result.evaluatorReport.teacherAssignment.teacherName as any
           );
+          // CRITICAL: Also save the userId so GlobalAIBot knows this user completed assessment
+          if (user?.id) {
+            teacherStore.setUserId(user.id);
+          }
         }
         // Stop polling once completed
         if (pollingRef.current) {
