@@ -919,21 +919,39 @@ export function GlobalAIBot() {
       <button
         onClick={() => setIsOpen(true)}
         className={cn(
-          'fixed bottom-6 z-50 w-14 h-14 rounded-full shadow-lg',
-          'bg-gradient-to-br text-white flex items-center justify-center',
-          'hover:scale-110 transition-transform duration-200',
-          'ring-4 ring-white/20',
-          teacher.gradient,
+          'fixed bottom-6 z-50 group',
           isRTL ? 'left-6' : 'right-6'
         )}
         aria-label={t.floatingBot.quickChat}
       >
-        <span className="text-xl font-bold">{teacher.initial[language]}</span>
-        {/* Pulse */}
+        {/* Main button with avatar */}
+        <div className={cn(
+          'relative w-16 h-16 rounded-2xl shadow-xl',
+          'bg-gradient-to-br text-white flex items-center justify-center',
+          'hover:scale-105 transition-all duration-300',
+          'ring-4 ring-white/20 hover:ring-white/40',
+          teacher.gradient
+        )}>
+          {/* Teacher initial with gradient background */}
+          <span className="text-2xl font-bold">{teacher.initial[language]}</span>
+          {/* Online indicator */}
+          <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse" />
+        </div>
+        {/* Pulse ring */}
         <span className={cn(
-          'absolute inset-0 rounded-full bg-gradient-to-br animate-ping opacity-20',
+          'absolute inset-0 rounded-2xl bg-gradient-to-br animate-ping opacity-20',
           teacher.gradient
         )} />
+        {/* Hover tooltip */}
+        <div className={cn(
+          'absolute top-1/2 -translate-y-1/2 bg-card px-3 py-2 rounded-xl shadow-lg',
+          'opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none',
+          'border border-border whitespace-nowrap',
+          isRTL ? 'right-20' : 'left-20'
+        )}>
+          <p className="text-sm font-medium text-foreground">{teacher.displayName[language]}</p>
+          <p className="text-xs text-muted-foreground">{language === 'ar' ? 'اضغط للمحادثة' : 'Click to chat'}</p>
+        </div>
       </button>
     );
   }
@@ -942,35 +960,51 @@ export function GlobalAIBot() {
   return (
     <div className={cn(
       'fixed bottom-6 z-50',
-      'w-[400px] max-h-[520px] bg-card border border-border rounded-2xl shadow-2xl',
-      'flex flex-col overflow-hidden',
+      'w-[420px] max-h-[560px] bg-card border border-border/50 rounded-3xl shadow-2xl',
+      'flex flex-col overflow-hidden backdrop-blur-sm',
       isRTL ? 'left-6' : 'right-6',
       // Mobile: full width
-      'max-sm:w-[calc(100%-3rem)] max-sm:left-6 max-sm:right-6'
+      'max-sm:w-[calc(100%-2rem)] max-sm:left-4 max-sm:right-4'
     )}>
-      {/* Header with Talking Avatar */}
+      {/* Premium Header with Talking Avatar */}
       <div className={cn(
-        'flex items-center justify-between px-4 py-3 border-b',
-        'bg-gradient-to-r text-white',
+        'relative flex items-center justify-between px-5 py-4',
+        'bg-gradient-to-r text-white overflow-hidden',
         teacher.gradient
       )}>
-        <div className="flex items-center gap-3">
-          <TalkingAvatar
-            teacherName={currentTeacher as TeacherName}
-            size="lg"
-            isSpeaking={playingMessageId !== null}
-            audioElement={currentAudioRef.current}
-          />
+        {/* Subtle animated background pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-32 h-32 bg-white/20 rounded-full blur-2xl animate-pulse" />
+          <div className="absolute bottom-0 right-0 w-24 h-24 bg-white/20 rounded-full blur-xl animate-pulse delay-300" />
+        </div>
+
+        <div className="relative flex items-center gap-4">
+          {/* Avatar with ring effect */}
+          <div className="relative">
+            <div className={cn(
+              'ring-2 ring-white/30 rounded-full',
+              playingMessageId && 'ring-4 ring-white/50 animate-pulse'
+            )}>
+              <TalkingAvatar
+                teacherName={currentTeacher as TeacherName}
+                size="lg"
+                isSpeaking={playingMessageId !== null}
+                audioElement={currentAudioRef.current}
+              />
+            </div>
+            {/* Online status */}
+            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white" />
+          </div>
           <div>
-            <p className="font-semibold">{teacher.displayName[language]}</p>
-            <p className="text-xs opacity-80">{teacher.shortDescription[language]}</p>
+            <h3 className="font-bold text-lg">{teacher.displayName[language]}</h3>
+            <p className="text-xs text-white/80">{teacher.shortDescription[language]}</p>
           </div>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="relative flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-white/80 hover:text-white hover:bg-white/20"
+            className="h-9 w-9 text-white/80 hover:text-white hover:bg-white/20 rounded-xl"
             onClick={() => {
               stopAudio();
               setIsOpen(false);
@@ -983,7 +1017,7 @@ export function GlobalAIBot() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-white/80 hover:text-white hover:bg-white/20"
+            className="h-9 w-9 text-white/80 hover:text-white hover:bg-white/20 rounded-xl"
             onClick={() => {
               stopAudio();
               setIsOpen(false);
@@ -995,41 +1029,53 @@ export function GlobalAIBot() {
       </div>
 
       {/* Context Banner - Smart guidance */}
-      <div className="px-3 py-2 bg-muted/50 text-xs text-muted-foreground border-b flex items-center gap-2">
+      <div className={cn(
+        'px-4 py-2.5 text-xs border-b flex items-center gap-2',
+        'bg-gradient-to-r from-muted/80 to-muted/40'
+      )}>
         <span className="text-base">📍</span>
-        <span>{pageContext.displayText}</span>
+        <span className="text-muted-foreground">{pageContext.displayText}</span>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 min-h-[220px] max-h-[320px]">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-[240px] max-h-[340px] scroll-smooth">
         {isLoadingWelcome && (
           <div className="flex items-center justify-center h-full">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
+            <div className="flex flex-col items-center gap-3 text-muted-foreground">
+              <div className="relative">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <div className="absolute inset-0 h-8 w-8 animate-ping opacity-20 rounded-full bg-primary" />
+              </div>
               <span className="text-sm">{language === 'ar' ? 'جاري التحميل...' : 'Loading...'}</span>
             </div>
           </div>
         )}
         {!isLoadingWelcome && messages.length === 0 && (
-          <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-            {t.floatingBot.greeting}
+          <div className="flex flex-col items-center justify-center h-full text-center py-8">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4">
+              <span className="text-3xl">💬</span>
+            </div>
+            <p className="text-muted-foreground text-sm">{t.floatingBot.greeting}</p>
+            <p className="text-muted-foreground/60 text-xs mt-1">
+              {language === 'ar' ? 'اكتب سؤالك أو استخدم الميكروفون' : 'Type your question or use the microphone'}
+            </p>
           </div>
         )}
         {messages.map((msg) => (
           <div
             key={msg.id}
             className={cn(
-              'flex flex-col gap-1',
+              'flex flex-col gap-1.5',
               msg.role === 'user'
                 ? (isRTL ? 'items-start' : 'items-end')
                 : (isRTL ? 'items-end' : 'items-start')
             )}
           >
             <div className={cn(
-              'max-w-[85%] px-3 py-2 rounded-xl text-sm',
+              'max-w-[85%] px-4 py-3 text-sm shadow-sm',
               msg.role === 'user'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-foreground'
+                ? 'bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-2xl rounded-br-md'
+                : 'bg-muted/80 text-foreground rounded-2xl rounded-bl-md border border-border/50'
             )}>
               <p className="whitespace-pre-wrap break-words leading-relaxed">{msg.content}</p>
             </div>
@@ -1038,21 +1084,21 @@ export function GlobalAIBot() {
               <button
                 onClick={() => playMessageAudio(msg)}
                 className={cn(
-                  'flex items-center gap-1 text-xs px-2 py-1 rounded-md transition-colors',
+                  'flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full transition-all duration-200',
                   playingMessageId === msg.id
-                    ? 'text-primary bg-primary/10'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    ? 'text-white bg-primary shadow-md'
+                    : 'text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted border border-border/50'
                 )}
               >
                 {playingMessageId === msg.id ? (
                   <>
-                    <VolumeX className="h-3 w-3" />
+                    <VolumeX className="h-3.5 w-3.5" />
                     <span>{language === 'ar' ? 'إيقاف' : 'Stop'}</span>
                   </>
                 ) : (
                   <>
-                    <Volume2 className="h-3 w-3" />
-                    <span>{language === 'ar' ? 'استمع' : 'Listen'}</span>
+                    <Volume2 className="h-3.5 w-3.5" />
+                    <span>{language === 'ar' ? '🔊 استمع' : '🔊 Listen'}</span>
                   </>
                 )}
               </button>
@@ -1061,9 +1107,13 @@ export function GlobalAIBot() {
         ))}
         {isLoading && (
           <div className={cn('flex', isRTL ? 'justify-end' : 'justify-start')}>
-            <div className="bg-muted px-3 py-2 rounded-xl text-sm text-muted-foreground flex items-center gap-2">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              {t.floatingBot.thinking}
+            <div className="bg-muted/80 border border-border/50 px-4 py-3 rounded-2xl rounded-bl-md text-sm text-muted-foreground flex items-center gap-3">
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+              <span>{t.floatingBot.thinking}</span>
             </div>
           </div>
         )}
@@ -1071,17 +1121,19 @@ export function GlobalAIBot() {
       </div>
 
       {/* Input */}
-      <div className="px-3 py-3 border-t bg-background">
-        <div className="flex items-center gap-2">
+      <div className="px-4 py-4 border-t bg-gradient-to-t from-background to-background/80">
+        <div className="flex items-center gap-3">
           {/* Voice Recording Button */}
           <Button
             size="icon"
-            variant="ghost"
+            variant="outline"
             onClick={isRecording ? stopRecording : startRecording}
             disabled={isLoading || isTranscribing}
             className={cn(
-              'h-9 w-9 rounded-lg shrink-0',
-              isRecording && 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
+              'h-11 w-11 rounded-xl shrink-0 border-2 transition-all duration-300',
+              isRecording
+                ? 'bg-red-500 hover:bg-red-600 text-white border-red-500 animate-pulse shadow-lg shadow-red-500/30'
+                : 'hover:bg-muted hover:border-primary/50'
             )}
             title={isRecording
               ? (language === 'ar' ? 'إيقاف التسجيل' : 'Stop recording')
@@ -1089,39 +1141,45 @@ export function GlobalAIBot() {
             }
           >
             {isTranscribing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-5 w-5 animate-spin" />
             ) : isRecording ? (
-              <Square className="h-4 w-4" />
+              <Square className="h-5 w-5" />
             ) : (
-              <Mic className="h-4 w-4" />
+              <Mic className="h-5 w-5" />
             )}
           </Button>
 
-          <input
-            ref={inputRef}
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={isTranscribing
-              ? (language === 'ar' ? 'جاري تحويل الصوت...' : 'Transcribing...')
-              : t.floatingBot.askAnything
-            }
-            className={cn(
-              'flex-1 bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm',
-              'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
-              'placeholder:text-muted-foreground',
-              isRTL && 'text-right'
-            )}
-            disabled={isLoading || isTranscribing}
-          />
+          <div className="flex-1 relative">
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={isTranscribing
+                ? (language === 'ar' ? 'جاري تحويل الصوت...' : 'Transcribing...')
+                : t.floatingBot.askAnything
+              }
+              className={cn(
+                'w-full bg-muted/60 border-2 border-border/50 rounded-xl px-4 py-3 text-sm',
+                'focus:outline-none focus:ring-0 focus:border-primary/50 focus:bg-muted/80',
+                'placeholder:text-muted-foreground/70 transition-all duration-200',
+                isRTL && 'text-right'
+              )}
+              disabled={isLoading || isTranscribing}
+            />
+          </div>
           <Button
             size="icon"
             onClick={handleSend}
             disabled={!input.trim() || isLoading || isTranscribing}
-            className={cn('h-9 w-9 rounded-lg bg-gradient-to-br shrink-0', teacher.gradient)}
+            className={cn(
+              'h-11 w-11 rounded-xl bg-gradient-to-br shrink-0 shadow-lg transition-all duration-300',
+              'hover:scale-105 hover:shadow-xl disabled:opacity-50 disabled:hover:scale-100',
+              teacher.gradient
+            )}
           >
-            <Send className={cn('h-4 w-4', isRTL && 'rotate-180')} />
+            <Send className={cn('h-5 w-5', isRTL && 'rotate-180')} />
           </Button>
         </div>
       </div>
