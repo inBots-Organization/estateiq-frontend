@@ -4,6 +4,8 @@ import { apiClient } from './client';
 
 export type BrainDocumentStatus = 'uploading' | 'processing' | 'ready' | 'failed';
 
+export type ContentLevel = 'beginner' | 'intermediate' | 'advanced' | 'professional' | 'general';
+
 export interface BrainDocument {
   id: string;
   title: string;
@@ -15,6 +17,9 @@ export interface BrainDocument {
   isSystemDefault: boolean;
   uploadedBy: string;
   errorMessage?: string | null;
+  contentLevel: ContentLevel;
+  targetPersona?: string | null;
+  tags: string[];
   createdAt: string;
 }
 
@@ -89,9 +94,19 @@ export const brainApi = {
   },
 
   /** Upload a document (uses FormData for multipart) */
-  uploadDocument: async (file: File): Promise<BrainUploadResponse> => {
+  uploadDocument: async (
+    file: File,
+    options?: {
+      contentLevel?: ContentLevel;
+      targetPersona?: string;
+      tags?: string[];
+    }
+  ): Promise<BrainUploadResponse> => {
     const formData = new FormData();
     formData.append('file', file);
+    if (options?.contentLevel) formData.append('contentLevel', options.contentLevel);
+    if (options?.targetPersona) formData.append('targetPersona', options.targetPersona);
+    if (options?.tags?.length) formData.append('tags', JSON.stringify(options.tags));
 
     const response = await fetch(`${API_BASE}/brain/documents`, {
       method: 'POST',
