@@ -214,9 +214,14 @@ export function GlobalAIBot() {
     });
   }, [autoPlayEnabled]);
 
-  // Hide on specific pages
-  const hiddenPaths = ['/ai-teacher', '/assessment'];
-  const shouldHideOnPath = hiddenPaths.some(p => pathname.includes(p));
+  // Check if assessment is complete (has assigned teacher or skill level)
+  const hasCompletedAssessment = assignedTeacher !== null;
+
+  // Hide on specific pages (but allow welcome bot for new trainees on /assessment)
+  const isOnAssessmentPage = pathname.includes('/assessment');
+  const hiddenPaths = ['/ai-teacher'];
+  const shouldHideOnPath = hiddenPaths.some(p => pathname.includes(p)) ||
+    (isOnAssessmentPage && hasCompletedAssessment); // Hide on assessment only if already completed
 
   // Hide for admin roles - bot is only for trainees
   const adminRoles = ['saas_super_admin', 'org_admin', 'trainer'];
@@ -224,9 +229,6 @@ export function GlobalAIBot() {
 
   // Combined hide condition
   const shouldHide = shouldHideOnPath || isAdminUser;
-
-  // Check if assessment is complete (has assigned teacher)
-  const hasCompletedAssessment = assignedTeacher !== null;
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -242,16 +244,24 @@ export function GlobalAIBot() {
 
   // Auto-open on first visit (client-side only)
   useEffect(() => {
-    if (!hasCheckedAutoOpen && hasCompletedAssessment) {
-      const wasAutoOpened = sessionStorage.getItem(AUTO_OPENED_KEY);
-      if (!wasAutoOpened) {
-        // First visit - auto open the bot
-        setIsOpen(true);
-        sessionStorage.setItem(AUTO_OPENED_KEY, 'true');
+    if (!hasCheckedAutoOpen) {
+      // Auto-open for:
+      // 1. New trainees without assessment (on assessment page) - show welcome bot
+      // 2. Trainees with completed assessment - show regular bot
+      const shouldAutoOpen = !hasCompletedAssessment && isOnAssessmentPage || hasCompletedAssessment;
+
+      if (shouldAutoOpen) {
+        const storageKey = hasCompletedAssessment ? AUTO_OPENED_KEY : `${AUTO_OPENED_KEY}_welcome`;
+        const wasAutoOpened = sessionStorage.getItem(storageKey);
+        if (!wasAutoOpened) {
+          // First visit - auto open the bot
+          setIsOpen(true);
+          sessionStorage.setItem(storageKey, 'true');
+        }
       }
       setHasCheckedAutoOpen(true);
     }
-  }, [hasCheckedAutoOpen, hasCompletedAssessment]);
+  }, [hasCheckedAutoOpen, hasCompletedAssessment, isOnAssessmentPage]);
 
   // Play welcome audio on first open
   useEffect(() => {
