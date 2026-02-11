@@ -102,6 +102,9 @@ export const useAuthStore = create<AuthState>()(
         if (typeof window !== 'undefined') {
           localStorage.removeItem('auth_token');
           localStorage.removeItem('impersonation_token');
+          // Clear session storage to reset diagnostic and teacher states
+          sessionStorage.removeItem('diagnostic-assessment');
+          sessionStorage.removeItem('teacher-assignment');
         }
         set({ token: null, user: null, isAuthenticated: false, impersonation: null });
       },

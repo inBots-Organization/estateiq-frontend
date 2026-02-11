@@ -46,26 +46,41 @@ export const useDiagnosticStore = create<DiagnosticState>()(
       checkAndSetStatus: async () => {
         try {
           const status = await diagnosticApi.getStatus();
-          set({
-            assessmentRequired: status.needsDiagnostic,
-            lastCheckTimestamp: Date.now(),
-            latestReport: status.currentReport,
-          });
-          // If they already have a report for today, mark as done
-          if (!status.needsDiagnostic && get().assessmentPhase !== 'done') {
-            set({ assessmentPhase: 'idle' });
-          }
-          // IMPORTANT: If server says diagnostic is needed, reset local teacher assignment
-          // This handles the case where admin reset evaluations on another device
-          if (status.needsDiagnostic && !status.currentReport) {
-            // Dynamically import to avoid circular dependency
+
+          // CRITICAL: If server says diagnostic is needed, ALWAYS reset local state
+          // This handles the case where admin reset evaluations
+          if (status.needsDiagnostic) {
+            console.log('[DiagnosticStore] Server says diagnostic needed - resetting local state');
+
+            // Reset teacher assignment
             import('@/stores/teacher.store').then(({ useTeacherStore }) => {
               useTeacherStore.getState().reset();
             });
-            // Also reset this store's state if it was marked as done
-            if (get().assessmentPhase === 'done') {
-              set({ assessmentPhase: 'idle', latestReport: null });
-            }
+
+            // Clear all local diagnostic state
+            set({
+              assessmentRequired: true,
+              assessmentPhase: 'idle',
+              diagnosticSessionId: null,
+              chatSimulationSessionId: null,
+              voiceSimulationSessionId: null,
+              skippedVoice: false,
+              latestReport: null, // Clear old report!
+              lastCheckTimestamp: Date.now(),
+            });
+            return;
+          }
+
+          // Server says no diagnostic needed - use server's current report
+          set({
+            assessmentRequired: false,
+            lastCheckTimestamp: Date.now(),
+            latestReport: status.currentReport,
+          });
+
+          // If they have a report, keep phase as idle (not done, to avoid confusion)
+          if (status.currentReport && get().assessmentPhase !== 'done') {
+            set({ assessmentPhase: 'idle' });
           }
         } catch (err) {
           console.error('[DiagnosticStore] Failed to check status:', err);

@@ -158,8 +158,12 @@ export default function TraineeLayout({
       return;
     }
 
-    // API check (throttled to once per 60s)
-    if (!diagnosticStore.lastCheckTimestamp || Date.now() - diagnosticStore.lastCheckTimestamp > 60000) {
+    // API check (throttled to once per 60s, but force check on new session)
+    const timeSinceLastCheck = Date.now() - (diagnosticStore.lastCheckTimestamp || 0);
+    const isNewSession = !diagnosticStore.lastCheckTimestamp || timeSinceLastCheck > 300000; // 5 min = new session
+    const shouldCheck = isNewSession || timeSinceLastCheck > 60000;
+
+    if (shouldCheck) {
       diagnosticStore.checkAndSetStatus();
     }
   }, [isHydrated, token, pathname, user?.role, diagnosticStore, router]);
