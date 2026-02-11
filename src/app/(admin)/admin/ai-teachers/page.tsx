@@ -28,6 +28,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -117,8 +120,17 @@ export default function AITeachersPage() {
     name: '',
     displayNameAr: '',
     displayNameEn: '',
+    descriptionAr: '',
+    descriptionEn: '',
     personality: 'friendly',
     level: 'general',
+    voiceId: '',
+    systemPromptAr: '',
+    systemPromptEn: '',
+    welcomeMessageAr: '',
+    welcomeMessageEn: '',
+    brainQueryPrefix: '',
+    contextSource: 'brain',
   });
 
   // Fetch teachers
@@ -498,9 +510,9 @@ export default function AITeachersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Create Teacher Dialog */}
+      {/* Create Teacher Dialog - Enhanced with all fields */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Bot className="h-5 w-5 text-violet-500" />
@@ -508,85 +520,205 @@ export default function AITeachersPage() {
             </DialogTitle>
             <DialogDescription>
               {isRTL
-                ? 'أدخل المعلومات الأساسية للمعلم الجديد. يمكنك تعديل التفاصيل لاحقاً.'
-                : 'Enter basic information for the new teacher. You can edit details later.'}
+                ? 'أدخل جميع تفاصيل المعلم الجديد لتخصيصه بالكامل'
+                : 'Enter all details for the new teacher to fully customize it'}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{isRTL ? 'الاسم بالعربي' : 'Arabic Name'}</Label>
-                <Input
-                  value={newTeacher.displayNameAr}
-                  onChange={(e) => setNewTeacher(prev => ({ ...prev, displayNameAr: e.target.value }))}
-                  placeholder={isRTL ? 'مثال: سارة' : 'e.g., سارة'}
-                  dir="rtl"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{isRTL ? 'الاسم بالإنجليزي' : 'English Name'}</Label>
-                <Input
-                  value={newTeacher.displayNameEn}
-                  onChange={(e) => setNewTeacher(prev => ({ ...prev, displayNameEn: e.target.value }))}
-                  placeholder="e.g., Sarah"
-                />
-              </div>
-            </div>
+          <ScrollArea className="max-h-[60vh] pr-4">
+            <Tabs defaultValue="basic" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-4">
+                <TabsTrigger value="basic">{isRTL ? 'أساسي' : 'Basic'}</TabsTrigger>
+                <TabsTrigger value="prompts">{isRTL ? 'التعليمات' : 'Prompts'}</TabsTrigger>
+                <TabsTrigger value="advanced">{isRTL ? 'متقدم' : 'Advanced'}</TabsTrigger>
+              </TabsList>
 
-            <div className="space-y-2">
-              <Label>{isRTL ? 'المعرف (للنظام)' : 'Identifier (system)'}</Label>
-              <Input
-                value={newTeacher.name}
-                onChange={(e) => setNewTeacher(prev => ({ ...prev, name: e.target.value.toLowerCase().replace(/\s+/g, '-') }))}
-                placeholder="e.g., sarah"
-              />
-              <p className="text-xs text-muted-foreground">
-                {isRTL ? 'حروف إنجليزية صغيرة بدون مسافات' : 'Lowercase letters, no spaces'}
-              </p>
-            </div>
+              {/* Basic Tab */}
+              <TabsContent value="basic" className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>{isRTL ? 'الاسم بالعربي *' : 'Arabic Name *'}</Label>
+                    <Input
+                      value={newTeacher.displayNameAr}
+                      onChange={(e) => setNewTeacher(prev => ({ ...prev, displayNameAr: e.target.value }))}
+                      placeholder={isRTL ? 'مثال: سارة' : 'e.g., سارة'}
+                      dir="rtl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{isRTL ? 'الاسم بالإنجليزي *' : 'English Name *'}</Label>
+                    <Input
+                      value={newTeacher.displayNameEn}
+                      onChange={(e) => setNewTeacher(prev => ({ ...prev, displayNameEn: e.target.value }))}
+                      placeholder="e.g., Sarah"
+                    />
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{isRTL ? 'الشخصية' : 'Personality'}</Label>
-                <Select
-                  value={newTeacher.personality}
-                  onValueChange={(value) => setNewTeacher(prev => ({ ...prev, personality: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(PERSONALITIES).map(([key, val]) => (
-                      <SelectItem key={key} value={key}>
-                        {isRTL ? val.label.ar : val.label.en}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>{isRTL ? 'المستوى' : 'Level'}</Label>
-                <Select
-                  value={newTeacher.level}
-                  onValueChange={(value) => setNewTeacher(prev => ({ ...prev, level: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(LEVELS).map(([key, val]) => (
-                      <SelectItem key={key} value={key}>
-                        {isRTL ? val.label.ar : val.label.en}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
+                <div className="space-y-2">
+                  <Label>{isRTL ? 'المعرف (للنظام) *' : 'Identifier (system) *'}</Label>
+                  <Input
+                    value={newTeacher.name}
+                    onChange={(e) => setNewTeacher(prev => ({ ...prev, name: e.target.value.toLowerCase().replace(/\s+/g, '-') }))}
+                    placeholder="e.g., sarah"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {isRTL ? 'حروف إنجليزية صغيرة بدون مسافات' : 'Lowercase letters, no spaces'}
+                  </p>
+                </div>
 
-          <DialogFooter>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>{isRTL ? 'الوصف بالعربي' : 'Arabic Description'}</Label>
+                    <Textarea
+                      value={newTeacher.descriptionAr || ''}
+                      onChange={(e) => setNewTeacher(prev => ({ ...prev, descriptionAr: e.target.value }))}
+                      placeholder={isRTL ? 'وصف قصير للمعلم...' : 'Short description...'}
+                      dir="rtl"
+                      rows={2}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{isRTL ? 'الوصف بالإنجليزي' : 'English Description'}</Label>
+                    <Textarea
+                      value={newTeacher.descriptionEn || ''}
+                      onChange={(e) => setNewTeacher(prev => ({ ...prev, descriptionEn: e.target.value }))}
+                      placeholder="Short description..."
+                      rows={2}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>{isRTL ? 'الشخصية' : 'Personality'}</Label>
+                    <Select
+                      value={newTeacher.personality}
+                      onValueChange={(value) => setNewTeacher(prev => ({ ...prev, personality: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(PERSONALITIES).map(([key, val]) => (
+                          <SelectItem key={key} value={key}>
+                            {isRTL ? val.label.ar : val.label.en}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{isRTL ? 'المستوى' : 'Level'}</Label>
+                    <Select
+                      value={newTeacher.level}
+                      onValueChange={(value) => setNewTeacher(prev => ({ ...prev, level: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(LEVELS).map(([key, val]) => (
+                          <SelectItem key={key} value={key}>
+                            {isRTL ? val.label.ar : val.label.en}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Prompts Tab */}
+              <TabsContent value="prompts" className="space-y-4">
+                <div className="space-y-2">
+                  <Label>{isRTL ? 'System Prompt بالعربي' : 'Arabic System Prompt'}</Label>
+                  <Textarea
+                    value={newTeacher.systemPromptAr || ''}
+                    onChange={(e) => setNewTeacher(prev => ({ ...prev, systemPromptAr: e.target.value }))}
+                    placeholder={isRTL ? 'تعليمات المعلم بالعربي...' : 'Arabic instructions...'}
+                    dir="rtl"
+                    rows={5}
+                    className="font-mono text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>{isRTL ? 'System Prompt بالإنجليزي' : 'English System Prompt'}</Label>
+                  <Textarea
+                    value={newTeacher.systemPromptEn || ''}
+                    onChange={(e) => setNewTeacher(prev => ({ ...prev, systemPromptEn: e.target.value }))}
+                    placeholder="English instructions..."
+                    rows={5}
+                    className="font-mono text-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>{isRTL ? 'رسالة الترحيب بالعربي' : 'Arabic Welcome'}</Label>
+                    <Textarea
+                      value={newTeacher.welcomeMessageAr || ''}
+                      onChange={(e) => setNewTeacher(prev => ({ ...prev, welcomeMessageAr: e.target.value }))}
+                      placeholder={isRTL ? 'مرحباً...' : 'Welcome message...'}
+                      dir="rtl"
+                      rows={2}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{isRTL ? 'رسالة الترحيب بالإنجليزي' : 'English Welcome'}</Label>
+                    <Textarea
+                      value={newTeacher.welcomeMessageEn || ''}
+                      onChange={(e) => setNewTeacher(prev => ({ ...prev, welcomeMessageEn: e.target.value }))}
+                      placeholder="Welcome message..."
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Advanced Tab */}
+              <TabsContent value="advanced" className="space-y-4">
+                <div className="space-y-2">
+                  <Label>{isRTL ? 'معرف الصوت (ElevenLabs)' : 'Voice ID (ElevenLabs)'}</Label>
+                  <Input
+                    value={newTeacher.voiceId || ''}
+                    onChange={(e) => setNewTeacher(prev => ({ ...prev, voiceId: e.target.value }))}
+                    placeholder="e.g., onwK4e9ZLuTAKqWW03F9"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {isRTL ? 'اتركه فارغاً لاستخدام الصوت الافتراضي' : 'Leave empty to use default voice'}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label>{isRTL ? 'بادئة البحث في المعرفة' : 'Brain Query Prefix'}</Label>
+                  <Input
+                    value={newTeacher.brainQueryPrefix || ''}
+                    onChange={(e) => setNewTeacher(prev => ({ ...prev, brainQueryPrefix: e.target.value }))}
+                    placeholder="e.g., basics fundamentals"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {isRTL ? 'كلمات تضاف للبحث في قاعدة المعرفة' : 'Keywords added to knowledge base queries'}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label>{isRTL ? 'مصدر السياق' : 'Context Source'}</Label>
+                  <Select
+                    value={newTeacher.contextSource || 'brain'}
+                    onValueChange={(value) => setNewTeacher(prev => ({ ...prev, contextSource: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="brain">{isRTL ? 'قاعدة المعرفة' : 'Knowledge Base'}</SelectItem>
+                      <SelectItem value="user-history">{isRTL ? 'سجل المستخدم' : 'User History'}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </ScrollArea>
+
+          <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
               {isRTL ? 'إلغاء' : 'Cancel'}
             </Button>
