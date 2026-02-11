@@ -14,6 +14,7 @@ export interface TeacherConfig {
   description: { ar: string; en: string };
   shortDescription: { ar: string; en: string };
   initial: { ar: string; en: string };
+  avatarUrl: string; // Avatar image URL
   gradient: string;
   bgLight: string;
   textColor: string;
@@ -35,6 +36,7 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
       en: 'Fundamentals',
     },
     initial: { ar: 'أ', en: 'A' },
+    avatarUrl: 'https://api.dicebear.com/9.x/notionists-neutral/svg?seed=Ahmed&backgroundColor=3b82f6',
     gradient: 'from-blue-500 to-blue-600',
     bgLight: 'bg-blue-500/10',
     textColor: 'text-blue-600',
@@ -54,6 +56,7 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
       en: 'Sales Strategy',
     },
     initial: { ar: 'ن', en: 'N' },
+    avatarUrl: 'https://api.dicebear.com/9.x/notionists-neutral/svg?seed=Noura&backgroundColor=8b5cf6',
     gradient: 'from-purple-500 to-purple-600',
     bgLight: 'bg-purple-500/10',
     textColor: 'text-purple-600',
@@ -73,6 +76,7 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
       en: 'Senior Closer',
     },
     initial: { ar: 'أ', en: 'A' },
+    avatarUrl: 'https://api.dicebear.com/9.x/notionists-neutral/svg?seed=Anas&backgroundColor=10b981',
     gradient: 'from-emerald-500 to-emerald-600',
     bgLight: 'bg-emerald-500/10',
     textColor: 'text-emerald-600',
@@ -92,6 +96,7 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
       en: 'Growth Mentor',
     },
     initial: { ar: 'ع', en: 'A' },
+    avatarUrl: 'https://api.dicebear.com/9.x/notionists-neutral/svg?seed=Abdullah&backgroundColor=f59e0b',
     gradient: 'from-amber-500 to-orange-500',
     bgLight: 'bg-amber-500/10',
     textColor: 'text-amber-600',

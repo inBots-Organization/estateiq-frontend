@@ -11,25 +11,15 @@ interface TalkingAvatarProps {
   isSpeaking?: boolean;
   audioElement?: HTMLAudioElement | null;
   className?: string;
+  showName?: boolean;
 }
 
 const SIZES = {
-  sm: { container: 'w-10 h-10', emoji: 'text-xl', ring: 'ring-2' },
-  md: { container: 'w-12 h-12', emoji: 'text-2xl', ring: 'ring-2' },
-  lg: { container: 'w-16 h-16', emoji: 'text-3xl', ring: 'ring-[3px]' },
-  xl: { container: 'w-24 h-24', emoji: 'text-5xl', ring: 'ring-4' },
+  sm: { container: 'w-10 h-10', ring: 'ring-2' },
+  md: { container: 'w-12 h-12', ring: 'ring-2' },
+  lg: { container: 'w-14 h-14', ring: 'ring-[3px]' },
+  xl: { container: 'w-24 h-24', ring: 'ring-4' },
 };
-
-// Gender based on teacher name - use appropriate emoji
-const TEACHER_EMOJI: Record<TeacherName, { default: string; speaking: string }> = {
-  ahmed: { default: '👨🏻‍💼', speaking: '🗣️' },
-  noura: { default: '👩🏻‍💼', speaking: '💬' },
-  anas: { default: '👨🏻‍🏫', speaking: '🗣️' },
-  abdullah: { default: '👨🏻‍💼', speaking: '🗣️' },
-};
-
-// Hijab version for Noura
-const NOURA_EMOJI = { default: '🧕🏻', speaking: '💬' };
 
 export function TalkingAvatar({
   teacherName,
@@ -37,13 +27,11 @@ export function TalkingAvatar({
   isSpeaking = false,
   audioElement,
   className,
+  showName = true,
 }: TalkingAvatarProps) {
   const { language } = useLanguage();
   const teacher = TEACHERS[teacherName];
   const sizeConfig = SIZES[size];
-
-  // Use hijab emoji for Noura
-  const emojis = teacherName === 'noura' ? NOURA_EMOJI : TEACHER_EMOJI[teacherName];
 
   // Animation states
   const [animationPhase, setAnimationPhase] = useState(0);
@@ -95,57 +83,54 @@ export function TalkingAvatar({
         </>
       )}
 
-      {/* Avatar container with gradient background */}
+      {/* Avatar container with image */}
       <div
         className={cn(
-          'relative rounded-full flex items-center justify-center',
+          'relative rounded-full overflow-hidden',
           'bg-gradient-to-br shadow-lg transition-all duration-300',
           teacher.gradient,
           sizeConfig.container,
           sizeConfig.ring,
           isSpeaking ? 'ring-white scale-110' : 'ring-white/50'
         )}
+        style={{
+          transform: isSpeaking
+            ? `scale(${1 + animationPhase * 0.05})`
+            : 'scale(1)',
+        }}
       >
-        {/* Emoji face */}
-        <div
-          className={cn(
-            'transition-transform duration-150',
-            sizeConfig.emoji
-          )}
-          style={{
-            transform: isSpeaking
-              ? `scale(${1 + animationPhase * 0.1}) translateY(${animationPhase * -2}px)`
-              : 'scale(1)',
-          }}
-        >
-          {isSpeaking ? emojis.speaking : emojis.default}
-        </div>
+        {/* Avatar image */}
+        <img
+          src={teacher.avatarUrl}
+          alt={teacher.displayName[language]}
+          className="w-full h-full object-cover"
+        />
 
         {/* Speaking indicator - sound waves */}
         {isSpeaking && (
-          <div className="absolute -right-1 -bottom-1">
+          <div className="absolute -right-1 -bottom-1 z-10">
             <div className="relative">
-              <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center shadow-md">
-                <div className="flex gap-0.5 items-end h-2">
+              <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shadow-md border-2 border-white">
+                <div className="flex gap-0.5 items-end h-2.5">
                   <div
-                    className="w-0.5 bg-white rounded-full animate-pulse"
+                    className="w-0.5 bg-white rounded-full"
                     style={{
-                      height: `${4 + animationPhase * 4}px`,
-                      animationDelay: '0ms'
+                      height: `${4 + animationPhase * 5}px`,
+                      transition: 'height 0.1s ease'
                     }}
                   />
                   <div
-                    className="w-0.5 bg-white rounded-full animate-pulse"
+                    className="w-0.5 bg-white rounded-full"
                     style={{
-                      height: `${6 + (1 - animationPhase) * 4}px`,
-                      animationDelay: '100ms'
+                      height: `${7 + (1 - animationPhase) * 5}px`,
+                      transition: 'height 0.1s ease'
                     }}
                   />
                   <div
-                    className="w-0.5 bg-white rounded-full animate-pulse"
+                    className="w-0.5 bg-white rounded-full"
                     style={{
-                      height: `${4 + animationPhase * 4}px`,
-                      animationDelay: '200ms'
+                      height: `${4 + animationPhase * 5}px`,
+                      transition: 'height 0.1s ease'
                     }}
                   />
                 </div>
@@ -156,17 +141,19 @@ export function TalkingAvatar({
       </div>
 
       {/* Name badge */}
-      <div
-        className={cn(
-          'absolute -bottom-1 left-1/2 -translate-x-1/2',
-          'bg-white/95 dark:bg-gray-800/95 px-2 py-0.5 rounded-full',
-          'text-[9px] font-bold shadow-sm whitespace-nowrap',
-          'border border-white/50',
-          teacher.textColor
-        )}
-      >
-        {teacher.displayName[language]}
-      </div>
+      {showName && (
+        <div
+          className={cn(
+            'absolute -bottom-1 left-1/2 -translate-x-1/2',
+            'bg-white/95 dark:bg-gray-800/95 px-2 py-0.5 rounded-full',
+            'text-[9px] font-bold shadow-sm whitespace-nowrap',
+            'border border-white/50',
+            teacher.textColor
+          )}
+        >
+          {teacher.displayName[language]}
+        </div>
+      )}
     </div>
   );
 }

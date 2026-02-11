@@ -926,14 +926,18 @@ export function GlobalAIBot() {
       >
         {/* Main button with avatar */}
         <div className={cn(
-          'relative w-16 h-16 rounded-2xl shadow-xl',
-          'bg-gradient-to-br text-white flex items-center justify-center',
+          'relative w-16 h-16 rounded-2xl shadow-xl overflow-hidden',
+          'bg-gradient-to-br',
           'hover:scale-105 transition-all duration-300',
           'ring-4 ring-white/20 hover:ring-white/40',
           teacher.gradient
         )}>
-          {/* Teacher initial with gradient background */}
-          <span className="text-2xl font-bold">{teacher.initial[language]}</span>
+          {/* Teacher avatar image */}
+          <img
+            src={teacher.avatarUrl}
+            alt={teacher.displayName[language]}
+            className="w-full h-full object-cover"
+          />
           {/* Online indicator */}
           <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse" />
         </div>
