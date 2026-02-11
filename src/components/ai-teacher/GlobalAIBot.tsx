@@ -230,6 +230,9 @@ export function GlobalAIBot() {
   // Hide on specific pages (but allow welcome bot for new trainees on /assessment)
   const isOnAssessmentPage = pathname.includes('/assessment');
   const hiddenPaths = ['/ai-teacher'];
+
+  // For new trainees: NEVER hide on assessment page (they need the welcome bot!)
+  // For existing trainees: hide on assessment page since they already completed it
   const shouldHideOnPath = hiddenPaths.some(p => pathname.includes(p)) ||
     (isOnAssessmentPage && hasCompletedAssessment); // Hide on assessment only if already completed
 
@@ -237,8 +240,19 @@ export function GlobalAIBot() {
   const adminRoles = ['saas_super_admin', 'org_admin', 'trainer'];
   const isAdminUser = user?.role && adminRoles.includes(user.role);
 
-  // Combined hide condition
-  const shouldHide = shouldHideOnPath || isAdminUser;
+  // Combined hide condition - BUT never hide for new trainees on assessment page!
+  const shouldHide = isAdminUser || (shouldHideOnPath && hasCompletedAssessment);
+
+  // Debug log
+  console.log('[GlobalAIBot] State:', {
+    pathname,
+    hasCompletedAssessment,
+    assignedTeacher,
+    isAdminUser,
+    userRole: user?.role,
+    shouldHide,
+    isOnAssessmentPage
+  });
 
   // Scroll to bottom on new messages
   useEffect(() => {
