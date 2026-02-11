@@ -2,6 +2,7 @@
  * Teacher Configuration
  *
  * Shared configuration for the 4 AI teacher personas used across the frontend.
+ * All avatars are custom professional Saudi-style illustrations.
  */
 
 export type TeacherName = 'ahmed' | 'noura' | 'anas' | 'abdullah';
@@ -23,6 +24,9 @@ export interface TeacherConfig {
   personality: TeacherPersonality;
 }
 
+// Base URL for avatars (Vercel deployment)
+const AVATAR_BASE_URL = 'https://estateiq-app.vercel.app/avatars';
+
 export const TEACHERS: Record<TeacherName, TeacherConfig> = {
   ahmed: {
     name: 'ahmed',
@@ -36,8 +40,8 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
       en: 'Fundamentals',
     },
     initial: { ar: 'أ', en: 'A' },
-    // Friendly fundamentals teacher - warm approachable style
-    avatarUrl: 'https://api.dicebear.com/9.x/big-ears/svg?seed=AhmedTeacher&backgroundColor=3b82f6',
+    // Professional Saudi male - friendly fundamentals teacher
+    avatarUrl: `${AVATAR_BASE_URL}/ahmed.png`,
     gradient: 'from-blue-500 to-blue-600',
     bgLight: 'bg-blue-500/10',
     textColor: 'text-blue-600',
@@ -57,8 +61,8 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
       en: 'Sales Strategy',
     },
     initial: { ar: 'ن', en: 'N' },
-    // Sales strategy teacher - custom Saudi woman with hijab
-    avatarUrl: 'https://estateiq-app.vercel.app/avatars/noura.avif',
+    // Professional Saudi woman with hijab - sales strategist
+    avatarUrl: `${AVATAR_BASE_URL}/noura.png`,
     gradient: 'from-purple-500 to-purple-600',
     bgLight: 'bg-purple-500/10',
     textColor: 'text-purple-600',
@@ -78,8 +82,8 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
       en: 'Senior Closer',
     },
     initial: { ar: 'أ', en: 'A' },
-    // Senior closing coach - serious expert look
-    avatarUrl: 'https://api.dicebear.com/9.x/big-ears/svg?seed=AnasCoach&backgroundColor=10b981',
+    // Professional Saudi male - senior closing coach
+    avatarUrl: `${AVATAR_BASE_URL}/anas.png`,
     gradient: 'from-emerald-500 to-emerald-600',
     bgLight: 'bg-emerald-500/10',
     textColor: 'text-emerald-600',
@@ -99,8 +103,8 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
       en: 'Growth Mentor',
     },
     initial: { ar: 'ع', en: 'A' },
-    // Growth mentor - wise and experienced
-    avatarUrl: 'https://api.dicebear.com/9.x/big-ears/svg?seed=AbdullahMentor&backgroundColor=f59e0b',
+    // Professional Saudi elder - wise growth mentor
+    avatarUrl: `${AVATAR_BASE_URL}/abdullah.png`,
     gradient: 'from-amber-500 to-orange-500',
     bgLight: 'bg-amber-500/10',
     textColor: 'text-amber-600',
