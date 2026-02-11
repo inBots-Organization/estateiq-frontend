@@ -721,6 +721,44 @@ export function GlobalAIBot() {
             ))}
           </div>
 
+          {/* Listen to welcome button - triggers audio with user interaction */}
+          {!isPlayingOnboardingWelcome && (
+            <Button
+              onClick={async () => {
+                setIsPlayingOnboardingWelcome(true);
+                try {
+                  const welcomeText = language === 'ar'
+                    ? 'يا هلا والله! أنا مرشدك للبداية، سعيد إنك معانا! قبل ما نبدأ رحلتك في عالم العقارات، لازم نعرف مستواك الحالي. الاختبار بسيط وسريع، بس 5 دقائق! بعدها هنختارلك أفضل معلم يناسب مستواك. يلا نبدأ!'
+                    : "Hello and welcome! I'm your onboarding guide. So happy you're here! Before we start your real estate journey, we need to know your current level. The assessment is quick and simple, just 5 minutes! After that, we'll match you with the perfect teacher for your level. Let's begin!";
+                  const result = await aiTeacherApi.textToSpeech(welcomeText, language, 'ahmed');
+                  if (result.audio) {
+                    const audio = new Audio(`data:audio/mpeg;base64,${result.audio}`);
+                    currentAudioRef.current = audio;
+                    audio.onended = () => { currentAudioRef.current = null; setIsPlayingOnboardingWelcome(false); };
+                    audio.play();
+                  } else {
+                    setIsPlayingOnboardingWelcome(false);
+                  }
+                } catch (e) {
+                  console.error('Failed to play welcome:', e);
+                  setIsPlayingOnboardingWelcome(false);
+                }
+              }}
+              variant="outline"
+              className="w-full h-10 text-sm font-medium border-teal-300 text-teal-700 hover:bg-teal-50 rounded-xl mb-2"
+            >
+              <Volume2 className="w-4 h-4 mr-2" />
+              {language === 'ar' ? '🔊 استمع للترحيب' : '🔊 Listen to Welcome'}
+            </Button>
+          )}
+
+          {isPlayingOnboardingWelcome && (
+            <div className="w-full h-10 flex items-center justify-center gap-2 text-teal-600 mb-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-sm">{language === 'ar' ? 'جاري التشغيل...' : 'Playing...'}</span>
+            </div>
+          )}
+
           <Button
             onClick={() => router.push('/assessment')}
             className="w-full h-12 text-base font-semibold bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 hover:from-teal-600 hover:via-emerald-600 hover:to-green-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
