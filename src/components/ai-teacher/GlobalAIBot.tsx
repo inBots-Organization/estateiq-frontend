@@ -149,7 +149,7 @@ export function GlobalAIBot() {
   const pathname = usePathname();
   const router = useRouter();
   const { t, language, isRTL } = useLanguage();
-  const { activeTeacher, assignedTeacher } = useTeacherStore();
+  const { activeTeacher, assignedTeacher, userId: storedUserId, reset: resetTeacherStore } = useTeacherStore();
   const { user } = useAuthStore();
   const diagnosticStore = useDiagnosticStore();
 
@@ -224,8 +224,17 @@ export function GlobalAIBot() {
     });
   }, [autoPlayEnabled]);
 
-  // Check if assessment is complete (has assigned teacher or skill level)
-  const hasCompletedAssessment = assignedTeacher !== null;
+  // Check if the stored teacher data belongs to the current user
+  // If not, reset it (this happens when a different user logs in)
+  useEffect(() => {
+    if (user?.id && storedUserId && storedUserId !== user.id) {
+      console.log('[GlobalAIBot] Different user detected, resetting teacher store');
+      resetTeacherStore();
+    }
+  }, [user?.id, storedUserId, resetTeacherStore]);
+
+  // Check if assessment is complete (has assigned teacher AND it belongs to this user)
+  const hasCompletedAssessment = assignedTeacher !== null && (!storedUserId || storedUserId === user?.id);
 
   // Hide on specific pages (but allow welcome bot for new trainees on /assessment)
   const isOnAssessmentPage = pathname.includes('/assessment');

@@ -5,8 +5,11 @@ import type { TeacherName } from '@/config/teachers';
 interface TeacherState {
   assignedTeacher: TeacherName | null;
   activeTeacher: TeacherName | null;
+  // Track which user this data belongs to
+  userId: string | null;
   setAssignedTeacher: (name: TeacherName) => void;
   setActiveTeacher: (name: TeacherName | null) => void;
+  setUserId: (id: string | null) => void;
   reset: () => void;
 }
 
@@ -15,6 +18,7 @@ export const useTeacherStore = create<TeacherState>()(
     (set) => ({
       assignedTeacher: null,
       activeTeacher: null,
+      userId: null,
 
       setAssignedTeacher: (name: TeacherName) => {
         set({ assignedTeacher: name, activeTeacher: name });
@@ -24,8 +28,12 @@ export const useTeacherStore = create<TeacherState>()(
         set({ activeTeacher: name });
       },
 
+      setUserId: (id: string | null) => {
+        set({ userId: id });
+      },
+
       reset: () => {
-        set({ assignedTeacher: null, activeTeacher: null });
+        set({ assignedTeacher: null, activeTeacher: null, userId: null });
       },
     }),
     {
