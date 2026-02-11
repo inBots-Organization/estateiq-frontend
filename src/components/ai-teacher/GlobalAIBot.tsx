@@ -236,16 +236,8 @@ export function GlobalAIBot() {
 
   // Check if assessment is complete (has assigned teacher AND it belongs to this user)
   // If storedUserId is null but assignedTeacher exists, this is OLD data from before userId tracking
-  // We treat this as NEW user (reset required)
-  const hasCompletedAssessment = assignedTeacher !== null && storedUserId === user?.id;
-
-  // Debug: log assessment status
-  console.log('[GlobalAIBot] Assessment Check:', {
-    assignedTeacher,
-    storedUserId,
-    currentUserId: user?.id,
-    hasCompletedAssessment
-  });
+  // SIMPLIFIED: Just check if assignedTeacher exists - the reset useEffect handles user mismatch
+  const hasCompletedAssessment = assignedTeacher !== null;
 
   // Hide on specific pages (but allow welcome bot for new trainees on /assessment)
   const isOnAssessmentPage = pathname.includes('/assessment');
@@ -262,24 +254,6 @@ export function GlobalAIBot() {
 
   // Combined hide condition - BUT never hide for new trainees on assessment page!
   const shouldHide = isAdminUser || (shouldHideOnPath && hasCompletedAssessment);
-
-  // Wait for user data to load before showing the bot for new trainees
-  // This prevents flickering and incorrect state
-  const userLoaded = !!user?.id;
-
-  // Debug log
-  console.log('[GlobalAIBot] State:', {
-    pathname,
-    hasCompletedAssessment,
-    assignedTeacher,
-    isAdminUser,
-    userRole: user?.role,
-    userId: user?.id,
-    storedUserId,
-    shouldHide,
-    isOnAssessmentPage,
-    userLoaded
-  });
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -298,16 +272,9 @@ export function GlobalAIBot() {
     // Only run once on mount
     if (hasCheckedAutoOpen) return;
 
-    // MUST wait for user data to load first!
-    if (!userLoaded) {
-      console.log('[GlobalAIBot] Waiting for user data to load...');
-      return;
-    }
-
-    // Wait a tick to ensure we have user data
+    // Small delay to let auth state settle
     const timer = setTimeout(() => {
       // For new trainees (no assessment) - ALWAYS open the bot immediately
-      // Don't check role - just check if assessment is not completed
       if (!hasCompletedAssessment && !isAdminUser) {
         console.log('[GlobalAIBot] Auto-opening for new trainee (no assessment)');
         setIsOpen(true);
@@ -324,10 +291,10 @@ export function GlobalAIBot() {
         }
       }
       setHasCheckedAutoOpen(true);
-    }, 100); // Short delay now since we already waited for user data
+    }, 200);
 
     return () => clearTimeout(timer);
-  }, [hasCheckedAutoOpen, hasCompletedAssessment, isAdminUser, userLoaded]);
+  }, [hasCheckedAutoOpen, hasCompletedAssessment, isAdminUser]);
 
   // Play welcome audio on first open
   useEffect(() => {
@@ -634,12 +601,6 @@ export function GlobalAIBot() {
       setPlayingMessageId(null);
     }
   };
-
-  // Don't render until user data is loaded (prevents incorrect state)
-  if (!userLoaded) {
-    console.log('[GlobalAIBot] Not rendering - waiting for user data');
-    return null;
-  }
 
   if (shouldHide) return null;
 
