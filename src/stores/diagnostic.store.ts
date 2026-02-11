@@ -55,6 +55,18 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           if (!status.needsDiagnostic && get().assessmentPhase !== 'done') {
             set({ assessmentPhase: 'idle' });
           }
+          // IMPORTANT: If server says diagnostic is needed, reset local teacher assignment
+          // This handles the case where admin reset evaluations on another device
+          if (status.needsDiagnostic && !status.currentReport) {
+            // Dynamically import to avoid circular dependency
+            import('@/stores/teacher.store').then(({ useTeacherStore }) => {
+              useTeacherStore.getState().reset();
+            });
+            // Also reset this store's state if it was marked as done
+            if (get().assessmentPhase === 'done') {
+              set({ assessmentPhase: 'idle', latestReport: null });
+            }
+          }
         } catch (err) {
           console.error('[DiagnosticStore] Failed to check status:', err);
         }
