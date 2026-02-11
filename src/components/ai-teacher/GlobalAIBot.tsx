@@ -248,13 +248,20 @@ export function GlobalAIBot() {
 
   // Auto-open on first visit (client-side only)
   useEffect(() => {
-    if (!hasCheckedAutoOpen) {
-      // For new trainees on assessment page - ALWAYS open the bot (mandatory)
-      if (!hasCompletedAssessment && isOnAssessmentPage) {
+    // Only run once on mount
+    if (hasCheckedAutoOpen) return;
+
+    // Wait a tick to ensure we have user data
+    const timer = setTimeout(() => {
+      // For new trainees - ALWAYS open the bot immediately (mandatory onboarding)
+      if (!hasCompletedAssessment && user?.role === 'trainee') {
         setIsOpen(true);
+        setHasCheckedAutoOpen(true);
+        return;
       }
+
       // For trainees with completed assessment - check sessionStorage
-      else if (hasCompletedAssessment) {
+      if (hasCompletedAssessment) {
         const wasAutoOpened = sessionStorage.getItem(AUTO_OPENED_KEY);
         if (!wasAutoOpened) {
           setIsOpen(true);
@@ -262,8 +269,10 @@ export function GlobalAIBot() {
         }
       }
       setHasCheckedAutoOpen(true);
-    }
-  }, [hasCheckedAutoOpen, hasCompletedAssessment, isOnAssessmentPage]);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [hasCheckedAutoOpen, hasCompletedAssessment, user?.role]);
 
   // Play welcome audio on first open
   useEffect(() => {
@@ -344,63 +353,31 @@ export function GlobalAIBot() {
   }, []);
 
   // CRITICAL: Redirect new trainees to assessment page if they try to access other pages
+  // Only redirect ONCE - use a ref to track if we've already redirected
+  const hasRedirectedRef = useRef(false);
   useEffect(() => {
-    if (!hasCompletedAssessment && !isOnAssessmentPage && user?.role === 'trainee') {
-      // New trainee trying to access non-assessment page - redirect them!
+    // Only redirect if: new trainee + not on assessment + haven't redirected yet
+    if (!hasCompletedAssessment && !isOnAssessmentPage && user?.role === 'trainee' && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true; // Prevent infinite redirects
       router.replace('/assessment');
     }
   }, [hasCompletedAssessment, isOnAssessmentPage, user?.role, router]);
 
-  // Play onboarding welcome audio for new trainees (Sara's voice) - plays EVERY time bot opens
+  // Ref to prevent duplicate onboarding welcome calls
+  const onboardingWelcomeTriggeredRef = useRef(false);
+
+  // Play onboarding welcome audio for new trainees (Sara's voice) - plays ONCE when bot opens
   useEffect(() => {
-    // Must be: new trainee + bot is open + on assessment page + not currently playing
-    if (!hasCompletedAssessment && isOpen && isOnAssessmentPage && !isPlayingOnboardingWelcome && !onboardingWelcomePlayed) {
-      const playOnboardingWelcome = async () => {
-        setIsPlayingOnboardingWelcome(true);
-        setOnboardingWelcomePlayed(true); // Mark immediately to prevent double calls
+    // Must be: new trainee + bot is open + haven't triggered yet
+    if (!hasCompletedAssessment && isOpen && !onboardingWelcomeTriggeredRef.current && user?.role === 'trainee') {
+      // Mark as triggered IMMEDIATELY to prevent any race conditions
+      onboardingWelcomeTriggeredRef.current = true;
 
-        try {
-          // Generate welcome audio using Ahmed's voice (friendly Saudi male)
-          // Note: Using ahmed voice temporarily until backend sara support is deployed
-          const welcomeText = language === 'ar'
-            ? 'يا هلا والله! أنا مرشدك للبداية، سعيد إنك معانا! قبل ما نبدأ رحلتك في عالم العقارات، لازم نعرف مستواك الحالي. الاختبار بسيط وسريع، بس 5 دقائق! بعدها هنختارلك أفضل معلم يناسب مستواك. يلا نبدأ!'
-            : "Hello and welcome! I'm your onboarding guide. So happy you're here! Before we start your real estate journey, we need to know your current level. The assessment is quick and simple, just 5 minutes! After that, we'll match you with the perfect teacher for your level. Let's begin!";
-
-          const result = await aiTeacherApi.textToSpeech(welcomeText, language, 'ahmed');
-
-          if (result.audio) {
-            const audio = new Audio(`data:audio/mpeg;base64,${result.audio}`);
-            currentAudioRef.current = audio;
-
-            audio.onended = () => {
-              currentAudioRef.current = null;
-              setIsPlayingOnboardingWelcome(false);
-            };
-
-            audio.onerror = () => {
-              currentAudioRef.current = null;
-              setIsPlayingOnboardingWelcome(false);
-            };
-
-            // Try to play - needs user interaction in some browsers
-            audio.play().catch((e) => {
-              console.log('Onboarding autoplay blocked by browser:', e);
-              setIsPlayingOnboardingWelcome(false);
-            });
-          } else {
-            setIsPlayingOnboardingWelcome(false);
-          }
-        } catch (error) {
-          console.error('Failed to play onboarding welcome:', error);
-          setIsPlayingOnboardingWelcome(false);
-        }
-      };
-
-      // Small delay to ensure component is fully mounted
-      const timer = setTimeout(playOnboardingWelcome, 500);
-      return () => clearTimeout(timer);
+      // Don't auto-play audio - browsers block it. User must click the "Listen" button
+      // Just set the flag so we show the welcome UI
+      setOnboardingWelcomePlayed(false); // Reset so button shows
     }
-  }, [hasCompletedAssessment, isOpen, isOnAssessmentPage, isPlayingOnboardingWelcome, onboardingWelcomePlayed, language]);
+  }, [hasCompletedAssessment, isOpen, user?.role]);
 
   // Detect page changes and offer contextual help
   useEffect(() => {
@@ -730,7 +707,7 @@ export function GlobalAIBot() {
                   const welcomeText = language === 'ar'
                     ? 'يا هلا والله! أنا مرشدك للبداية، سعيد إنك معانا! قبل ما نبدأ رحلتك في عالم العقارات، لازم نعرف مستواك الحالي. الاختبار بسيط وسريع، بس 5 دقائق! بعدها هنختارلك أفضل معلم يناسب مستواك. يلا نبدأ!'
                     : "Hello and welcome! I'm your onboarding guide. So happy you're here! Before we start your real estate journey, we need to know your current level. The assessment is quick and simple, just 5 minutes! After that, we'll match you with the perfect teacher for your level. Let's begin!";
-                  const result = await aiTeacherApi.textToSpeech(welcomeText, language, 'ahmed');
+                  const result = await aiTeacherApi.textToSpeech(welcomeText, language, 'sara');
                   if (result.audio) {
                     const audio = new Audio(`data:audio/mpeg;base64,${result.audio}`);
                     currentAudioRef.current = audio;
