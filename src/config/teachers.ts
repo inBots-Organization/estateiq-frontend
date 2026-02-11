@@ -57,8 +57,8 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
       en: 'Sales Strategy',
     },
     initial: { ar: 'ن', en: 'N' },
-    // Sales strategy teacher - confident professional woman
-    avatarUrl: 'https://api.dicebear.com/9.x/big-ears/svg?seed=NouraTeacher&backgroundColor=8b5cf6',
+    // Sales strategy teacher - custom Saudi woman with hijab
+    avatarUrl: '/avatars/noura.avif',
     gradient: 'from-purple-500 to-purple-600',
     bgLight: 'bg-purple-500/10',
     textColor: 'text-purple-600',
