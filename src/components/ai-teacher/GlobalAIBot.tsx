@@ -175,6 +175,10 @@ export function GlobalAIBot() {
   const [onboardingWelcomePlayed, setOnboardingWelcomePlayed] = useState(false);
   const [isPlayingOnboardingWelcome, setIsPlayingOnboardingWelcome] = useState(false);
 
+  // State for onboarding flow (must be at top level to avoid React hooks error)
+  const [onboardingStep, setOnboardingStep] = useState<'initial' | 'speaking' | 'ready'>('initial');
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+
   // Audio refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -581,10 +585,6 @@ export function GlobalAIBot() {
   };
 
   if (shouldHide) return null;
-
-  // State for onboarding flow
-  const [onboardingStep, setOnboardingStep] = useState<'initial' | 'speaking' | 'ready'>('initial');
-  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
 
   // Function to start Sara's welcome
   const startSaraWelcome = async () => {
