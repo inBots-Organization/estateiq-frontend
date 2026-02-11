@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDiagnosticStore } from '@/stores/diagnostic.store';
 import { useTeacherStore } from '@/stores/teacher.store';
@@ -30,6 +31,8 @@ import {
   BookOpen,
   Calendar,
   Brain,
+  AlertTriangle,
+  Shield,
 } from 'lucide-react';
 
 export default function AssessmentPage() {
@@ -47,7 +50,70 @@ export default function AssessmentPage() {
   const [activeTab, setActiveTab] = useState<'shortTerm' | 'mediumTerm' | 'longTerm'>('shortTerm');
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Progress state for completing phase
+  const [completingProgress, setCompletingProgress] = useState(0);
+  const [completingStep, setCompletingStep] = useState(0);
+
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
+
+  // Completing phase steps
+  const completingSteps = isRTL ? [
+    'جاري تحليل محادثتك مع العميل...',
+    'جاري تقييم مهارات التواصل...',
+    'جاري تقييم مهارات التفاوض...',
+    'جاري تحديد نقاط القوة والضعف...',
+    'جاري اختيار المعلم المناسب لك...',
+    'جاري إنشاء خطة التدريب المخصصة...',
+  ] : [
+    'Analyzing your conversation with the client...',
+    'Evaluating communication skills...',
+    'Evaluating negotiation skills...',
+    'Identifying strengths and weaknesses...',
+    'Selecting the best teacher for you...',
+    'Creating your personalized training plan...',
+  ];
+
+  // CRITICAL: Prevent user from leaving page during completing phase
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (store.assessmentPhase === 'completing') {
+        e.preventDefault();
+        e.returnValue = isRTL
+          ? 'جاري إنشاء التقييم! الخروج الآن قد يفقد بياناتك.'
+          : 'Assessment in progress! Leaving now may lose your data.';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [store.assessmentPhase, isRTL]);
+
+  // Progress animation for completing phase
+  useEffect(() => {
+    if (store.assessmentPhase === 'completing') {
+      setCompletingProgress(0);
+      setCompletingStep(0);
+
+      // Animate progress from 0 to 95 over 15 seconds
+      const progressInterval = setInterval(() => {
+        setCompletingProgress(prev => {
+          if (prev >= 95) return 95;
+          return prev + 1;
+        });
+      }, 150);
+
+      // Change step every 2.5 seconds
+      const stepInterval = setInterval(() => {
+        setCompletingStep(prev => (prev + 1) % completingSteps.length);
+      }, 2500);
+
+      return () => {
+        clearInterval(progressInterval);
+        clearInterval(stepInterval);
+      };
+    }
+  }, [store.assessmentPhase, completingSteps.length]);
 
   // Poll for evaluator report
   const pollEvaluatorReport = useCallback(async () => {
@@ -223,23 +289,101 @@ export default function AssessmentPage() {
   // --- PHASE: Completing (loading) ---
   if (store.assessmentPhase === 'completing') {
     return (
-      <div className="container mx-auto py-16 px-4 max-w-2xl">
-        <div className="flex flex-col items-center justify-center space-y-6">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center animate-pulse">
-              <Target className="h-12 w-12 text-primary" />
-            </div>
-            <div className="absolute -top-2 -right-2">
-              <Sparkles className="h-6 w-6 text-yellow-500 animate-bounce" />
-            </div>
-          </div>
-          <div className="text-center space-y-2">
-            <h2 className="text-xl font-semibold text-foreground">{t.diagnostic.generating}</h2>
-            <p className="text-muted-foreground">
-              {isRTL ? 'يتم تحليل أدائك وإنشاء تقرير مخصص...' : 'Analyzing your performance and creating a personalized report...'}
-            </p>
-          </div>
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-lg">
+          <Card className="border-2 border-primary/20 shadow-xl">
+            <CardContent className="p-8">
+              {/* Warning Banner */}
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0">
+                    <Shield className="h-6 w-6 text-amber-500" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-amber-600 dark:text-amber-400">
+                      {isRTL ? '⚠️ تحذير مهم' : '⚠️ Important Warning'}
+                    </p>
+                    <p className="text-sm text-amber-600/80 dark:text-amber-400/80">
+                      {isRTL
+                        ? 'لا تغادر هذه الصفحة أو تغلق المتصفح حتى يكتمل التقييم'
+                        : 'Do not leave this page or close the browser until the evaluation is complete'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Content */}
+              <div className="text-center space-y-6">
+                {/* Animated Icon */}
+                <div className="relative inline-flex">
+                  <div className="w-28 h-28 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+                    <Brain className="h-14 w-14 text-primary animate-pulse" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 animate-bounce">
+                    <Sparkles className="h-8 w-8 text-yellow-500" />
+                  </div>
+                  <div className="absolute -bottom-1 -left-1 animate-pulse delay-300">
+                    <Target className="h-6 w-6 text-emerald-500" />
+                  </div>
+                </div>
+
+                {/* Title */}
+                <div>
+                  <h1 className="text-2xl font-bold text-foreground mb-2">
+                    {isRTL ? 'جاري إنشاء تقييمك المخصص' : 'Creating Your Personalized Assessment'}
+                  </h1>
+                  <p className="text-muted-foreground">
+                    {isRTL ? 'الذكاء الاصطناعي يحلل أدائك بدقة' : 'AI is analyzing your performance in detail'}
+                  </p>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {isRTL ? 'التقدم' : 'Progress'}
+                    </span>
+                    <span className="font-semibold text-primary">{completingProgress}%</span>
+                  </div>
+                  <Progress value={completingProgress} className="h-3" />
+                </div>
+
+                {/* Current Step */}
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <div className="flex items-center justify-center gap-3">
+                    <Loader2 className="h-5 w-5 animate-spin text-primary flex-shrink-0" />
+                    <p className="text-sm font-medium text-foreground">
+                      {completingSteps[completingStep]}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Steps indicator */}
+                <div className="flex justify-center gap-2">
+                  {completingSteps.map((_, index) => (
+                    <div
+                      key={index}
+                      className={cn(
+                        "w-2 h-2 rounded-full transition-all duration-300",
+                        index === completingStep
+                          ? "bg-primary w-6"
+                          : index < completingStep
+                          ? "bg-primary/50"
+                          : "bg-muted-foreground/30"
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Bottom hint */}
+          <p className="text-center text-xs text-muted-foreground mt-4">
+            {isRTL
+              ? 'قد يستغرق هذا من 10 إلى 30 ثانية حسب جودة الاتصال'
+              : 'This may take 10-30 seconds depending on connection quality'}
+          </p>
         </div>
       </div>
     );
