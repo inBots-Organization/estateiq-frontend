@@ -532,77 +532,125 @@ export function GlobalAIBot() {
 
   if (shouldHide) return null;
 
-  // If no assessment completed, show "assessment required" bot
+  // If no assessment completed, show welcoming onboarding bot
   if (!hasCompletedAssessment) {
     if (!isOpen) {
       return (
         <button
           onClick={() => setIsOpen(true)}
           className={cn(
-            'fixed bottom-6 z-50 w-14 h-14 rounded-full shadow-lg',
-            'bg-gradient-to-br from-amber-500 to-orange-500 text-white flex items-center justify-center',
-            'hover:scale-110 transition-transform duration-200',
-            'ring-4 ring-white/20',
+            'fixed bottom-6 z-50 w-16 h-16 rounded-full shadow-xl',
+            'bg-gradient-to-br from-teal-400 via-emerald-500 to-green-600 text-white flex items-center justify-center',
+            'hover:scale-110 transition-all duration-300',
+            'ring-4 ring-white/30',
             isRTL ? 'left-6' : 'right-6'
           )}
-          aria-label={language === 'ar' ? 'تحديد المستوى مطلوب' : 'Assessment Required'}
+          aria-label={language === 'ar' ? 'مرحباً!' : 'Welcome!'}
         >
-          <ClipboardCheck className="h-6 w-6" />
+          {/* Welcoming Avatar Emoji */}
+          <span className="text-3xl">👋</span>
           {/* Pulse */}
-          <span className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 animate-ping opacity-20" />
+          <span className="absolute inset-0 rounded-full bg-gradient-to-br from-teal-400 to-green-600 animate-ping opacity-25" />
+          {/* Sparkle effect */}
+          <span className="absolute -top-1 -right-1 text-xl animate-bounce">✨</span>
         </button>
       );
     }
 
-    // Expanded assessment required panel
+    // Expanded welcoming onboarding panel
     return (
       <div className={cn(
         'fixed bottom-6 z-50',
-        'w-[320px] bg-card border border-border rounded-2xl shadow-2xl',
+        'w-[360px] bg-card border border-border rounded-3xl shadow-2xl',
         'flex flex-col overflow-hidden',
         isRTL ? 'left-6' : 'right-6'
       )}>
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-amber-500 to-orange-500 text-white">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-              <ClipboardCheck className="h-4 w-4" />
+        {/* Header with friendly gradient */}
+        <div className="flex items-center justify-between px-5 py-4 border-b bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 text-white">
+          <div className="flex items-center gap-3">
+            {/* Friendly welcoming avatar */}
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-2xl animate-pulse">
+                🎉
+              </div>
+              <span className="absolute -bottom-1 -right-1 text-lg">👋</span>
             </div>
-            <span className="font-semibold text-sm">
-              {language === 'ar' ? 'مرحباً بك!' : 'Welcome!'}
-            </span>
+            <div>
+              <span className="font-bold text-lg block">
+                {language === 'ar' ? 'أهلاً وسهلاً!' : 'Welcome!'}
+              </span>
+              <span className="text-xs text-white/80">
+                {language === 'ar' ? 'مرشدك للبداية' : 'Your Onboarding Guide'}
+              </span>
+            </div>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20"
+            className="h-8 w-8 text-white/80 hover:text-white hover:bg-white/20 rounded-full"
             onClick={() => setIsOpen(false)}
           >
             <X className="h-4 w-4" />
           </Button>
         </div>
 
-        {/* Content */}
-        <div className="p-4 space-y-4">
+        {/* Content with welcoming message */}
+        <div className="p-5 space-y-5">
+          {/* Welcoming Avatar Section */}
           <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
-              <ClipboardCheck className="h-8 w-8 text-amber-600" />
+            <div className="relative w-24 h-24 mx-auto mb-4">
+              {/* Animated welcoming character */}
+              <div className="w-full h-full rounded-full bg-gradient-to-br from-teal-100 via-emerald-100 to-green-100 flex items-center justify-center shadow-lg">
+                <span className="text-5xl animate-bounce">🧑‍🏫</span>
+              </div>
+              {/* Floating elements */}
+              <span className="absolute top-0 right-0 text-2xl animate-pulse">⭐</span>
+              <span className="absolute bottom-0 left-0 text-xl animate-bounce delay-100">🎯</span>
             </div>
-            <h3 className="font-semibold text-foreground mb-2">
-              {language === 'ar' ? 'لنبدأ رحلتك التدريبية!' : "Let's Start Your Training Journey!"}
+
+            <h3 className="font-bold text-xl text-foreground mb-2">
+              {language === 'ar' ? 'يا هلا والله! 🌟' : 'Hello There! 🌟'}
             </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
               {language === 'ar'
-                ? 'قبل أن نبدأ، نحتاج تحديد مستواك لنختار لك المعلم الأنسب. الاختبار سريع ويساعدنا نفهم نقاط قوتك.'
-                : "Before we begin, we need to assess your level to match you with the right teacher. The assessment is quick and helps us understand your strengths."}
+                ? 'أنا سعيد إنك معانا! قبل ما نبدأ رحلتك في عالم العقارات، خلينا نتعرف على مستواك عشان نختارلك المعلم المناسب.'
+                : "I'm so happy you're here! Before we start your real estate journey, let's discover your level so we can match you with the perfect teacher."}
             </p>
+
+            <div className="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl p-3 text-sm">
+              <div className="flex items-center gap-2 text-teal-700 font-medium mb-1">
+                <span>💡</span>
+                <span>{language === 'ar' ? 'الاختبار بسيط!' : 'Quick Assessment!'}</span>
+              </div>
+              <p className="text-teal-600/80 text-xs">
+                {language === 'ar'
+                  ? '5 دقائق فقط وبنعرف نقاط قوتك وضعفك'
+                  : 'Just 5 minutes to discover your strengths and areas to improve'}
+              </p>
+            </div>
+          </div>
+
+          {/* Benefits */}
+          <div className="space-y-2">
+            {[
+              { emoji: '🎯', ar: 'معلم مخصص لمستواك', en: 'Personalized teacher for your level' },
+              { emoji: '📈', ar: 'خطة تدريب شخصية', en: 'Custom training plan' },
+              { emoji: '🏆', ar: 'تتبع تقدمك يومياً', en: 'Track your daily progress' },
+            ].map((benefit, i) => (
+              <div key={i} className="flex items-center gap-3 text-sm text-muted-foreground">
+                <span className="text-lg">{benefit.emoji}</span>
+                <span>{language === 'ar' ? benefit.ar : benefit.en}</span>
+              </div>
+            ))}
           </div>
 
           <Button
             onClick={() => router.push('/assessment')}
-            className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 hover:from-teal-600 hover:via-emerald-600 hover:to-green-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
           >
-            {language === 'ar' ? 'ابدأ تحديد المستوى' : 'Start Assessment'}
+            <span className="mr-2">🚀</span>
+            {language === 'ar' ? 'يلا نبدأ!' : "Let's Start!"}
           </Button>
         </div>
       </div>
