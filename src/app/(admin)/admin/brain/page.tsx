@@ -16,6 +16,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -395,8 +396,8 @@ export default function AdminBrainPage() {
                   <SelectContent>
                     <SelectItem value="all">{isRTL ? 'كل المعلمين' : 'All Teachers'}</SelectItem>
                     {teachers.length > 0 ? (
-                      teachers.map(t => (
-                        <SelectItem key={t.id} value={t.name}>
+                      teachers.filter(t => t.name).map(t => (
+                        <SelectItem key={t.id} value={t.name || t.id}>
                           {isRTL ? t.displayNameAr : t.displayNameEn}
                         </SelectItem>
                       ))
@@ -507,6 +508,9 @@ export default function AdminBrainPage() {
               <Sparkles className="w-5 h-5 text-violet-500" />
               {isRTL ? 'إعدادات المستند' : 'Document Settings'}
             </DialogTitle>
+            <DialogDescription>
+              {isRTL ? 'حدد إعدادات المستند قبل الرفع' : 'Configure document settings before upload'}
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -553,8 +557,8 @@ export default function AdminBrainPage() {
                 <SelectContent>
                   <SelectItem value="_all_">{isRTL ? 'كل المعلمين' : 'All Teachers'}</SelectItem>
                   {teachers.length > 0 ? (
-                    teachers.map(t => (
-                      <SelectItem key={t.id} value={t.name}>
+                    teachers.filter(t => t.name).map(t => (
+                      <SelectItem key={t.id} value={t.name || t.id}>
                         {isRTL ? t.displayNameAr : t.displayNameEn} ({isRTL ?
                           (t.level === 'beginner' ? 'مبتدئ' : t.level === 'intermediate' ? 'متوسط' : t.level === 'advanced' ? 'متقدم' : t.level === 'professional' ? 'محترف' : 'عام')
                           : t.level})
