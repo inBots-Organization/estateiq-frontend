@@ -99,6 +99,7 @@ export const brainApi = {
     options?: {
       contentLevel?: ContentLevel;
       targetPersona?: string;
+      teacherId?: string;
       tags?: string[];
     }
   ): Promise<BrainUploadResponse> => {
@@ -106,6 +107,7 @@ export const brainApi = {
     formData.append('file', file);
     if (options?.contentLevel) formData.append('contentLevel', options.contentLevel);
     if (options?.targetPersona) formData.append('targetPersona', options.targetPersona);
+    if (options?.teacherId) formData.append('teacherId', options.teacherId);
     if (options?.tags?.length) formData.append('tags', JSON.stringify(options.tags));
 
     const response = await fetch(`${API_BASE}/brain/documents`, {

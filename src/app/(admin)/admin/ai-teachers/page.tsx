@@ -53,6 +53,9 @@ import {
   Sparkles,
   ChevronRight,
   ChevronLeft,
+  RefreshCcw,
+  Trash2,
+  Upload,
 } from 'lucide-react';
 
 // Personality configuration
@@ -108,6 +111,8 @@ export default function AITeachersPage() {
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const [newTeacher, setNewTeacher] = useState<CreateAITeacherData>({
     name: '',
     displayNameAr: '',
@@ -177,6 +182,23 @@ export default function AITeachersPage() {
     }
   };
 
+  // Reset all evaluations
+  const handleResetEvaluations = async () => {
+    try {
+      setIsResetting(true);
+      const result = await aiTeachersApi.resetEvaluations();
+      console.log('Reset result:', result);
+      setResetDialogOpen(false);
+      // Refresh teachers to update counts
+      await fetchTeachers();
+    } catch (err) {
+      console.error('Error resetting evaluations:', err);
+      setError(err instanceof Error ? err.message : 'Failed to reset evaluations');
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   // Get gradient for teacher
   const getGradient = (index: number) => GRADIENTS[index % GRADIENTS.length];
 
@@ -233,13 +255,23 @@ export default function AITeachersPage() {
               : 'Manage AI teachers and customize them for your trainees'}
           </p>
         </div>
-        <Button
-          onClick={() => setCreateDialogOpen(true)}
-          className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
-        >
-          <Plus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
-          {isRTL ? 'إضافة معلم' : 'Add Teacher'}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setResetDialogOpen(true)}
+            className="text-destructive border-destructive/30 hover:bg-destructive/10"
+          >
+            <RefreshCcw className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+            {isRTL ? 'إعادة ضبط التقييمات' : 'Reset Evaluations'}
+          </Button>
+          <Button
+            onClick={() => setCreateDialogOpen(true)}
+            className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
+          >
+            <Plus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+            {isRTL ? 'إضافة معلم' : 'Add Teacher'}
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -411,6 +443,60 @@ export default function AITeachersPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Reset Evaluations Confirmation Dialog */}
+      <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <RefreshCcw className="h-5 w-5" />
+              {isRTL ? 'إعادة ضبط جميع التقييمات' : 'Reset All Evaluations'}
+            </DialogTitle>
+            <DialogDescription>
+              {isRTL
+                ? 'هذا الإجراء سيحذف جميع تقييمات المتدربين وتعييناتهم للمعلمين. سيحتاج كل متدرب لإعادة التقييم من جديد.'
+                : 'This action will delete all trainee evaluations and teacher assignments. Every trainee will need to be re-evaluated.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
+              <p className="text-sm text-destructive font-medium mb-2">
+                {isRTL ? 'سيتم حذف:' : 'This will delete:'}
+              </p>
+              <ul className={cn("text-sm text-muted-foreground space-y-1", isRTL ? "list-disc pr-5" : "list-disc pl-5")}>
+                <li>{isRTL ? 'جميع تعيينات المعلمين' : 'All teacher assignments'}</li>
+                <li>{isRTL ? 'مستويات المهارات الحالية' : 'Current skill levels'}</li>
+                <li>{isRTL ? 'تقارير المهارات اليومية' : 'Daily skill reports'}</li>
+                <li>{isRTL ? 'جلسات التشخيص' : 'Diagnostic sessions'}</li>
+              </ul>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetDialogOpen(false)}>
+              {isRTL ? 'إلغاء' : 'Cancel'}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleResetEvaluations}
+              disabled={isResetting}
+            >
+              {isResetting ? (
+                <>
+                  <Loader2 className={cn("h-4 w-4 animate-spin", isRTL ? "ml-2" : "mr-2")} />
+                  {isRTL ? 'جاري الحذف...' : 'Resetting...'}
+                </>
+              ) : (
+                <>
+                  <Trash2 className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                  {isRTL ? 'حذف وإعادة ضبط' : 'Reset All'}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Create Teacher Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>

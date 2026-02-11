@@ -362,6 +362,24 @@ export const aiTeachersApi = {
 
     return response.json();
   },
+
+  /**
+   * Reset all trainee evaluations (clear assignments and skill levels)
+   */
+  async resetEvaluations(): Promise<{ message: string; resetCount: number; deletedReports: number; deletedSessions: number }> {
+    const response = await fetch(`${API_URL}/admin/ai-teachers/reset-evaluations`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({}), // Cloud Run needs content-length
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to reset evaluations' }));
+      throw new Error(error.error || 'Failed to reset evaluations');
+    }
+
+    return response.json();
+  },
 };
 
 export default aiTeachersApi;

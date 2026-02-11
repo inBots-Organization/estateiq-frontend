@@ -11,7 +11,7 @@
  * - Assigned trainees list
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, ChangeEvent } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -51,6 +51,7 @@ import {
   AITeacherDocument,
   UpdateAITeacherData,
 } from '@/lib/api/ai-teachers.api';
+import { brainApi } from '@/lib/api/brain.api';
 import {
   Bot,
   ArrowLeft,
@@ -110,6 +111,7 @@ export default function AITeacherDetailPage() {
   const { isRTL, language } = useLanguage();
   const { token } = useAuthStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const docFileInputRef = useRef<HTMLInputElement>(null);
 
   const teacherId = params.id as string;
 
@@ -119,6 +121,7 @@ export default function AITeacherDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('info');
@@ -235,6 +238,38 @@ export default function AITeacherDetailPage() {
       setError(err instanceof Error ? err.message : 'Failed to upload avatar');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Handle document upload for this teacher
+  const handleDocumentUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !teacher) return;
+
+    try {
+      setIsUploading(true);
+      setError(null);
+
+      await brainApi.uploadDocument(file, {
+        teacherId: teacher.id,
+        contentLevel: teacher.level as 'beginner' | 'intermediate' | 'advanced' | 'professional' | 'general',
+      });
+
+      // Refresh documents list
+      const docsData = await aiTeachersApi.getDocuments(teacher.id);
+      setDocuments(docsData.documents);
+
+      setSuccessMessage(isRTL ? 'تم رفع الملف بنجاح وجاري معالجته' : 'File uploaded successfully, processing...');
+      setTimeout(() => setSuccessMessage(null), 5000);
+    } catch (err) {
+      console.error('Error uploading document:', err);
+      setError(err instanceof Error ? err.message : 'Failed to upload document');
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      if (docFileInputRef.current) {
+        docFileInputRef.current.value = '';
+      }
     }
   };
 
@@ -658,12 +693,35 @@ export default function AITeacherDetailPage() {
                       : 'Documents assigned to this teacher from the knowledge base'}
                   </CardDescription>
                 </div>
-                <Link href="/admin/brain">
-                  <Button variant="outline" size="sm">
-                    <FileText className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
-                    {isRTL ? 'إدارة الملفات' : 'Manage Documents'}
+                <div className="flex items-center gap-2">
+                  <input
+                    ref={docFileInputRef}
+                    type="file"
+                    accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                    onChange={handleDocumentUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => docFileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="bg-gradient-to-r from-violet-500 to-purple-600"
+                  >
+                    {isUploading ? (
+                      <Loader2 className={cn("h-4 w-4 animate-spin", isRTL ? "ml-2" : "mr-2")} />
+                    ) : (
+                      <Upload className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                    )}
+                    {isRTL ? 'رفع ملف' : 'Upload File'}
                   </Button>
-                </Link>
+                  <Link href="/admin/brain">
+                    <Button variant="outline" size="sm">
+                      <FileText className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                      {isRTL ? 'إدارة الملفات' : 'Manage All'}
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -671,11 +729,15 @@ export default function AITeacherDetailPage() {
                 <div className="text-center py-8 text-muted-foreground">
                   <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>{isRTL ? 'لا توجد ملفات مرتبطة بهذا المعلم' : 'No documents linked to this teacher'}</p>
-                  <Link href="/admin/brain">
-                    <Button variant="link" className="mt-2">
-                      {isRTL ? 'اذهب للعقل الذكي لإضافة ملفات' : 'Go to AI Brain to add documents'}
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="outline"
+                    className="mt-4"
+                    onClick={() => docFileInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    <Upload className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                    {isRTL ? 'رفع ملف جديد' : 'Upload New File'}
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-2">
