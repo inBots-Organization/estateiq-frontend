@@ -44,6 +44,7 @@ import {
   ClipboardCheck,
   Layers,
   Brain,
+  Bot,
 } from 'lucide-react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 
@@ -130,6 +131,15 @@ export default function AdminLayout({
           ? (isTrainer ? 'إدارة البطاقات التعليمية' : 'إدارة البطاقات التعليمية')
           : (isTrainer ? 'Manage your flashcards' : 'Manage flashcards'),
         showFor: ['trainer', 'org_admin'],
+      },
+      {
+        href: '/admin/ai-teachers',
+        label: isRTL ? 'المعلمين الأذكياء' : 'AI Teachers',
+        icon: Bot,
+        description: isRTL
+          ? 'إدارة المعلمين الأذكياء'
+          : 'Manage AI teachers',
+        showFor: ['org_admin'],
       },
       {
         href: '/admin/brain',
