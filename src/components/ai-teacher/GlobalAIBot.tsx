@@ -582,187 +582,313 @@ export function GlobalAIBot() {
 
   if (shouldHide) return null;
 
+  // State for onboarding flow
+  const [onboardingStep, setOnboardingStep] = useState<'initial' | 'speaking' | 'ready'>('initial');
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+
+  // Function to start Sara's welcome
+  const startSaraWelcome = async () => {
+    setIsLoadingAudio(true);
+    setOnboardingStep('speaking');
+
+    try {
+      const welcomeText = language === 'ar'
+        ? 'يا هلا والله! أنا سارة، مرشدتك للبداية. سعيدة إنك معانا! قبل ما نبدأ رحلتك في عالم العقارات، لازم نعرف مستواك الحالي. الاختبار بسيط وسريع، بس خمس دقائق! بعدها نختارلك أفضل معلم يناسب مستواك. يلا نبدأ!'
+        : "Hello and welcome! I'm Sara, your onboarding guide. So happy you're here! Before we start your real estate journey, we need to know your current level. The assessment is quick and simple, just 5 minutes! After that, we'll match you with the perfect teacher for your level. Let's begin!";
+
+      // Try noura voice (female, available in production)
+      const result = await aiTeacherApi.textToSpeech(welcomeText, language, 'noura');
+
+      if (result.audio) {
+        const audio = new Audio(`data:audio/mpeg;base64,${result.audio}`);
+        currentAudioRef.current = audio;
+        setIsLoadingAudio(false);
+
+        audio.onended = () => {
+          currentAudioRef.current = null;
+          setOnboardingStep('ready');
+        };
+
+        audio.onerror = () => {
+          currentAudioRef.current = null;
+          setOnboardingStep('ready');
+        };
+
+        await audio.play();
+      } else {
+        setIsLoadingAudio(false);
+        setOnboardingStep('ready');
+      }
+    } catch (e) {
+      console.error('Failed to play welcome:', e);
+      setIsLoadingAudio(false);
+      setOnboardingStep('ready');
+    }
+  };
+
   // If no assessment completed, show welcoming onboarding bot
   if (!hasCompletedAssessment) {
+    // Collapsed state - attractive pulsing button
     if (!isOpen) {
       return (
         <button
           onClick={() => setIsOpen(true)}
           className={cn(
-            'fixed bottom-6 z-50 w-16 h-16 rounded-full shadow-xl',
-            'bg-gradient-to-br from-teal-400 via-emerald-500 to-green-600 text-white flex items-center justify-center',
-            'hover:scale-110 transition-all duration-300',
-            'ring-4 ring-white/30',
+            'fixed bottom-6 z-50 group',
             isRTL ? 'left-6' : 'right-6'
           )}
           aria-label={language === 'ar' ? 'مرحباً!' : 'Welcome!'}
         >
-          {/* Welcoming Avatar Emoji */}
-          <span className="text-3xl">👋</span>
-          {/* Pulse */}
-          <span className="absolute inset-0 rounded-full bg-gradient-to-br from-teal-400 to-green-600 animate-ping opacity-25" />
-          {/* Sparkle effect */}
+          {/* Main button */}
+          <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-teal-400 via-emerald-500 to-green-600 text-white flex items-center justify-center shadow-xl hover:scale-110 transition-all duration-300 ring-4 ring-white/30">
+            <span className="text-3xl">👋</span>
+            {/* Pulse rings */}
+            <span className="absolute inset-0 rounded-full bg-gradient-to-br from-teal-400 to-green-600 animate-ping opacity-25" />
+            <span className="absolute inset-[-4px] rounded-full border-2 border-teal-400/50 animate-pulse" />
+          </div>
+          {/* Floating label */}
+          <div className={cn(
+            "absolute top-1/2 -translate-y-1/2 bg-white dark:bg-card px-3 py-1.5 rounded-full shadow-lg text-sm font-medium text-teal-700 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity",
+            isRTL ? 'right-20' : 'left-20'
+          )}>
+            {language === 'ar' ? '👋 أهلاً! اضغط للبدء' : '👋 Hi! Click to start'}
+          </div>
+          {/* Sparkles */}
           <span className="absolute -top-1 -right-1 text-xl animate-bounce">✨</span>
+          <span className="absolute -bottom-1 -left-1 text-lg animate-pulse delay-300">🌟</span>
         </button>
       );
     }
 
-    // Expanded welcoming onboarding panel
+    // STEP 1: Initial welcome - single CTA to start voice
+    if (onboardingStep === 'initial') {
+      return (
+        <div className={cn(
+          'fixed bottom-6 z-50',
+          'w-[380px] bg-gradient-to-br from-teal-50 via-emerald-50 to-green-50 dark:from-teal-950 dark:via-emerald-950 dark:to-green-950 border border-teal-200 dark:border-teal-800 rounded-3xl shadow-2xl',
+          'flex flex-col overflow-hidden',
+          isRTL ? 'left-6' : 'right-6'
+        )}>
+          {/* Animated header */}
+          <div className="relative bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 px-6 py-5 text-white overflow-hidden">
+            {/* Animated background particles */}
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute top-2 left-4 w-2 h-2 bg-white/30 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+              <div className="absolute top-4 right-8 w-1.5 h-1.5 bg-white/20 rounded-full animate-bounce" style={{ animationDelay: '0.5s' }} />
+              <div className="absolute bottom-3 left-12 w-1 h-1 bg-white/25 rounded-full animate-bounce" style={{ animationDelay: '1s' }} />
+            </div>
+
+            <div className="relative flex items-center gap-4">
+              {/* Sara Avatar */}
+              <div className="relative">
+                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center ring-4 ring-white/30">
+                  <span className="text-4xl">👩‍💼</span>
+                </div>
+                {/* Online indicator */}
+                <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse" />
+              </div>
+              <div className="flex-1">
+                <h2 className="font-bold text-xl">{language === 'ar' ? 'أنا سارة! 👋' : "I'm Sara! 👋"}</h2>
+                <p className="text-white/80 text-sm">{language === 'ar' ? 'مرشدتك الشخصية للبداية' : 'Your personal onboarding guide'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 text-center space-y-5">
+            {/* Welcome message bubble */}
+            <div className="relative bg-white dark:bg-card rounded-2xl p-4 shadow-sm border border-teal-100 dark:border-teal-800">
+              <div className="absolute -top-2 left-6 w-4 h-4 bg-white dark:bg-card border-l border-t border-teal-100 dark:border-teal-800 rotate-45" />
+              <p className="text-foreground text-base leading-relaxed">
+                {language === 'ar'
+                  ? 'يا هلا والله! 🌟 سعيدة إنك معانا. خليني أعرفك على نفسي وأشرحلك إيش راح نسوي سوا!'
+                  : "Hello there! 🌟 So happy you're here. Let me introduce myself and explain what we'll do together!"}
+              </p>
+            </div>
+
+            {/* Single prominent CTA */}
+            <Button
+              onClick={startSaraWelcome}
+              disabled={isLoadingAudio}
+              className="w-full h-14 text-lg font-bold bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 hover:from-teal-600 hover:via-emerald-600 hover:to-green-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+            >
+              {isLoadingAudio ? (
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
+              ) : (
+                <Volume2 className="w-5 h-5 mr-2" />
+              )}
+              {language === 'ar' ? '🎧 اضغط عشان سارة تتكلم' : '🎧 Tap to hear Sara speak'}
+            </Button>
+
+            {/* Skip option */}
+            <button
+              onClick={() => setOnboardingStep('ready')}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {language === 'ar' ? 'تخطي ← ' : 'Skip →'}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // STEP 2: Sara is speaking - animated state
+    if (onboardingStep === 'speaking') {
+      return (
+        <div className={cn(
+          'fixed bottom-6 z-50',
+          'w-[380px] bg-gradient-to-br from-teal-50 via-emerald-50 to-green-50 dark:from-teal-950 dark:via-emerald-950 dark:to-green-950 border border-teal-200 dark:border-teal-800 rounded-3xl shadow-2xl',
+          'flex flex-col overflow-hidden',
+          isRTL ? 'left-6' : 'right-6'
+        )}>
+          {/* Header with speaking indicator */}
+          <div className="relative bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 px-6 py-5 text-white">
+            <div className="flex items-center gap-4">
+              {/* Animated speaking avatar */}
+              <div className="relative">
+                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center ring-4 ring-white/50 animate-pulse">
+                  <span className="text-4xl">👩‍💼</span>
+                </div>
+                {/* Sound waves */}
+                <div className="absolute -right-1 top-1/2 -translate-y-1/2 flex gap-0.5">
+                  <div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-1 h-5 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h2 className="font-bold text-xl flex items-center gap-2">
+                  {language === 'ar' ? 'سارة تتكلم...' : 'Sara is speaking...'}
+                  <span className="inline-flex gap-1">
+                    <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </span>
+                </h2>
+                <p className="text-white/80 text-sm">{language === 'ar' ? 'استمع للترحيب' : 'Listen to the welcome'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Content - Live transcription style */}
+          <div className="p-6 space-y-4">
+            <div className="bg-white dark:bg-card rounded-2xl p-4 shadow-sm border border-teal-100 dark:border-teal-800 min-h-[120px]">
+              <p className="text-foreground text-base leading-relaxed animate-pulse">
+                {language === 'ar'
+                  ? 'يا هلا والله! أنا سارة، مرشدتك للبداية. سعيدة إنك معانا! قبل ما نبدأ رحلتك في عالم العقارات، لازم نعرف مستواك الحالي...'
+                  : "Hello and welcome! I'm Sara, your onboarding guide. So happy you're here! Before we start your real estate journey..."}
+              </p>
+            </div>
+
+            {/* Audio visualizer */}
+            <div className="flex items-center justify-center gap-1 h-8">
+              {[...Array(12)].map((_, i) => (
+                <div
+                  key={i}
+                  className="w-1 bg-teal-500 rounded-full animate-bounce"
+                  style={{
+                    height: `${Math.random() * 20 + 10}px`,
+                    animationDelay: `${i * 100}ms`,
+                    animationDuration: '0.5s'
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Stop button */}
+            <Button
+              onClick={() => {
+                if (currentAudioRef.current) {
+                  currentAudioRef.current.pause();
+                  currentAudioRef.current = null;
+                }
+                setOnboardingStep('ready');
+              }}
+              variant="outline"
+              className="w-full h-10 text-sm border-teal-300 text-teal-700 hover:bg-teal-50 rounded-xl"
+            >
+              <Square className="w-4 h-4 mr-2" />
+              {language === 'ar' ? 'تخطي للمتابعة' : 'Skip to continue'}
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    // STEP 3: Ready to start assessment
     return (
       <div className={cn(
         'fixed bottom-6 z-50',
-        'w-[360px] bg-card border border-border rounded-3xl shadow-2xl',
+        'w-[380px] bg-gradient-to-br from-teal-50 via-emerald-50 to-green-50 dark:from-teal-950 dark:via-emerald-950 dark:to-green-950 border border-teal-200 dark:border-teal-800 rounded-3xl shadow-2xl',
         'flex flex-col overflow-hidden',
         isRTL ? 'left-6' : 'right-6'
       )}>
-        {/* Header with friendly gradient */}
-        <div className="flex items-center justify-between px-5 py-4 border-b bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 text-white">
+        {/* Success header */}
+        <div className="relative bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 px-6 py-4 text-white">
           <div className="flex items-center gap-3">
-            {/* Friendly welcoming avatar */}
-            <div className="relative">
-              <div className={cn(
-                "w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-2xl",
-                isPlayingOnboardingWelcome ? "animate-pulse ring-2 ring-white" : "animate-pulse"
-              )}>
-                {isPlayingOnboardingWelcome ? '🔊' : '🎉'}
-              </div>
-              <span className="absolute -bottom-1 -right-1 text-lg">👋</span>
+            <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+              <span className="text-2xl">✨</span>
             </div>
             <div>
-              <span className="font-bold text-lg block">
-                {isPlayingOnboardingWelcome
-                  ? (language === 'ar' ? 'سارة تتكلم...' : 'Sara is speaking...')
-                  : (language === 'ar' ? 'أهلاً وسهلاً!' : 'Welcome!')}
-              </span>
-              <span className="text-xs text-white/80">
-                {language === 'ar' ? 'مرشدتك للبداية' : 'Your Onboarding Guide'}
-              </span>
+              <h2 className="font-bold text-lg">{language === 'ar' ? 'يلا نبدأ الرحلة!' : "Let's start your journey!"}</h2>
+              <p className="text-white/80 text-xs">{language === 'ar' ? 'سارة جاهزة تساعدك' : 'Sara is ready to help'}</p>
             </div>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-white/80 hover:text-white hover:bg-white/20 rounded-full"
+            className="absolute top-3 right-3 h-8 w-8 text-white/80 hover:text-white hover:bg-white/20 rounded-full"
             onClick={() => setIsOpen(false)}
           >
             <X className="h-4 w-4" />
           </Button>
         </div>
 
-        {/* Content with welcoming message */}
-        <div className="p-5 space-y-5">
-          {/* Welcoming Avatar Section */}
-          <div className="text-center">
-            <div className="relative w-24 h-24 mx-auto mb-4">
-              {/* Animated welcoming character */}
-              <div className="w-full h-full rounded-full bg-gradient-to-br from-teal-100 via-emerald-100 to-green-100 flex items-center justify-center shadow-lg">
-                <span className="text-5xl animate-bounce">🧑‍🏫</span>
-              </div>
-              {/* Floating elements */}
-              <span className="absolute top-0 right-0 text-2xl animate-pulse">⭐</span>
-              <span className="absolute bottom-0 left-0 text-xl animate-bounce delay-100">🎯</span>
-            </div>
-
-            <h3 className="font-bold text-xl text-foreground mb-2">
-              {language === 'ar' ? 'يا هلا والله! 🌟' : 'Hello There! 🌟'}
+        {/* Content */}
+        <div className="p-5 space-y-4">
+          {/* Quick info */}
+          <div className="bg-white dark:bg-card rounded-xl p-4 shadow-sm border border-teal-100 dark:border-teal-800">
+            <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+              <span>📋</span>
+              {language === 'ar' ? 'الخطوة الأولى: تحليل مستواك' : 'Step 1: Level Assessment'}
             </h3>
-
-            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-              {language === 'ar'
-                ? 'أنا سعيد إنك معانا! قبل ما نبدأ رحلتك في عالم العقارات، خلينا نتعرف على مستواك عشان نختارلك المعلم المناسب.'
-                : "I'm so happy you're here! Before we start your real estate journey, let's discover your level so we can match you with the perfect teacher."}
-            </p>
-
-            <div className="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl p-3 text-sm">
-              <div className="flex items-center gap-2 text-teal-700 font-medium mb-1">
-                <span>💡</span>
-                <span>{language === 'ar' ? 'الاختبار بسيط!' : 'Quick Assessment!'}</span>
-              </div>
-              <p className="text-teal-600/80 text-xs">
-                {language === 'ar'
-                  ? '5 دقائق فقط وبنعرف نقاط قوتك وضعفك'
-                  : 'Just 5 minutes to discover your strengths and areas to improve'}
-              </p>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              {[
+                { icon: '⏱️', ar: '5 دقائق فقط', en: 'Only 5 minutes' },
+                { icon: '💬', ar: 'محادثة مع عميل افتراضي', en: 'Chat with a virtual client' },
+                { icon: '🎯', ar: 'نختارلك المعلم المناسب', en: 'We match you with the right teacher' },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span>{item.icon}</span>
+                  <span>{language === 'ar' ? item.ar : item.en}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Benefits */}
-          <div className="space-y-2">
-            {[
-              { emoji: '🎯', ar: 'معلم مخصص لمستواك', en: 'Personalized teacher for your level' },
-              { emoji: '📈', ar: 'خطة تدريب شخصية', en: 'Custom training plan' },
-              { emoji: '🏆', ar: 'تتبع تقدمك يومياً', en: 'Track your daily progress' },
-            ].map((benefit, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm text-muted-foreground">
-                <span className="text-lg">{benefit.emoji}</span>
-                <span>{language === 'ar' ? benefit.ar : benefit.en}</span>
-              </div>
-            ))}
-          </div>
+          {/* Listen again option */}
+          <button
+            onClick={() => setOnboardingStep('initial')}
+            className="w-full flex items-center justify-center gap-2 text-sm text-teal-600 hover:text-teal-700 transition-colors py-2"
+          >
+            <Volume2 className="w-4 h-4" />
+            {language === 'ar' ? 'استمع لسارة مرة ثانية' : 'Listen to Sara again'}
+          </button>
 
-          {/* Listen to welcome button - triggers audio with user interaction */}
-          {!isPlayingOnboardingWelcome && (
-            <Button
-              onClick={async () => {
-                setIsPlayingOnboardingWelcome(true);
-                try {
-                  const welcomeText = language === 'ar'
-                    ? 'يا هلا والله! أنا مرشدتك للبداية، سعيدة إنك معانا! قبل ما نبدأ رحلتك في عالم العقارات، لازم نعرف مستواك الحالي. الاختبار بسيط وسريع، بس 5 دقائق! بعدها نختارلك أفضل معلم يناسب مستواك. يلا نبدأ!'
-                    : "Hello and welcome! I'm Sara, your onboarding guide. So happy you're here! Before we start your real estate journey, we need to know your current level. The assessment is quick and simple, just 5 minutes! After that, we'll match you with the perfect teacher for your level. Let's begin!";
-
-                  // Try sara voice first, fallback to noura (female) if sara not available
-                  let result;
-                  try {
-                    result = await aiTeacherApi.textToSpeech(welcomeText, language, 'sara');
-                  } catch {
-                    // Sara not available, try noura (female voice)
-                    console.log('Sara voice not available, trying noura...');
-                    result = await aiTeacherApi.textToSpeech(welcomeText, language, 'noura');
-                  }
-
-                  if (result.audio) {
-                    const audio = new Audio(`data:audio/mpeg;base64,${result.audio}`);
-                    currentAudioRef.current = audio;
-                    audio.onended = () => { currentAudioRef.current = null; setIsPlayingOnboardingWelcome(false); };
-                    audio.play();
-                  } else {
-                    setIsPlayingOnboardingWelcome(false);
-                  }
-                } catch (e) {
-                  console.error('Failed to play welcome:', e);
-                  setIsPlayingOnboardingWelcome(false);
-                }
-              }}
-              variant="outline"
-              className="w-full h-10 text-sm font-medium border-teal-300 text-teal-700 hover:bg-teal-50 rounded-xl mb-2"
-            >
-              <Volume2 className="w-4 h-4 mr-2" />
-              {language === 'ar' ? '🔊 استمع للترحيب' : '🔊 Listen to Welcome'}
-            </Button>
-          )}
-
-          {isPlayingOnboardingWelcome && (
-            <div className="w-full h-10 flex items-center justify-center gap-2 text-teal-600 mb-2">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span className="text-sm">{language === 'ar' ? 'جاري التشغيل...' : 'Playing...'}</span>
-            </div>
-          )}
-
+          {/* Main CTA */}
           <Button
             onClick={async () => {
-              // Start the assessment via the diagnostic store
               try {
                 await diagnosticStore.startAssessment();
-                // Close the bot after starting
                 setIsOpen(false);
               } catch (error) {
                 console.error('Failed to start assessment:', error);
               }
             }}
-            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 hover:from-teal-600 hover:via-emerald-600 hover:to-green-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+            className="w-full h-14 text-lg font-bold bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 hover:from-teal-600 hover:via-emerald-600 hover:to-green-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
           >
-            <span className="mr-2">🚀</span>
-            {language === 'ar' ? 'يلا نبدأ!' : "Let's Start!"}
+            <span className="mr-2 text-xl">🚀</span>
+            {language === 'ar' ? 'يلا نبدأ التحليل!' : "Let's Start!"}
           </Button>
         </div>
       </div>
