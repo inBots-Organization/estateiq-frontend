@@ -40,6 +40,8 @@ import {
 } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuthStore } from '@/stores/auth.store';
+import { useTeacherStore } from '@/stores/teacher.store';
+import { useDiagnosticStore } from '@/stores/diagnostic.store';
 import { cn } from '@/lib/utils';
 import { aiTeachersApi, AITeacher, CreateAITeacherData } from '@/lib/api/ai-teachers.api';
 import {
@@ -235,6 +237,13 @@ export default function AITeachersPage() {
       setIsResetting(true);
       const result = await aiTeachersApi.resetEvaluations();
       console.log('Reset result:', result);
+
+      // IMPORTANT: Also reset local stores so trainees are forced to do new assessment
+      // Reset teacher store (clears assigned teacher from localStorage)
+      useTeacherStore.getState().reset();
+      // Reset diagnostic store (clears assessment state from sessionStorage)
+      useDiagnosticStore.getState().reset();
+
       setResetDialogOpen(false);
       // Refresh teachers to update counts
       await fetchTeachers();
