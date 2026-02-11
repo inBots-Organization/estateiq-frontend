@@ -360,12 +360,13 @@ export function GlobalAIBot() {
         setOnboardingWelcomePlayed(true); // Mark immediately to prevent double calls
 
         try {
-          // Generate welcome audio using Sara's voice
+          // Generate welcome audio using Ahmed's voice (friendly Saudi male)
+          // Note: Using ahmed voice temporarily until backend sara support is deployed
           const welcomeText = language === 'ar'
-            ? 'يا هلا والله! أنا سارة، مرشدتك للبداية. سعيدة إنك معانا! قبل ما نبدأ رحلتك في عالم العقارات، لازم نعرف مستواك الحالي. الاختبار بسيط وسريع، بس 5 دقائق! بعدها هنختارلك أفضل معلم يناسب مستواك. يلا نبدأ!'
-            : "Hello and welcome! I'm Sara, your onboarding guide. So happy you're here! Before we start your real estate journey, we need to know your current level. The assessment is quick and simple, just 5 minutes! After that, we'll match you with the perfect teacher for your level. Let's begin!";
+            ? 'يا هلا والله! أنا مرشدك للبداية، سعيد إنك معانا! قبل ما نبدأ رحلتك في عالم العقارات، لازم نعرف مستواك الحالي. الاختبار بسيط وسريع، بس 5 دقائق! بعدها هنختارلك أفضل معلم يناسب مستواك. يلا نبدأ!'
+            : "Hello and welcome! I'm your onboarding guide. So happy you're here! Before we start your real estate journey, we need to know your current level. The assessment is quick and simple, just 5 minutes! After that, we'll match you with the perfect teacher for your level. Let's begin!";
 
-          const result = await aiTeacherApi.textToSpeech(welcomeText, language, 'sara');
+          const result = await aiTeacherApi.textToSpeech(welcomeText, language, 'ahmed');
 
           if (result.audio) {
             const audio = new Audio(`data:audio/mpeg;base64,${result.audio}`);
