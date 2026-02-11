@@ -36,8 +36,8 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
       en: 'Fundamentals',
     },
     initial: { ar: 'أ', en: 'A' },
-    // Professional Saudi male avatar - friendly look with turban and light beard
-    avatarUrl: 'https://api.dicebear.com/9.x/avataaars/svg?seed=AhmedSaudi&top=turban&skinColor=d08b5b&facialHair=beardLight&facialHairProbability=100&eyes=happy&eyebrows=defaultNatural&mouth=smile&clothes=blazerAndShirt&clothesColor=3b82f6&backgroundColor=3b82f6',
+    // Professional Arab male avatar - friendly, warm skin tone, beard
+    avatarUrl: 'https://api.dicebear.com/9.x/personas/svg?seed=AhmedKSA&skinColor=b16a5b&hair=fade&facialHair=goatee&facialHairProbability=100&eyes=happy&mouth=bigSmile&body=squared&clothing=blazerAndShirt&clothingColor=3b82f6&backgroundColor=3b82f6',
     gradient: 'from-blue-500 to-blue-600',
     bgLight: 'bg-blue-500/10',
     textColor: 'text-blue-600',
@@ -57,8 +57,8 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
       en: 'Sales Strategy',
     },
     initial: { ar: 'ن', en: 'N' },
-    // Professional Saudi woman avatar - hijab with confident look
-    avatarUrl: 'https://api.dicebear.com/9.x/avataaars/svg?seed=NouraSaudi&top=hijab&skinColor=edb98a&eyes=default&eyebrows=defaultNatural&mouth=serious&clothes=blazerAndSweater&clothesColor=8b5cf6&backgroundColor=8b5cf6',
+    // Professional Arab woman avatar - confident look, long hair
+    avatarUrl: 'https://api.dicebear.com/9.x/personas/svg?seed=NouraKSA&skinColor=e5a07e&hair=long&facialHairProbability=0&eyes=open&mouth=smile&body=rounded&clothing=blazerAndShirt&clothingColor=8b5cf6&backgroundColor=8b5cf6',
     gradient: 'from-purple-500 to-purple-600',
     bgLight: 'bg-purple-500/10',
     textColor: 'text-purple-600',
@@ -78,8 +78,8 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
       en: 'Senior Closer',
     },
     initial: { ar: 'أ', en: 'A' },
-    // Professional Saudi male avatar - senior expert with turban and medium beard
-    avatarUrl: 'https://api.dicebear.com/9.x/avataaars/svg?seed=AnasSaudi&top=turban&skinColor=ae5d29&facialHair=beardMedium&facialHairProbability=100&eyes=default&eyebrows=raisedExcitedNatural&mouth=serious&clothes=blazerAndShirt&clothesColor=10b981&backgroundColor=10b981',
+    // Professional Arab male avatar - senior expert, darker skin, full beard
+    avatarUrl: 'https://api.dicebear.com/9.x/personas/svg?seed=AnasKSA&skinColor=92594b&hair=bald&facialHair=beardMustache&facialHairProbability=100&eyes=open&mouth=smirk&body=squared&clothing=blazerAndShirt&clothingColor=10b981&backgroundColor=10b981',
     gradient: 'from-emerald-500 to-emerald-600',
     bgLight: 'bg-emerald-500/10',
     textColor: 'text-emerald-600',
@@ -99,8 +99,8 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
       en: 'Growth Mentor',
     },
     initial: { ar: 'ع', en: 'A' },
-    // Professional Saudi male avatar - wise mentor with turban and majestic beard
-    avatarUrl: 'https://api.dicebear.com/9.x/avataaars/svg?seed=AbdullahSaudi&top=turban&skinColor=d08b5b&facialHair=beardMajestic&facialHairProbability=100&eyes=default&eyebrows=defaultNatural&mouth=smile&clothes=blazerAndShirt&clothesColor=f59e0b&backgroundColor=f59e0b',
+    // Professional Arab male avatar - wise mentor, warm skin, distinguished beard
+    avatarUrl: 'https://api.dicebear.com/9.x/personas/svg?seed=AbdullahKSA&skinColor=b16a5b&hair=balding&facialHair=walrus&facialHairProbability=100&eyes=open&mouth=smile&body=rounded&clothing=blazerAndShirt&clothingColor=f59e0b&backgroundColor=f59e0b',
     gradient: 'from-amber-500 to-orange-500',
     bgLight: 'bg-amber-500/10',
     textColor: 'text-amber-600',
