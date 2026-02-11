@@ -292,6 +292,76 @@ export const aiTeachersApi = {
 
     return response.json();
   },
+
+  /**
+   * Bulk assign trainees to a teacher
+   */
+  async assignTrainees(teacherId: string, traineeIds: string[]): Promise<{ message: string; assignedCount: number }> {
+    const response = await fetch(`${API_URL}/admin/ai-teachers/${teacherId}/assign-trainees`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ traineeIds }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to assign trainees' }));
+      throw new Error(error.error || 'Failed to assign trainees');
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Bulk unassign trainees from a teacher
+   */
+  async unassignTrainees(teacherId: string, traineeIds: string[]): Promise<{ message: string; unassignedCount: number }> {
+    const response = await fetch(`${API_URL}/admin/ai-teachers/${teacherId}/unassign-trainees`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ traineeIds }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to unassign trainees' }));
+      throw new Error(error.error || 'Failed to unassign trainees');
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Resync default teachers with latest prompts (only updates empty prompts)
+   */
+  async resync(): Promise<{ message: string; updatedCount: number }> {
+    const response = await fetch(`${API_URL}/admin/ai-teachers/resync`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to resync teachers' }));
+      throw new Error(error.error || 'Failed to resync teachers');
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Force resync default teachers with latest prompts (overwrites existing)
+   */
+  async forceResync(): Promise<{ message: string; updatedCount: number }> {
+    const response = await fetch(`${API_URL}/admin/ai-teachers/force-resync`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to force-resync teachers' }));
+      throw new Error(error.error || 'Failed to force-resync teachers');
+    }
+
+    return response.json();
+  },
 };
 
 export default aiTeachersApi;
