@@ -23,6 +23,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { brainApi, type BrainDocument, type ContentLevel } from '@/lib/api/brain.api';
+import { aiTeachersApi, type AITeacher } from '@/lib/api/ai-teachers.api';
 import {
   Brain,
   Upload,
@@ -110,7 +111,8 @@ function getLevelBadge(level: ContentLevel, isRTL: boolean) {
   );
 }
 
-const TEACHER_PERSONAS = [
+// Fallback teacher personas (used if API fails)
+const FALLBACK_TEACHER_PERSONAS = [
   { id: 'ahmed', name: 'أحمد', nameEn: 'Ahmed', level: 'beginner' },
   { id: 'noura', name: 'نورة', nameEn: 'Noura', level: 'intermediate' },
   { id: 'anas', name: 'أنس', nameEn: 'Anas', level: 'advanced' },
@@ -122,10 +124,12 @@ export default function AdminBrainPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [documents, setDocuments] = useState<BrainDocument[]>([]);
+  const [teachers, setTeachers] = useState<AITeacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterTeacher, setFilterTeacher] = useState<string>('all');
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
@@ -149,9 +153,20 @@ export default function AdminBrainPage() {
     }
   }, []);
 
+  const fetchTeachers = useCallback(async () => {
+    try {
+      const data = await aiTeachersApi.list();
+      setTeachers(data.teachers);
+    } catch (err) {
+      console.error('Failed to fetch teachers:', err);
+      // Use fallback if API fails
+    }
+  }, []);
+
   useEffect(() => {
     fetchDocuments();
-  }, [fetchDocuments]);
+    fetchTeachers();
+  }, [fetchDocuments, fetchTeachers]);
 
   // Poll for processing documents
   useEffect(() => {
@@ -231,10 +246,32 @@ export default function AdminBrainPage() {
   };
 
   const filteredDocs = documents.filter(doc => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return doc.title.toLowerCase().includes(q) || doc.fileName.toLowerCase().includes(q);
+    // Filter by search
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      if (!doc.title.toLowerCase().includes(q) && !doc.fileName.toLowerCase().includes(q)) {
+        return false;
+      }
+    }
+    // Filter by teacher
+    if (filterTeacher !== 'all') {
+      if (!doc.targetPersona || doc.targetPersona !== filterTeacher) {
+        return false;
+      }
+    }
+    return true;
   });
+
+  // Helper to get teacher display name
+  const getTeacherName = (personaId: string) => {
+    const teacher = teachers.find(t => t.name === personaId);
+    if (teacher) {
+      return isRTL ? teacher.displayNameAr : teacher.displayNameEn;
+    }
+    // Fallback to static list
+    const fallback = FALLBACK_TEACHER_PERSONAS.find(p => p.id === personaId);
+    return fallback ? (isRTL ? fallback.name : fallback.nameEn) : personaId;
+  };
 
   const totalChunks = documents.reduce((sum, d) => sum + d.chunkCount, 0);
   const readyDocs = documents.filter(d => d.status === 'ready').length;
@@ -343,20 +380,45 @@ export default function AdminBrainPage() {
       {/* Document List */}
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <CardTitle className="flex items-center gap-2">
               <HardDrive className="w-5 h-5" />
-              {isRTL ? 'المستندات' : 'Documents'} ({documents.length})
+              {isRTL ? 'المستندات' : 'Documents'} ({filteredDocs.length}/{documents.length})
             </CardTitle>
             {documents.length > 0 && (
-              <div className="relative w-64">
-                <Search className={cn('absolute top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground', isRTL ? 'right-3' : 'left-3')} />
-                <Input
-                  placeholder={isRTL ? 'بحث...' : 'Search...'}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className={cn('h-9', isRTL ? 'pr-9' : 'pl-9')}
-                />
+              <div className="flex items-center gap-2">
+                {/* Teacher Filter */}
+                <Select value={filterTeacher} onValueChange={setFilterTeacher}>
+                  <SelectTrigger className="w-40 h-9">
+                    <SelectValue placeholder={isRTL ? 'المعلم' : 'Teacher'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{isRTL ? 'كل المعلمين' : 'All Teachers'}</SelectItem>
+                    {teachers.length > 0 ? (
+                      teachers.map(t => (
+                        <SelectItem key={t.id} value={t.name}>
+                          {isRTL ? t.displayNameAr : t.displayNameEn}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      FALLBACK_TEACHER_PERSONAS.map(p => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {isRTL ? p.name : p.nameEn}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                {/* Search */}
+                <div className="relative w-48">
+                  <Search className={cn('absolute top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground', isRTL ? 'right-3' : 'left-3')} />
+                  <Input
+                    placeholder={isRTL ? 'بحث...' : 'Search...'}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={cn('h-9', isRTL ? 'pr-9' : 'pl-9')}
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -392,7 +454,7 @@ export default function AdminBrainPage() {
                       {doc.targetPersona && (
                         <Badge variant="outline" className="text-xs bg-violet-50 text-violet-700 border-violet-200">
                           <User className="w-3 h-3 mr-1" />
-                          {TEACHER_PERSONAS.find(p => p.id === doc.targetPersona)?.[isRTL ? 'name' : 'nameEn'] || doc.targetPersona}
+                          {getTeacherName(doc.targetPersona)}
                         </Badge>
                       )}
                     </div>
@@ -489,16 +551,31 @@ export default function AdminBrainPage() {
                   <SelectValue placeholder={isRTL ? 'اختر معلم...' : 'Select teacher...'} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{isRTL ? 'الكل' : 'All Teachers'}</SelectItem>
-                  {TEACHER_PERSONAS.map(p => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {isRTL ? p.name : p.nameEn} ({isRTL ?
-                        (p.level === 'beginner' ? 'مبتدئ' : p.level === 'intermediate' ? 'متوسط' : p.level === 'advanced' ? 'متقدم' : 'محترف')
-                        : p.level})
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="">{isRTL ? 'كل المعلمين' : 'All Teachers'}</SelectItem>
+                  {teachers.length > 0 ? (
+                    teachers.map(t => (
+                      <SelectItem key={t.id} value={t.name}>
+                        {isRTL ? t.displayNameAr : t.displayNameEn} ({isRTL ?
+                          (t.level === 'beginner' ? 'مبتدئ' : t.level === 'intermediate' ? 'متوسط' : t.level === 'advanced' ? 'متقدم' : t.level === 'professional' ? 'محترف' : 'عام')
+                          : t.level})
+                      </SelectItem>
+                    ))
+                  ) : (
+                    FALLBACK_TEACHER_PERSONAS.map(p => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {isRTL ? p.name : p.nameEn} ({isRTL ?
+                          (p.level === 'beginner' ? 'مبتدئ' : p.level === 'intermediate' ? 'متوسط' : p.level === 'advanced' ? 'متقدم' : 'محترف')
+                          : p.level})
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                {isRTL
+                  ? 'حدد معلم معين ليكون هذا المستند خاص به، أو اتركه فارغاً ليكون متاحاً لجميع المعلمين'
+                  : 'Select a specific teacher to make this document exclusive to them, or leave empty for all teachers'}
+              </p>
             </div>
           </div>
 
