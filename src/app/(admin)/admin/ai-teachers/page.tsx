@@ -10,7 +10,7 @@
  * - View assigned trainees and documents
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -59,6 +59,8 @@ import {
   RefreshCcw,
   Trash2,
   Upload,
+  Camera,
+  ImagePlus,
 } from 'lucide-react';
 
 // Personality configuration
@@ -108,6 +110,7 @@ export default function AITeachersPage() {
   const { isRTL, language } = useLanguage();
   const { token } = useAuthStore();
   const router = useRouter();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [teachers, setTeachers] = useState<AITeacher[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -116,6 +119,8 @@ export default function AITeachersPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [newTeacher, setNewTeacher] = useState<CreateAITeacherData>({
     name: '',
     displayNameAr: '',
@@ -166,6 +171,20 @@ export default function AITeachersPage() {
     }
   };
 
+  // Handle avatar file selection
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Create new teacher
   const handleCreateTeacher = async () => {
     if (!newTeacher.name || !newTeacher.displayNameAr || !newTeacher.displayNameEn) {
@@ -175,7 +194,21 @@ export default function AITeachersPage() {
     try {
       setIsCreating(true);
       const data = await aiTeachersApi.create(newTeacher);
-      setTeachers(prev => [...prev, data.teacher]);
+
+      // If avatar file was selected, upload it
+      if (avatarFile && data.teacher.id) {
+        try {
+          const updatedTeacher = await aiTeachersApi.uploadAvatar(data.teacher.id, avatarFile);
+          setTeachers(prev => [...prev, updatedTeacher.teacher]);
+        } catch (avatarErr) {
+          console.error('Error uploading avatar:', avatarErr);
+          // Still add teacher without avatar
+          setTeachers(prev => [...prev, data.teacher]);
+        }
+      } else {
+        setTeachers(prev => [...prev, data.teacher]);
+      }
+
       setCreateDialogOpen(false);
       setNewTeacher({
         name: '',
@@ -184,6 +217,8 @@ export default function AITeachersPage() {
         personality: 'friendly',
         level: 'general',
       });
+      setAvatarFile(null);
+      setAvatarPreview(null);
       // Navigate to the new teacher's page
       router.push(`/admin/ai-teachers/${data.teacher.id}`);
     } catch (err) {
@@ -535,6 +570,45 @@ export default function AITeachersPage() {
 
               {/* Basic Tab */}
               <TabsContent value="basic" className="space-y-4">
+                {/* Avatar Upload Section */}
+                <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
+                  <div className="relative group">
+                    <Avatar className="h-20 w-20 border-2 border-border">
+                      {avatarPreview ? (
+                        <AvatarImage src={avatarPreview} alt="Preview" />
+                      ) : null}
+                      <AvatarFallback className="text-white text-2xl font-bold bg-gradient-to-br from-violet-500 to-purple-600">
+                        {newTeacher.displayNameEn?.charAt(0) || '?'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <button
+                      type="button"
+                      onClick={() => avatarInputRef.current?.click()}
+                      className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Camera className="h-6 w-6 text-white" />
+                    </button>
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleAvatarSelect}
+                      className="hidden"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Label className="text-base font-medium">{isRTL ? 'صورة المعلم' : 'Teacher Avatar'}</Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {isRTL ? 'اضغط على الصورة لرفع أفاتار مخصص' : 'Click the image to upload a custom avatar'}
+                    </p>
+                    {avatarFile && (
+                      <p className="text-xs text-emerald-500 mt-1">
+                        ✓ {avatarFile.name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>{isRTL ? 'الاسم بالعربي *' : 'Arabic Name *'}</Label>
