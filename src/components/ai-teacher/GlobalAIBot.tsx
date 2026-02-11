@@ -6,6 +6,7 @@ import { Send, X, Maximize2, Loader2, ClipboardCheck, Mic, Volume2, VolumeX, Squ
 import { Button } from '@/components/ui/button';
 import { TEACHERS, type TeacherName } from '@/config/teachers';
 import { useTeacherStore } from '@/stores/teacher.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { aiTeacherApi } from '@/lib/api/ai-teacher.api';
@@ -148,6 +149,7 @@ export function GlobalAIBot() {
   const router = useRouter();
   const { t, language, isRTL } = useLanguage();
   const { activeTeacher, assignedTeacher } = useTeacherStore();
+  const { user } = useAuthStore();
 
   // Start closed, then check if should auto-open on client
   const [isOpen, setIsOpen] = useState(false);
@@ -214,7 +216,14 @@ export function GlobalAIBot() {
 
   // Hide on specific pages
   const hiddenPaths = ['/ai-teacher', '/assessment'];
-  const shouldHide = hiddenPaths.some(p => pathname.includes(p));
+  const shouldHideOnPath = hiddenPaths.some(p => pathname.includes(p));
+
+  // Hide for admin roles - bot is only for trainees
+  const adminRoles = ['saas_super_admin', 'org_admin', 'trainer'];
+  const isAdminUser = user?.role && adminRoles.includes(user.role);
+
+  // Combined hide condition
+  const shouldHide = shouldHideOnPath || isAdminUser;
 
   // Check if assessment is complete (has assigned teacher)
   const hasCompletedAssessment = assignedTeacher !== null;
