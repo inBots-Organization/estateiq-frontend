@@ -397,18 +397,31 @@ export default function AITeachersPage() {
           const PersonalityIcon = personality.icon;
 
           return (
-            <Link key={teacher.id} href={`/admin/ai-teachers/${teacher.id}`}>
-              <Card className={cn(
+            <Card
+              key={teacher.id}
+              className={cn(
                 "group cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-violet-500/30",
                 !teacher.isActive && "opacity-60"
-              )}>
-                <CardContent className="p-5">
-                  {/* Header with Avatar and Status */}
-                  <div className="flex items-start justify-between mb-4">
+              )}
+              onClick={() => router.push(`/admin/ai-teachers/${teacher.id}`)}
+            >
+              <CardContent className="p-5">
+                {/* Header with Avatar and Status */}
+                <div className="flex items-start justify-between mb-4">
+                  {teacher.avatarUrl ? (
+                    <div className="h-16 w-16 rounded-full border-2 border-border shadow-soft overflow-hidden bg-gradient-to-br from-violet-500 to-purple-600">
+                      <img
+                        src={teacher.avatarUrl}
+                        alt={teacher.displayNameEn}
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          // On error, hide image and show fallback
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  ) : (
                     <Avatar className="h-16 w-16 border-2 border-border shadow-soft">
-                      {teacher.avatarUrl ? (
-                        <AvatarImage src={teacher.avatarUrl} alt={teacher.displayNameEn} />
-                      ) : null}
                       <AvatarFallback className={cn(
                         "text-white text-xl font-bold bg-gradient-to-br",
                         getGradient(index)
@@ -416,15 +429,18 @@ export default function AITeachersPage() {
                         {teacher.displayNameEn.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={teacher.isActive}
-                        onCheckedChange={() => handleToggleActive(teacher)}
-                        onClick={(e) => e.stopPropagation()}
-                        className="data-[state=checked]:bg-emerald-500"
-                      />
-                    </div>
+                  )}
+                  <div
+                    className="flex items-center gap-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Switch
+                      checked={teacher.isActive}
+                      onCheckedChange={() => handleToggleActive(teacher)}
+                      className="data-[state=checked]:bg-emerald-500"
+                    />
                   </div>
+                </div>
 
                   {/* Name and Description */}
                   <div className="mb-3">
@@ -468,7 +484,6 @@ export default function AITeachersPage() {
                   </div>
                 </CardContent>
               </Card>
-            </Link>
           );
         })}
 
