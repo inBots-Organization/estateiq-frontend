@@ -169,6 +169,10 @@ export function GlobalAIBot() {
   const [autoPlayEnabled, setAutoPlayEnabled] = useState(true); // Auto-play responses
   const [previousPathname, setPreviousPathname] = useState<string | null>(null);
 
+  // Onboarding welcome state (for new trainees)
+  const [onboardingWelcomePlayed, setOnboardingWelcomePlayed] = useState(false);
+  const [isPlayingOnboardingWelcome, setIsPlayingOnboardingWelcome] = useState(false);
+
   // Audio refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -340,6 +344,70 @@ export function GlobalAIBot() {
       }
     };
   }, []);
+
+  // CRITICAL: Redirect new trainees to assessment page if they try to access other pages
+  useEffect(() => {
+    if (!hasCompletedAssessment && !isOnAssessmentPage && user?.role === 'trainee') {
+      // New trainee trying to access non-assessment page - redirect them!
+      router.replace('/assessment');
+    }
+  }, [hasCompletedAssessment, isOnAssessmentPage, user?.role, router]);
+
+  // Play onboarding welcome audio for new trainees (Sara's voice)
+  useEffect(() => {
+    if (!hasCompletedAssessment && isOpen && !onboardingWelcomePlayed && isOnAssessmentPage) {
+      // Check if already played this session
+      const playedKey = 'onboarding_welcome_played';
+      const alreadyPlayed = sessionStorage.getItem(playedKey);
+      if (alreadyPlayed) {
+        setOnboardingWelcomePlayed(true);
+        return;
+      }
+
+      const playOnboardingWelcome = async () => {
+        setIsPlayingOnboardingWelcome(true);
+        try {
+          // Generate welcome audio using Sara's voice
+          const welcomeText = language === 'ar'
+            ? 'يا هلا والله! أنا سارة، مرشدتك للبداية. سعيدة إنك معانا! خلينا نبدأ رحلتك ونكتشف مستواك عشان نختارلك أفضل معلم يناسبك.'
+            : "Hello and welcome! I'm Sara, your onboarding guide. So happy you're here! Let's start your journey and discover your level to match you with the best teacher.";
+
+          const result = await aiTeacherApi.textToSpeech(welcomeText, language, 'sara');
+
+          if (result.audio) {
+            const audio = new Audio(`data:audio/mpeg;base64,${result.audio}`);
+            currentAudioRef.current = audio;
+
+            audio.onended = () => {
+              currentAudioRef.current = null;
+              setIsPlayingOnboardingWelcome(false);
+            };
+
+            audio.onerror = () => {
+              currentAudioRef.current = null;
+              setIsPlayingOnboardingWelcome(false);
+            };
+
+            // Try to play
+            audio.play().catch((e) => {
+              console.log('Onboarding autoplay blocked:', e);
+              setIsPlayingOnboardingWelcome(false);
+            });
+          }
+
+          // Mark as played
+          sessionStorage.setItem(playedKey, 'true');
+          setOnboardingWelcomePlayed(true);
+        } catch (error) {
+          console.error('Failed to play onboarding welcome:', error);
+          setIsPlayingOnboardingWelcome(false);
+          setOnboardingWelcomePlayed(true);
+        }
+      };
+
+      playOnboardingWelcome();
+    }
+  }, [hasCompletedAssessment, isOpen, onboardingWelcomePlayed, isOnAssessmentPage, language]);
 
   // Detect page changes and offer contextual help
   useEffect(() => {
@@ -580,17 +648,22 @@ export function GlobalAIBot() {
           <div className="flex items-center gap-3">
             {/* Friendly welcoming avatar */}
             <div className="relative">
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-2xl animate-pulse">
-                🎉
+              <div className={cn(
+                "w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-2xl",
+                isPlayingOnboardingWelcome ? "animate-pulse ring-2 ring-white" : "animate-pulse"
+              )}>
+                {isPlayingOnboardingWelcome ? '🔊' : '🎉'}
               </div>
               <span className="absolute -bottom-1 -right-1 text-lg">👋</span>
             </div>
             <div>
               <span className="font-bold text-lg block">
-                {language === 'ar' ? 'أهلاً وسهلاً!' : 'Welcome!'}
+                {isPlayingOnboardingWelcome
+                  ? (language === 'ar' ? 'سارة تتكلم...' : 'Sara is speaking...')
+                  : (language === 'ar' ? 'أهلاً وسهلاً!' : 'Welcome!')}
               </span>
               <span className="text-xs text-white/80">
-                {language === 'ar' ? 'مرشدك للبداية' : 'Your Onboarding Guide'}
+                {language === 'ar' ? 'مرشدتك للبداية' : 'Your Onboarding Guide'}
               </span>
             </div>
           </div>
