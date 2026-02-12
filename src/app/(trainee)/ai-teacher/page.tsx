@@ -65,7 +65,7 @@ import {
   TraineeProfile,
   AVContent,
 } from '@/lib/api/ai-teacher.api';
-import { GenerateAVButtons, AVPlayerModal, TeacherSelector, TeacherAvatar } from '@/components/ai-teacher';
+import { GenerateAVButtons, AVPlayerModal, TeacherAvatar } from '@/components/ai-teacher';
 import { useTeacherStore } from '@/stores/teacher.store';
 import { traineeApi } from '@/lib/api/trainee.api';
 import { diagnosticApi } from '@/lib/api/diagnostic.api';
@@ -1138,9 +1138,6 @@ ${lastLessonText}${skillSection}
           </div>
         </div>
       </div>
-
-      {/* Teacher Selector */}
-      <TeacherSelector className="mb-3" />
 
       <div className="grid lg:grid-cols-4 gap-3">
         {/* Main Chat Area */}
