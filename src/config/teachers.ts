@@ -125,7 +125,7 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
     },
     initial: { ar: 'ف', en: 'F' },
     // Professional Saudi male - closing coach (uses custom avatar from backend if available)
-    avatarUrl: `${AVATAR_BASE_URL}/firas.png`,
+    avatarUrl: `${AVATAR_BASE_URL}/firas.webp`,
     gradient: 'from-cyan-500 to-teal-600',
     bgLight: 'bg-cyan-500/10',
     textColor: 'text-cyan-600',
