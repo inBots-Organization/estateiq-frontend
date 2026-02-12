@@ -146,6 +146,17 @@ export default function TraineeLayout({
     // Exempt super admin and org admin from diagnostic
     if (user?.role === 'saas_super_admin' || user?.role === 'org_admin' || user?.role === 'trainer') return;
 
+    // CRITICAL: If user has assignedTeacher from backend, they don't need assessment
+    // This takes priority over local diagnostic store state
+    if (user?.assignedTeacher) {
+      console.log('[TraineeLayout] User has assignedTeacher:', user.assignedTeacher, '- skipping diagnostic check');
+      // Clear any stale assessmentRequired from session storage
+      if (diagnosticStore.assessmentRequired) {
+        diagnosticStore.reset();
+      }
+      return;
+    }
+
     // Exempt assessment page and pages being used during diagnostic flow
     if (pathname === '/assessment') return;
     const phase = diagnosticStore.assessmentPhase;
@@ -166,7 +177,7 @@ export default function TraineeLayout({
     if (shouldCheck) {
       diagnosticStore.checkAndSetStatus();
     }
-  }, [isHydrated, token, pathname, user?.role, diagnosticStore, router]);
+  }, [isHydrated, token, pathname, user?.role, user?.assignedTeacher, diagnosticStore, router]);
 
   // Show loading while checking auth
   if (!isHydrated) {
