@@ -44,6 +44,17 @@ export interface AITeacherTrainee {
   lastActiveAt: string | null;
 }
 
+export interface AvailableTrainee {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  currentSkillLevel: string | null;
+  assignedTeacherId: string | null;
+  assignedTeacher: string | null;
+  currentTeacherName: { ar: string; en: string } | null;
+}
+
 export interface AITeacherDocument {
   id: string;
   title: string;
@@ -217,6 +228,23 @@ export const aiTeachersApi = {
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Failed to fetch trainees' }));
       throw new Error(error.error || 'Failed to fetch trainees');
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Get trainees available (not assigned) to a teacher
+   */
+  async getAvailableTrainees(id: string): Promise<{ trainees: AvailableTrainee[] }> {
+    const response = await fetch(`${API_URL}/admin/ai-teachers/${id}/available-trainees`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to fetch available trainees' }));
+      throw new Error(error.error || 'Failed to fetch available trainees');
     }
 
     return response.json();

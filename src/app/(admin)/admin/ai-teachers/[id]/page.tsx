@@ -50,6 +50,7 @@ import {
   AITeacherTrainee,
   AITeacherDocument,
   UpdateAITeacherData,
+  AvailableTrainee,
 } from '@/lib/api/ai-teachers.api';
 import { brainApi } from '@/lib/api/brain.api';
 import {
@@ -72,7 +73,13 @@ import {
   Brain,
   Star,
   Camera,
+  UserPlus,
+  UserMinus,
+  Check,
+  Search,
+  ArrowRightLeft,
 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 // Personality options
 const PERSONALITIES = [
@@ -129,6 +136,15 @@ export default function AITeacherDetailPage() {
   // Form state
   const [formData, setFormData] = useState<UpdateAITeacherData>({});
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Trainee management state
+  const [availableTrainees, setAvailableTrainees] = useState<AvailableTrainee[]>([]);
+  const [selectedTraineesToAssign, setSelectedTraineesToAssign] = useState<string[]>([]);
+  const [selectedTraineesToUnassign, setSelectedTraineesToUnassign] = useState<string[]>([]);
+  const [isLoadingAvailable, setIsLoadingAvailable] = useState(false);
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
+  const [traineeSearchQuery, setTraineeSearchQuery] = useState('');
 
   // Fetch teacher data
   const fetchTeacher = useCallback(async () => {
@@ -294,6 +310,68 @@ export default function AITeacherDetailPage() {
       }
     }
   };
+
+  // Fetch available trainees when assign dialog opens
+  const fetchAvailableTrainees = useCallback(async () => {
+    if (!teacher) return;
+    try {
+      setIsLoadingAvailable(true);
+      const data = await aiTeachersApi.getAvailableTrainees(teacher.id);
+      setAvailableTrainees(data.trainees);
+    } catch (err) {
+      console.error('Error fetching available trainees:', err);
+    } finally {
+      setIsLoadingAvailable(false);
+    }
+  }, [teacher]);
+
+  // Handle assign trainees
+  const handleAssignTrainees = async () => {
+    if (!teacher || selectedTraineesToAssign.length === 0) return;
+    try {
+      setIsAssigning(true);
+      await aiTeachersApi.assignTrainees(teacher.id, selectedTraineesToAssign);
+      // Refresh trainees list
+      const [traineesData] = await Promise.all([
+        aiTeachersApi.getTrainees(teacher.id),
+      ]);
+      setTrainees(traineesData.trainees);
+      setSelectedTraineesToAssign([]);
+      setShowAssignDialog(false);
+      setSuccessMessage(isRTL ? 'تم تعيين الطلاب بنجاح' : 'Trainees assigned successfully');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      console.error('Error assigning trainees:', err);
+      setError(err instanceof Error ? err.message : 'Failed to assign trainees');
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  // Handle unassign trainees
+  const handleUnassignTrainees = async () => {
+    if (!teacher || selectedTraineesToUnassign.length === 0) return;
+    try {
+      setIsAssigning(true);
+      await aiTeachersApi.unassignTrainees(teacher.id, selectedTraineesToUnassign);
+      // Refresh trainees list
+      const traineesData = await aiTeachersApi.getTrainees(teacher.id);
+      setTrainees(traineesData.trainees);
+      setSelectedTraineesToUnassign([]);
+      setSuccessMessage(isRTL ? 'تم إلغاء تعيين الطلاب بنجاح' : 'Trainees unassigned successfully');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      console.error('Error unassigning trainees:', err);
+      setError(err instanceof Error ? err.message : 'Failed to unassign trainees');
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  // Filter trainees by search
+  const filteredAvailableTrainees = availableTrainees.filter(trainee =>
+    `${trainee.firstName} ${trainee.lastName} ${trainee.email}`.toLowerCase().includes(traineeSearchQuery.toLowerCase())
+  );
 
   // RTL-aware arrow
   const BackArrow = isRTL ? ArrowRight : ArrowLeft;
@@ -838,29 +916,80 @@ export default function AITeacherDetailPage() {
         {/* Trainees Tab */}
         <TabsContent value="trainees" className="space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle>{isRTL ? 'الطلاب المعينين' : 'Assigned Trainees'}</CardTitle>
-              <CardDescription>
-                {isRTL
-                  ? 'قائمة المتدربين الذين تم تعيين هذا المعلم لهم'
-                  : 'List of trainees who have been assigned this teacher'}
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>{isRTL ? 'الطلاب المعينين' : 'Assigned Trainees'}</CardTitle>
+                <CardDescription>
+                  {isRTL
+                    ? 'قائمة المتدربين الذين تم تعيين هذا المعلم لهم'
+                    : 'List of trainees who have been assigned this teacher'}
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                {selectedTraineesToUnassign.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleUnassignTrainees}
+                    disabled={isAssigning}
+                    className="text-destructive hover:bg-destructive/10"
+                  >
+                    {isAssigning ? (
+                      <Loader2 className={cn("h-4 w-4 animate-spin", isRTL ? "ml-2" : "mr-2")} />
+                    ) : (
+                      <UserMinus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                    )}
+                    {isRTL ? `إلغاء تعيين (${selectedTraineesToUnassign.length})` : `Unassign (${selectedTraineesToUnassign.length})`}
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowAssignDialog(true);
+                    fetchAvailableTrainees();
+                  }}
+                >
+                  <UserPlus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                  {isRTL ? 'إضافة طلاب' : 'Add Trainees'}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {trainees.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>{isRTL ? 'لا يوجد طلاب معينين لهذا المعلم' : 'No trainees assigned to this teacher'}</p>
+                  <Button
+                    variant="link"
+                    onClick={() => {
+                      setShowAssignDialog(true);
+                      fetchAvailableTrainees();
+                    }}
+                    className="mt-2"
+                  >
+                    <UserPlus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                    {isRTL ? 'إضافة طلاب الآن' : 'Add trainees now'}
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {trainees.map((trainee) => (
-                    <Link
+                    <div
                       key={trainee.id}
-                      href={`/admin/employees/${trainee.id}`}
                       className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                     >
                       <div className="flex items-center gap-3">
+                        <Checkbox
+                          checked={selectedTraineesToUnassign.includes(trainee.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedTraineesToUnassign(prev => [...prev, trainee.id]);
+                            } else {
+                              setSelectedTraineesToUnassign(prev => prev.filter(id => id !== trainee.id));
+                            }
+                          }}
+                        />
                         <Avatar className="h-10 w-10">
                           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white text-sm">
                             {trainee.firstName.charAt(0)}{trainee.lastName.charAt(0)}
@@ -879,15 +1008,143 @@ export default function AITeacherDetailPage() {
                             {trainee.currentSkillLevel}
                           </Badge>
                         )}
-                        <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                        <Link href={`/admin/employees/${trainee.id}`}>
+                          <ExternalLink className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                        </Link>
                       </div>
-                    </Link>
+                    </div>
                   ))}
                 </div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Assign Trainees Dialog */}
+        <AlertDialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
+          <AlertDialogContent className="sm:max-w-[600px] max-h-[80vh]">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <UserPlus className="h-5 w-5 text-violet-500" />
+                {isRTL ? 'إضافة طلاب للمعلم' : 'Add Trainees to Teacher'}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {isRTL
+                  ? 'اختر الطلاب الذين تريد تعيينهم لهذا المعلم. الطلاب المعينين لمعلم آخر سيتم نقلهم.'
+                  : 'Select trainees to assign to this teacher. Trainees assigned to another teacher will be transferred.'}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            <div className="py-4 space-y-4">
+              {/* Search */}
+              <div className="relative">
+                <Search className={cn("absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground", isRTL ? "right-3" : "left-3")} />
+                <Input
+                  placeholder={isRTL ? 'البحث عن طالب...' : 'Search for trainee...'}
+                  value={traineeSearchQuery}
+                  onChange={(e) => setTraineeSearchQuery(e.target.value)}
+                  className={isRTL ? "pr-10" : "pl-10"}
+                />
+              </div>
+
+              {/* Trainees List */}
+              <div className="border rounded-lg max-h-[300px] overflow-y-auto">
+                {isLoadingAvailable ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
+                  </div>
+                ) : filteredAvailableTrainees.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">
+                      {traineeSearchQuery
+                        ? (isRTL ? 'لا توجد نتائج' : 'No results found')
+                        : (isRTL ? 'جميع الطلاب معينين لهذا المعلم' : 'All trainees are assigned to this teacher')}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="divide-y">
+                    {filteredAvailableTrainees.map((trainee) => (
+                      <div
+                        key={trainee.id}
+                        className={cn(
+                          "flex items-center gap-3 p-3 cursor-pointer transition-colors",
+                          selectedTraineesToAssign.includes(trainee.id)
+                            ? "bg-violet-500/10"
+                            : "hover:bg-muted/50"
+                        )}
+                        onClick={() => {
+                          if (selectedTraineesToAssign.includes(trainee.id)) {
+                            setSelectedTraineesToAssign(prev => prev.filter(id => id !== trainee.id));
+                          } else {
+                            setSelectedTraineesToAssign(prev => [...prev, trainee.id]);
+                          }
+                        }}
+                      >
+                        <Checkbox
+                          checked={selectedTraineesToAssign.includes(trainee.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedTraineesToAssign(prev => [...prev, trainee.id]);
+                            } else {
+                              setSelectedTraineesToAssign(prev => prev.filter(id => id !== trainee.id));
+                            }
+                          }}
+                        />
+                        <Avatar className="h-9 w-9">
+                          <AvatarFallback className="bg-gradient-to-br from-gray-400 to-gray-500 text-white text-xs">
+                            {trainee.firstName.charAt(0)}{trainee.lastName.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">
+                            {trainee.firstName} {trainee.lastName}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">{trainee.email}</p>
+                        </div>
+                        {trainee.currentTeacherName && (
+                          <Badge variant="outline" className="text-xs shrink-0 bg-amber-500/10 text-amber-600 border-amber-500/20">
+                            <ArrowRightLeft className="h-3 w-3 mr-1" />
+                            {isRTL ? trainee.currentTeacherName.ar : trainee.currentTeacherName.en}
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {selectedTraineesToAssign.length > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  {isRTL
+                    ? `تم اختيار ${selectedTraineesToAssign.length} طالب`
+                    : `${selectedTraineesToAssign.length} trainee(s) selected`}
+                </p>
+              )}
+            </div>
+
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                setSelectedTraineesToAssign([]);
+                setTraineeSearchQuery('');
+              }}>
+                {isRTL ? 'إلغاء' : 'Cancel'}
+              </AlertDialogCancel>
+              <Button
+                onClick={handleAssignTrainees}
+                disabled={selectedTraineesToAssign.length === 0 || isAssigning}
+                className="bg-gradient-to-r from-violet-500 to-purple-600"
+              >
+                {isAssigning ? (
+                  <Loader2 className={cn("h-4 w-4 animate-spin", isRTL ? "ml-2" : "mr-2")} />
+                ) : (
+                  <Check className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                )}
+                {isRTL ? 'تعيين الطلاب' : 'Assign Trainees'}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </Tabs>
     </div>
   );
