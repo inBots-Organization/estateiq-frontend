@@ -30,7 +30,8 @@ export function TalkingAvatar({
   showName = true,
 }: TalkingAvatarProps) {
   const { language } = useLanguage();
-  const teacher = TEACHERS[teacherName];
+  // Fallback to abdullah if teacher doesn't exist in config
+  const teacher = TEACHERS[teacherName] || TEACHERS.abdullah;
   const sizeConfig = SIZES[size];
 
   // Animation states

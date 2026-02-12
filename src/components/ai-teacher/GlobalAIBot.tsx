@@ -189,7 +189,10 @@ export function GlobalAIBot() {
   const audioQueueRef = useRef<string[]>([]); // Queue for auto-playing audio
 
   // Determine which teacher to use
-  const currentTeacher = activeTeacher || assignedTeacher || 'abdullah';
+  // IMPORTANT: Validate that the teacher exists in TEACHERS config
+  // If user has an invalid teacher name (e.g., from old data), fallback to abdullah
+  const rawTeacher = activeTeacher || assignedTeacher || 'abdullah';
+  const currentTeacher = (rawTeacher && TEACHERS[rawTeacher as TeacherName]) ? rawTeacher : 'abdullah';
   const teacher = TEACHERS[currentTeacher as TeacherName] || TEACHERS.abdullah;
 
   // Get detailed page context

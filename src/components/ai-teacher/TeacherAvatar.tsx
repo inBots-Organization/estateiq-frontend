@@ -29,7 +29,8 @@ interface TeacherAvatarProps {
 
 export function TeacherAvatar({ teacherName, size = 'md', showName = false, showPulse = false, className }: TeacherAvatarProps) {
   const { language } = useLanguage();
-  const teacher = TEACHERS[teacherName];
+  // Fallback to abdullah if teacher doesn't exist in config
+  const teacher = TEACHERS[teacherName] || TEACHERS.abdullah;
   const sizeConfig = SIZES[size];
   const Icon = ICON_MAP[teacher.iconName];
 
