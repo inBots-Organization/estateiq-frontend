@@ -239,8 +239,10 @@ export function GlobalAIBot() {
   // SIMPLIFIED: Just check if assignedTeacher exists - the reset useEffect handles user mismatch
   const hasCompletedAssessment = assignedTeacher !== null;
 
-  // Hide on specific pages (but allow welcome bot for new trainees on /assessment)
-  const isOnAssessmentPage = pathname.includes('/assessment');
+  // Hide on specific pages (but allow welcome bot for new trainees on assessment pages)
+  // Assessment can be at /assessment OR /simulation?diagnostic=true
+  const isOnAssessmentPage = pathname.includes('/assessment') ||
+    (pathname.includes('/simulation') && typeof window !== 'undefined' && window.location.search.includes('diagnostic=true'));
   const hiddenPaths = ['/ai-teacher'];
 
   // For new trainees: NEVER hide on assessment page (they need the welcome bot!)
