@@ -153,6 +153,9 @@ export function GlobalAIBot() {
   const { user } = useAuthStore();
   const diagnosticStore = useDiagnosticStore();
 
+  // Track if auth store has been hydrated (to prevent race condition redirects)
+  const [isAuthHydrated, setIsAuthHydrated] = useState(false);
+
   // Start closed, then check if should auto-open on client
   const [isOpen, setIsOpen] = useState(false);
   const [hasCheckedAutoOpen, setHasCheckedAutoOpen] = useState(false);
@@ -224,6 +227,33 @@ export function GlobalAIBot() {
     });
   }, [autoPlayEnabled]);
 
+  // Wait for auth store to hydrate before making redirect decisions
+  // This prevents the race condition where we redirect before user data is loaded
+  useEffect(() => {
+    // Check if auth store has been hydrated by looking at persist state
+    const checkHydration = () => {
+      const authStorage = localStorage.getItem('auth-storage');
+      if (authStorage) {
+        try {
+          const parsed = JSON.parse(authStorage);
+          // If there's stored data and we have a user, or if storage is empty, we're hydrated
+          if (parsed?.state?.user || !parsed?.state?.token) {
+            setIsAuthHydrated(true);
+          }
+        } catch {
+          setIsAuthHydrated(true);
+        }
+      } else {
+        // No storage means no logged in user, which is a valid hydrated state
+        setIsAuthHydrated(true);
+      }
+    };
+
+    // Small delay to ensure Zustand persist has loaded
+    const timer = setTimeout(checkHydration, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Sync teacher store with auth store on login
   // If user has assignedTeacher from backend, update the teacher store
   useEffect(() => {
@@ -235,6 +265,8 @@ export function GlobalAIBot() {
         useTeacherStore.getState().setAssignedTeacher(user.assignedTeacher as any);
         useTeacherStore.getState().setUserId(user.id);
       }
+      // Mark as hydrated once we have user data
+      setIsAuthHydrated(true);
     }
   }, [user?.id, user?.assignedTeacher]);
 
@@ -397,15 +429,23 @@ export function GlobalAIBot() {
 
   // CRITICAL: Redirect new trainees to assessment page if they try to access other pages
   // Only redirect ONCE - use a ref to track if we've already redirected
+  // IMPORTANT: Wait for auth to hydrate before making redirect decision!
   const hasRedirectedRef = useRef(false);
   useEffect(() => {
+    // Don't redirect until auth store is hydrated (prevents race condition)
+    if (!isAuthHydrated) {
+      console.log('[GlobalAIBot] Waiting for auth hydration before redirect check...');
+      return;
+    }
+
     // Only redirect if: new trainee + not on assessment + not admin + haven't redirected yet
     if (!hasCompletedAssessment && !isOnAssessmentPage && !isAdminUser && !hasRedirectedRef.current) {
       hasRedirectedRef.current = true; // Prevent infinite redirects
       console.log('[GlobalAIBot] Redirecting new trainee to assessment page');
+      console.log('[GlobalAIBot] hasCompletedAssessment:', hasCompletedAssessment, 'assignedTeacher:', assignedTeacher, 'user.assignedTeacher:', user?.assignedTeacher);
       router.replace('/assessment');
     }
-  }, [hasCompletedAssessment, isOnAssessmentPage, isAdminUser, router]);
+  }, [hasCompletedAssessment, isOnAssessmentPage, isAdminUser, router, isAuthHydrated, assignedTeacher, user?.assignedTeacher]);
 
   // Ref to prevent duplicate onboarding welcome calls
   const onboardingWelcomeTriggeredRef = useRef(false);
