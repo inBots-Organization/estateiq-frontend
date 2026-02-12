@@ -191,6 +191,13 @@ export function GlobalAIBot() {
   const [onboardingStep, setOnboardingStep] = useState<'initial' | 'speaking' | 'ready'>('initial');
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
 
+  // Sara (welcome bot) info from database
+  const [saraInfo, setSaraInfo] = useState<{
+    displayNameAr: string;
+    displayNameEn: string;
+    avatarUrl: string | null;
+  } | null>(null);
+
   // Audio refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -490,6 +497,25 @@ export function GlobalAIBot() {
   // Ref to prevent duplicate onboarding welcome calls
   const onboardingWelcomeTriggeredRef = useRef(false);
 
+  // Fetch Sara's info from database for onboarding (avatar, display name)
+  useEffect(() => {
+    if (!hasCompletedAssessment && !saraInfo) {
+      aiTeacherApi.getTeacherInfo('sara')
+        .then((info) => {
+          if (info) {
+            setSaraInfo({
+              displayNameAr: info.displayNameAr,
+              displayNameEn: info.displayNameEn,
+              avatarUrl: info.avatarUrl,
+            });
+          }
+        })
+        .catch((err) => {
+          console.error('[GlobalAIBot] Failed to fetch Sara info:', err);
+        });
+    }
+  }, [hasCompletedAssessment, saraInfo]);
+
   // Play onboarding welcome audio for new trainees (Sara's voice) - plays ONCE when bot opens
   useEffect(() => {
     // Must be: new trainee + bot is open + haven't triggered yet + not admin
@@ -705,18 +731,14 @@ export function GlobalAIBot() {
 
   if (shouldHide) return null;
 
-  // Function to start Sara's welcome
+  // Function to start Sara's welcome - uses database settings (voice, message)
   const startSaraWelcome = async () => {
     setIsLoadingAudio(true);
     setOnboardingStep('speaking');
 
     try {
-      const welcomeText = language === 'ar'
-        ? 'يا هلا والله! أنا سارة، مرشدتك للبداية. سعيدة إنك معانا! قبل ما نبدأ رحلتك في عالم العقارات، لازم نعرف مستواك الحالي. الاختبار بسيط وسريع، بس خمس دقائق! بعدها نختارلك أفضل معلم يناسب مستواك. يلا نبدأ!'
-        : "Hello and welcome! I'm Sara, your onboarding guide. So happy you're here! Before we start your real estate journey, we need to know your current level. The assessment is quick and simple, just 5 minutes! After that, we'll match you with the perfect teacher for your level. Let's begin!";
-
-      // Try noura voice (female, available in production)
-      const result = await aiTeacherApi.textToSpeech(welcomeText, language, 'noura');
+      // Use getWelcomeAudio API - fetches welcome message and voice from database for Sara
+      const result = await aiTeacherApi.getWelcomeAudio('sara', language);
 
       if (result.audio) {
         const audio = new Audio(`data:audio/mpeg;base64,${result.audio}`);
@@ -798,16 +820,26 @@ export function GlobalAIBot() {
             </div>
 
             <div className="relative flex items-center gap-4">
-              {/* Sara Avatar */}
+              {/* Sara Avatar - from database */}
               <div className="relative">
-                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center ring-4 ring-white/30">
-                  <span className="text-4xl">👩‍💼</span>
+                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur overflow-hidden ring-4 ring-white/30">
+                  {saraInfo?.avatarUrl ? (
+                    <img src={saraInfo.avatarUrl} alt="Sara" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-4xl">👩‍💼</span>
+                    </div>
+                  )}
                 </div>
                 {/* Online indicator */}
                 <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse" />
               </div>
               <div className="flex-1">
-                <h2 className="font-bold text-xl">{language === 'ar' ? 'أنا سارة! 👋' : "I'm Sara! 👋"}</h2>
+                <h2 className="font-bold text-xl">
+                  {language === 'ar'
+                    ? `أنا ${saraInfo?.displayNameAr || 'سارة'}! 👋`
+                    : `I'm ${saraInfo?.displayNameEn || 'Sara'}! 👋`}
+                </h2>
                 <p className="text-white/80 text-sm">{language === 'ar' ? 'مرشدتك الشخصية للبداية' : 'Your personal onboarding guide'}</p>
               </div>
             </div>
@@ -863,10 +895,16 @@ export function GlobalAIBot() {
           {/* Header with speaking indicator */}
           <div className="relative bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 px-6 py-5 text-white">
             <div className="flex items-center gap-4">
-              {/* Animated speaking avatar */}
+              {/* Animated speaking avatar - from database */}
               <div className="relative">
-                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center ring-4 ring-white/50 animate-pulse">
-                  <span className="text-4xl">👩‍💼</span>
+                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur overflow-hidden ring-4 ring-white/50 animate-pulse">
+                  {saraInfo?.avatarUrl ? (
+                    <img src={saraInfo.avatarUrl} alt="Sara" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-4xl">👩‍💼</span>
+                    </div>
+                  )}
                 </div>
                 {/* Sound waves */}
                 <div className="absolute -right-1 top-1/2 -translate-y-1/2 flex gap-0.5">
@@ -877,7 +915,9 @@ export function GlobalAIBot() {
               </div>
               <div className="flex-1">
                 <h2 className="font-bold text-xl flex items-center gap-2">
-                  {language === 'ar' ? 'سارة تتكلم...' : 'Sara is speaking...'}
+                  {language === 'ar'
+                    ? `${saraInfo?.displayNameAr || 'سارة'} تتكلم...`
+                    : `${saraInfo?.displayNameEn || 'Sara'} is speaking...`}
                   <span className="inline-flex gap-1">
                     <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                     <span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -945,12 +985,22 @@ export function GlobalAIBot() {
         {/* Success header */}
         <div className="relative bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 px-6 py-4 text-white">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
-              <span className="text-2xl">✨</span>
+            <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur overflow-hidden">
+              {saraInfo?.avatarUrl ? (
+                <img src={saraInfo.avatarUrl} alt="Sara" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-2xl">✨</span>
+                </div>
+              )}
             </div>
             <div>
               <h2 className="font-bold text-lg">{language === 'ar' ? 'يلا نبدأ الرحلة!' : "Let's start your journey!"}</h2>
-              <p className="text-white/80 text-xs">{language === 'ar' ? 'سارة جاهزة تساعدك' : 'Sara is ready to help'}</p>
+              <p className="text-white/80 text-xs">
+                {language === 'ar'
+                  ? `${saraInfo?.displayNameAr || 'سارة'} جاهزة تساعدك`
+                  : `${saraInfo?.displayNameEn || 'Sara'} is ready to help`}
+              </p>
             </div>
           </div>
           <Button
@@ -991,7 +1041,9 @@ export function GlobalAIBot() {
             className="w-full flex items-center justify-center gap-2 text-sm text-teal-600 hover:text-teal-700 transition-colors py-2"
           >
             <Volume2 className="w-4 h-4" />
-            {language === 'ar' ? 'استمع لسارة مرة ثانية' : 'Listen to Sara again'}
+            {language === 'ar'
+              ? `استمع لـ${saraInfo?.displayNameAr || 'سارة'} مرة ثانية`
+              : `Listen to ${saraInfo?.displayNameEn || 'Sara'} again`}
           </button>
 
           {/* Main CTA */}

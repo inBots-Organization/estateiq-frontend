@@ -330,6 +330,24 @@ export const aiTeacherApi = {
     return apiClient.get('/ai-teacher/assigned-teacher');
   },
 
+  /**
+   * Get teacher info by name (avatar, displayName, voiceId, etc)
+   * Used to display teacher info dynamically from database
+   */
+  getTeacherInfo: async (teacherName: string): Promise<{
+    name: string;
+    displayNameAr: string;
+    displayNameEn: string;
+    descriptionAr: string;
+    descriptionEn: string;
+    avatarUrl: string | null;
+    voiceId: string | null;
+    personality: string | null;
+    level: string | null;
+  } | null> => {
+    return apiClient.get(`/ai-teacher/teacher-info/${encodeURIComponent(teacherName)}`);
+  },
+
   // Voice endpoints
   textToSpeech: async (text: string, language: 'ar' | 'en', teacherName?: string): Promise<{ audio: string }> => {
     return apiClient.post<{ audio: string }>('/ai-teacher/tts', { text, language, teacherName });
