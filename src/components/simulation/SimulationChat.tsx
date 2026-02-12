@@ -58,9 +58,19 @@ export function SimulationChat({ onSendMessage, onEndSimulation, isDiagnosticMod
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
+  // Allow interaction on error status too so user can retry
+  const isActive = status === 'ready' || status === 'in_progress' || status === 'error';
+
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Auto-focus input after AI finishes typing
+  useEffect(() => {
+    if (!isTyping && !isSending && isActive) {
+      inputRef.current?.focus();
+    }
+  }, [isTyping, isSending, isActive]);
 
   const handleSend = async () => {
     if (!inputMessage.trim() || isSending) return;
@@ -86,9 +96,6 @@ export function SimulationChat({ onSendMessage, onEndSimulation, isDiagnosticMod
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
-
-  // Allow interaction on error status too so user can retry
-  const isActive = status === 'ready' || status === 'in_progress' || status === 'error';
 
   // Get sentiment badge
   const getSentimentBadge = (sentiment: Sentiment | null) => {
