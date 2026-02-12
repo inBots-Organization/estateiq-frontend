@@ -351,13 +351,12 @@ export default function AITeacherDetailPage() {
     setError(null);
 
     try {
-      // Use teacher name for TTS preview
-      const teacherName = teacher?.name || 'preview';
+      // Use the voiceId from formData (allows preview of unsaved changes)
       const previewText = isRTL
         ? `مرحباً! أنا ${formData.displayNameAr || teacher?.displayNameAr || 'المعلم'}. كيف يمكنني مساعدتك اليوم؟`
         : `Hello! I am ${formData.displayNameEn || teacher?.displayNameEn || 'the teacher'}. How can I help you today?`;
 
-      // Call TTS API
+      // Call TTS API with voiceId directly (for previewing before save)
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai-teacher/tts`, {
         method: 'POST',
         headers: {
@@ -367,7 +366,7 @@ export default function AITeacherDetailPage() {
         body: JSON.stringify({
           text: previewText,
           language: isRTL ? 'ar' : 'en',
-          teacherName: teacherName,
+          voiceId: voiceId, // Send voiceId directly for preview (doesn't require save first)
         }),
       });
 
