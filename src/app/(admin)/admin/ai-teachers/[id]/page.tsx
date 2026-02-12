@@ -318,24 +318,33 @@ export default function AITeacherDetailPage() {
           >
             <BackArrow className="h-5 w-5" />
           </Button>
-          <div className="relative group">
-            <Avatar className="h-16 w-16 border-2 border-border shadow-soft">
-              {teacher.avatarUrl ? (
-                <AvatarImage src={teacher.avatarUrl} alt={teacher.displayNameEn} />
-              ) : null}
-              <AvatarFallback className={cn(
-                "text-white text-2xl font-bold bg-gradient-to-br",
-                GRADIENTS[0]
-              )}>
-                {teacher.displayNameEn.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <button
+          <div className="flex flex-col items-center gap-2">
+            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+              <Avatar className="h-20 w-20 border-2 border-border shadow-soft">
+                {teacher.avatarUrl ? (
+                  <AvatarImage src={teacher.avatarUrl} alt={teacher.displayNameEn} />
+                ) : null}
+                <AvatarFallback className={cn(
+                  "text-white text-3xl font-bold bg-gradient-to-br",
+                  GRADIENTS[0]
+                )}>
+                  {teacher.displayNameEn.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                <Camera className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => fileInputRef.current?.click()}
-              className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              disabled={isSaving}
+              className="text-xs"
             >
-              <Camera className="h-6 w-6 text-white" />
-            </button>
+              <Camera className={cn("h-3 w-3", isRTL ? "ml-1" : "mr-1")} />
+              {isRTL ? 'تغيير الصورة' : 'Change Photo'}
+            </Button>
             <input
               ref={fileInputRef}
               type="file"
