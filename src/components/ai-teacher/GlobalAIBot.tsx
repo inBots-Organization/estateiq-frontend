@@ -149,7 +149,16 @@ export function GlobalAIBot() {
   const pathname = usePathname();
   const router = useRouter();
   const { t, language, isRTL } = useLanguage();
-  const { activeTeacher, assignedTeacher, userId: storedUserId, reset: resetTeacherStore } = useTeacherStore();
+  const {
+    activeTeacher,
+    assignedTeacher,
+    userId: storedUserId,
+    reset: resetTeacherStore,
+    customTeacherAvatar,
+    customTeacherDisplayNameAr,
+    customTeacherDisplayNameEn,
+    customTeacherVoiceId,
+  } = useTeacherStore();
   const { user } = useAuthStore();
   const diagnosticStore = useDiagnosticStore();
 
@@ -189,11 +198,29 @@ export function GlobalAIBot() {
   const audioQueueRef = useRef<string[]>([]); // Queue for auto-playing audio
 
   // Determine which teacher to use
-  // IMPORTANT: Validate that the teacher exists in TEACHERS config
-  // If user has an invalid teacher name (e.g., from old data), fallback to abdullah
-  const rawTeacher = activeTeacher || assignedTeacher || 'abdullah';
-  const currentTeacher = (rawTeacher && TEACHERS[rawTeacher as TeacherName]) ? rawTeacher : 'abdullah';
-  const teacher = TEACHERS[currentTeacher as TeacherName] || TEACHERS.abdullah;
+  // Priority: 1) user.assignedTeacher from backend (source of truth)
+  //           2) activeTeacher from store (session selection)
+  //           3) assignedTeacher from store (persisted)
+  //           4) 'abdullah' as fallback
+  const rawTeacher = user?.assignedTeacher || activeTeacher || assignedTeacher || 'abdullah';
+  const currentTeacher = rawTeacher as TeacherName;
+
+  // Get teacher config - use TEACHERS config if exists, otherwise create dynamic config for custom teachers
+  const isCustomTeacher = !TEACHERS[currentTeacher];
+  const teacher = TEACHERS[currentTeacher] || {
+    ...TEACHERS.abdullah, // Base config
+    name: currentTeacher,
+    displayName: {
+      ar: customTeacherDisplayNameAr || currentTeacher,
+      en: customTeacherDisplayNameEn || currentTeacher,
+    },
+    avatarUrl: customTeacherAvatar || TEACHERS.abdullah.avatarUrl,
+  };
+
+  // For custom teachers, override avatar with database value if available
+  const effectiveAvatarUrl = isCustomTeacher && customTeacherAvatar
+    ? customTeacherAvatar
+    : teacher.avatarUrl;
 
   // Get detailed page context
   const pageContext = getDetailedPageContext(pathname, language);
@@ -1008,7 +1035,7 @@ export function GlobalAIBot() {
         )}>
           {/* Teacher avatar image */}
           <img
-            src={teacher.avatarUrl}
+            src={effectiveAvatarUrl}
             alt={teacher.displayName[language]}
             className="w-full h-full object-cover"
           />
@@ -1068,6 +1095,7 @@ export function GlobalAIBot() {
                 size="lg"
                 isSpeaking={playingMessageId !== null}
                 audioElement={currentAudioRef.current}
+                avatarUrl={effectiveAvatarUrl}
               />
             </div>
             {/* Online status */}
