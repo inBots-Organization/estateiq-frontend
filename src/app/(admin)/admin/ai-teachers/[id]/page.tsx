@@ -146,6 +146,9 @@ export default function AITeacherDetailPage() {
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [traineeSearchQuery, setTraineeSearchQuery] = useState('');
 
+  // Document management state
+  const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
+
   // Fetch teacher data
   const fetchTeacher = useCallback(async () => {
     if (!token || !teacherId) return;
@@ -308,6 +311,25 @@ export default function AITeacherDetailPage() {
       if (docFileInputRef.current) {
         docFileInputRef.current.value = '';
       }
+    }
+  };
+
+  // Handle document delete
+  const handleDeleteDocument = async (docId: string) => {
+    if (!teacher) return;
+    try {
+      setDeletingDocId(docId);
+      await brainApi.deleteDocument(docId);
+      // Refresh documents list
+      const docsData = await aiTeachersApi.getDocuments(teacher.id);
+      setDocuments(docsData.documents);
+      setSuccessMessage(isRTL ? 'تم حذف الملف بنجاح' : 'Document deleted successfully');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      console.error('Error deleting document:', err);
+      setError(err instanceof Error ? err.message : 'Failed to delete document');
+    } finally {
+      setDeletingDocId(null);
     }
   };
 
@@ -899,12 +921,27 @@ export default function AITeacherDetailPage() {
                           </p>
                         </div>
                       </div>
-                      <Badge variant="outline" className={cn(
-                        "text-xs",
-                        doc.status === 'ready' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"
-                      )}>
-                        {doc.status}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className={cn(
+                          "text-xs",
+                          doc.status === 'ready' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"
+                        )}>
+                          {doc.status}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          onClick={() => handleDeleteDocument(doc.id)}
+                          disabled={deletingDocId === doc.id}
+                        >
+                          {deletingDocId === doc.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
