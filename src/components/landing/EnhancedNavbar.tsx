@@ -17,7 +17,6 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { CompactSettings } from '@/components/ui/LanguageToggle';
-import { InLearnLogo } from '@/components/ui/InLearnLogo';
 import { cn } from '@/lib/utils';
 import { Menu, X, ArrowRight, ArrowLeft, ChevronRight } from 'lucide-react';
 
@@ -69,7 +68,6 @@ export function EnhancedNavbar() {
     { href: '#hero', label: isRTL ? 'الرئيسية' : 'Home', id: 'hero' },
     { href: '#features', label: t.landing.nav.features, id: 'features' },
     { href: '#how-it-works', label: t.landing.nav.howItWorks, id: 'how-it-works' },
-    { href: '#pricing', label: t.landing.nav.pricing, id: 'pricing' },
     { href: '#testimonials', label: t.landing.nav.testimonials, id: 'testimonials' },
   ];
 
@@ -94,23 +92,21 @@ export function EnhancedNavbar() {
         <div className="container mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* ══════════════════════════════════
-                Logo — Elegant with fade-in
+                Logo — New brand logo image
                ══════════════════════════════════ */}
             <Link
               href="/"
-              className="flex items-center gap-2.5 group"
+              className="flex items-center group"
             >
               <div className="relative">
-                <InLearnLogo size="md" />
+                <img
+                  src="/logo-white.png"
+                  alt="INLEARN"
+                  className="h-8 lg:h-10 w-auto transition-all duration-300 group-hover:brightness-125"
+                />
                 {/* Subtle glow on hover */}
                 <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
               </div>
-              <span className={cn(
-                "text-xl lg:text-2xl font-bold text-foreground font-heading tracking-tight transition-colors duration-300",
-                "group-hover:text-primary"
-              )}>
-                {t.landing.brandName}
-              </span>
             </Link>
 
             {/* ══════════════════════════════════
@@ -277,11 +273,12 @@ export function EnhancedNavbar() {
 
             {/* Footer branding */}
             <div className="p-6 border-t border-border/30">
-              <div className="flex items-center gap-2 opacity-40">
-                <InLearnLogo size="sm" />
-                <span className="text-xs font-medium text-muted-foreground">
-                  {t.landing.brandName}
-                </span>
+              <div className="flex items-center opacity-40">
+                <img
+                  src="/logo-white.png"
+                  alt="INLEARN"
+                  className="h-6 w-auto"
+                />
               </div>
             </div>
           </div>

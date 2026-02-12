@@ -8,7 +8,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { EnhancedNavbar } from '@/components/landing/EnhancedNavbar';
 import { cn } from '@/lib/utils';
 import {
-  Building2,
   MessageSquare,
   BarChart,
   Award,
@@ -17,12 +16,8 @@ import {
   Star,
   ArrowRight,
   ArrowLeft,
-  Users,
-  TrendingUp,
-  Shield,
   Zap,
   BookOpen,
-  Target,
   Phone,
   Globe,
 } from 'lucide-react';
@@ -365,11 +360,12 @@ export default function HomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-8">
             {/* Brand */}
             <div className="col-span-2 sm:col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center">
-                  <Building2 className="h-4 w-4 text-white" />
-                </div>
-                <span className="text-lg font-bold text-foreground">{t.landing.brandName}</span>
+              <div className="flex items-center mb-4">
+                <img
+                  src="/logo-white.png"
+                  alt="INLEARN"
+                  className="h-8 w-auto"
+                />
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 {t.landing.footer.description}
@@ -381,7 +377,7 @@ export default function HomePage() {
               <h4 className="text-foreground font-semibold mb-3 sm:mb-4 text-sm sm:text-base">{t.landing.footer.product}</h4>
               <ul className="space-y-2 text-xs sm:text-sm">
                 <li><a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.features}</a></li>
-                <li><a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.pricing}</a></li>
+                <li><a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.howItWorks}</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.courses}</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.simulations}</a></li>
               </ul>
