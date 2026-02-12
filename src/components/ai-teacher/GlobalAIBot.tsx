@@ -269,6 +269,7 @@ export function GlobalAIBot() {
           avatar: user.assignedTeacherAvatar,
           displayNameAr: user.assignedTeacherDisplayNameAr,
           displayNameEn: user.assignedTeacherDisplayNameEn,
+          voiceId: user.assignedTeacherVoiceId,
         });
         useTeacherStore.getState().setUserId(user.id);
       }
@@ -290,6 +291,7 @@ export function GlobalAIBot() {
           avatar: user.assignedTeacherAvatar,
           displayNameAr: user.assignedTeacherDisplayNameAr,
           displayNameEn: user.assignedTeacherDisplayNameEn,
+          voiceId: user.assignedTeacherVoiceId,
         });
         useTeacherStore.getState().setUserId(user.id);
       }

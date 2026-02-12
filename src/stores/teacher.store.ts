@@ -11,7 +11,8 @@ interface TeacherState {
   customTeacherAvatar: string | null;
   customTeacherDisplayNameAr: string | null;
   customTeacherDisplayNameEn: string | null;
-  setAssignedTeacher: (name: TeacherName, customData?: { avatar?: string | null; displayNameAr?: string | null; displayNameEn?: string | null }) => void;
+  customTeacherVoiceId: string | null;
+  setAssignedTeacher: (name: TeacherName, customData?: { avatar?: string | null; displayNameAr?: string | null; displayNameEn?: string | null; voiceId?: string | null }) => void;
   setActiveTeacher: (name: TeacherName | null) => void;
   setUserId: (id: string | null) => void;
   reset: () => void;
@@ -26,14 +27,16 @@ export const useTeacherStore = create<TeacherState>()(
       customTeacherAvatar: null,
       customTeacherDisplayNameAr: null,
       customTeacherDisplayNameEn: null,
+      customTeacherVoiceId: null,
 
-      setAssignedTeacher: (name: TeacherName, customData?: { avatar?: string | null; displayNameAr?: string | null; displayNameEn?: string | null }) => {
+      setAssignedTeacher: (name: TeacherName, customData?: { avatar?: string | null; displayNameAr?: string | null; displayNameEn?: string | null; voiceId?: string | null }) => {
         set({
           assignedTeacher: name,
           activeTeacher: name,
           customTeacherAvatar: customData?.avatar || null,
           customTeacherDisplayNameAr: customData?.displayNameAr || null,
           customTeacherDisplayNameEn: customData?.displayNameEn || null,
+          customTeacherVoiceId: customData?.voiceId || null,
         });
       },
 
@@ -53,6 +56,7 @@ export const useTeacherStore = create<TeacherState>()(
           customTeacherAvatar: null,
           customTeacherDisplayNameAr: null,
           customTeacherDisplayNameEn: null,
+          customTeacherVoiceId: null,
         });
       },
     }),

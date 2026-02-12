@@ -165,7 +165,7 @@ export function TalkingAvatar({
             teacher.textColor
           )}
         >
-          {teacher.displayName[language]}
+          {finalDisplayName[language]}
         </div>
       )}
     </div>
