@@ -1,8 +1,9 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { TEACHERS, type TeacherName } from '@/config/teachers';
+import { TEACHERS, type TeacherName, VALID_TEACHER_NAMES } from '@/config/teachers';
 import { useTeacherStore } from '@/stores/teacher.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { TeacherAvatar } from './TeacherAvatar';
@@ -15,16 +16,25 @@ interface TeacherSelectorProps {
 
 export function TeacherSelector({ onSelect, className, showAllTeachers = false }: TeacherSelectorProps) {
   const { t, language, isRTL } = useLanguage();
-  const { assignedTeacher, activeTeacher, setActiveTeacher } = useTeacherStore();
+  const { assignedTeacher: storeAssignedTeacher, activeTeacher, setActiveTeacher } = useTeacherStore();
+
+  // Get assigned teacher from auth store as primary source of truth
+  const user = useAuthStore((state) => state.user);
+  const authAssignedTeacher = user?.assignedTeacher;
 
   const handleSelect = (name: TeacherName) => {
     setActiveTeacher(name);
     onSelect?.(name);
   };
 
+  // Get the assigned teacher from auth store (primary) or teacher store (fallback)
+  // Also validate that the teacher name exists in TEACHERS config
+  const rawAssignedTeacher = authAssignedTeacher || storeAssignedTeacher;
+  const isValidTeacher = rawAssignedTeacher && VALID_TEACHER_NAMES.includes(rawAssignedTeacher as TeacherName);
+
   // Only show assigned teacher by default
-  // If no assigned teacher, fallback to abdullah
-  const teacherToShow = assignedTeacher || 'abdullah';
+  // If no assigned teacher or invalid teacher, fallback to abdullah
+  const teacherToShow = isValidTeacher ? rawAssignedTeacher : 'abdullah';
   const teacher = TEACHERS[teacherToShow as TeacherName];
 
   // If showAllTeachers is false, just show the assigned teacher as a display card (not selectable)
@@ -71,7 +81,7 @@ export function TeacherSelector({ onSelect, className, showAllTeachers = false }
       )}>
         {allTeachers.map((t) => {
           const isActive = activeTeacher === t.name;
-          const isAssigned = assignedTeacher === t.name;
+          const isAssigned = rawAssignedTeacher === t.name;
 
           return (
             <button
