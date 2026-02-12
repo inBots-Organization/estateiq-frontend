@@ -230,9 +230,9 @@ export default function AITeacherDetailPage() {
     const file = e.target.files?.[0];
     if (!file || !teacher) return;
 
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      setError(isRTL ? 'حجم الملف كبير جداً. الحد الأقصى 5 ميجابايت' : 'File too large. Maximum size is 5MB.');
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      setError(isRTL ? 'حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت' : 'File too large. Maximum size is 10MB.');
       return;
     }
 
