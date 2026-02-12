@@ -42,7 +42,10 @@ export function useSimulation() {
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to send message';
-      store.setError(errorMessage);
+      // Don't change status to 'error' for message failures - keep chat open
+      // Just set the error message and stop typing indicator
+      store.setTyping(false);
+      console.error('Simulation message error:', errorMessage);
       throw error;
     } finally {
       store.setSending(false);

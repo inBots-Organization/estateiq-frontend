@@ -306,8 +306,8 @@ export default function SimulationPage() {
     );
   }
 
-  // Chat Simulation Mode
-  if ((status === 'ready' || status === 'in_progress') && simulationMode === 'chat') {
+  // Chat Simulation Mode - also show on 'error' status to allow retry
+  if ((status === 'ready' || status === 'in_progress' || status === 'error') && simulationMode === 'chat') {
     return (
       <div className="container mx-auto py-8 px-4 max-w-4xl">
         {isDiagnosticMode && (

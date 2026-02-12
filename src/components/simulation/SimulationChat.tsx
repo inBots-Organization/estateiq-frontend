@@ -66,7 +66,12 @@ export function SimulationChat({ onSendMessage, onEndSimulation, isDiagnosticMod
     if (!inputMessage.trim() || isSending) return;
     const message = inputMessage.trim();
     setInputMessage('');
-    await onSendMessage(message);
+    try {
+      await onSendMessage(message);
+    } catch {
+      // Error is handled by the hook, chat stays open for retry
+      // Could optionally show a toast notification here
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -82,7 +87,8 @@ export function SimulationChat({ onSendMessage, onEndSimulation, isDiagnosticMod
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const isActive = status === 'ready' || status === 'in_progress';
+  // Allow interaction on error status too so user can retry
+  const isActive = status === 'ready' || status === 'in_progress' || status === 'error';
 
   // Get sentiment badge
   const getSentimentBadge = (sentiment: Sentiment | null) => {
