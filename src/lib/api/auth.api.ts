@@ -32,6 +32,10 @@ export interface AuthResult {
     assignedTeacher?: string | null;
     assignedTeacherId?: string | null;
     currentSkillLevel?: string | null;
+    // Custom teacher info (from backend)
+    assignedTeacherAvatar?: string | null;
+    assignedTeacherDisplayNameAr?: string | null;
+    assignedTeacherDisplayNameEn?: string | null;
   };
 }
 

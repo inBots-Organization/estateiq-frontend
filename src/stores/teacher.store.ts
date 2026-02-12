@@ -7,7 +7,11 @@ interface TeacherState {
   activeTeacher: TeacherName | null;
   // Track which user this data belongs to
   userId: string | null;
-  setAssignedTeacher: (name: TeacherName) => void;
+  // Custom teacher data from backend (for non-default teachers)
+  customTeacherAvatar: string | null;
+  customTeacherDisplayNameAr: string | null;
+  customTeacherDisplayNameEn: string | null;
+  setAssignedTeacher: (name: TeacherName, customData?: { avatar?: string | null; displayNameAr?: string | null; displayNameEn?: string | null }) => void;
   setActiveTeacher: (name: TeacherName | null) => void;
   setUserId: (id: string | null) => void;
   reset: () => void;
@@ -19,9 +23,18 @@ export const useTeacherStore = create<TeacherState>()(
       assignedTeacher: null,
       activeTeacher: null,
       userId: null,
+      customTeacherAvatar: null,
+      customTeacherDisplayNameAr: null,
+      customTeacherDisplayNameEn: null,
 
-      setAssignedTeacher: (name: TeacherName) => {
-        set({ assignedTeacher: name, activeTeacher: name });
+      setAssignedTeacher: (name: TeacherName, customData?: { avatar?: string | null; displayNameAr?: string | null; displayNameEn?: string | null }) => {
+        set({
+          assignedTeacher: name,
+          activeTeacher: name,
+          customTeacherAvatar: customData?.avatar || null,
+          customTeacherDisplayNameAr: customData?.displayNameAr || null,
+          customTeacherDisplayNameEn: customData?.displayNameEn || null,
+        });
       },
 
       setActiveTeacher: (name: TeacherName | null) => {
@@ -33,7 +46,14 @@ export const useTeacherStore = create<TeacherState>()(
       },
 
       reset: () => {
-        set({ assignedTeacher: null, activeTeacher: null, userId: null });
+        set({
+          assignedTeacher: null,
+          activeTeacher: null,
+          userId: null,
+          customTeacherAvatar: null,
+          customTeacherDisplayNameAr: null,
+          customTeacherDisplayNameEn: null,
+        });
       },
     }),
     {

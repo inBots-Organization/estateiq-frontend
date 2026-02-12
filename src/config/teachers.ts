@@ -5,7 +5,7 @@
  * All avatars are custom professional Saudi-style illustrations.
  */
 
-export type TeacherName = 'ahmed' | 'noura' | 'anas' | 'abdullah';
+export type TeacherName = 'ahmed' | 'noura' | 'anas' | 'abdullah' | 'firas';
 
 export type TeacherPersonality = 'professional' | 'friendly' | 'wise' | 'challenging';
 
@@ -112,7 +112,28 @@ export const TEACHERS: Record<TeacherName, TeacherConfig> = {
     isAlwaysAvailable: true,
     personality: 'wise',
   },
+  firas: {
+    name: 'firas',
+    displayName: { ar: 'فراس', en: 'Firas' },
+    description: {
+      ar: 'كوتش الإغلاق — خبير متقدم في إتمام الصفقات وتحليل السوق',
+      en: 'Closing Coach — Advanced expert in deal closing and market analysis',
+    },
+    shortDescription: {
+      ar: 'كوتش الإغلاق',
+      en: 'Closing Coach',
+    },
+    initial: { ar: 'ف', en: 'F' },
+    // Professional Saudi male - closing coach (uses custom avatar from backend if available)
+    avatarUrl: `${AVATAR_BASE_URL}/firas.png`,
+    gradient: 'from-cyan-500 to-teal-600',
+    bgLight: 'bg-cyan-500/10',
+    textColor: 'text-cyan-600',
+    iconName: 'Target',
+    isAlwaysAvailable: false,
+    personality: 'professional',
+  },
 };
 
 export const TEACHER_LIST: TeacherConfig[] = Object.values(TEACHERS);
-export const VALID_TEACHER_NAMES: TeacherName[] = ['ahmed', 'noura', 'anas', 'abdullah'];
+export const VALID_TEACHER_NAMES: TeacherName[] = ['ahmed', 'noura', 'anas', 'abdullah', 'firas'];

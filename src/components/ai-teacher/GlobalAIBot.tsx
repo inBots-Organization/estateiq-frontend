@@ -265,13 +265,17 @@ export function GlobalAIBot() {
       // Only update if teacher store doesn't have this user's teacher, or if it's a different user
       if (!currentTeacherStore.assignedTeacher || currentTeacherStore.userId !== user.id) {
         console.log('[GlobalAIBot] Syncing teacher from auth:', user.assignedTeacher);
-        useTeacherStore.getState().setAssignedTeacher(user.assignedTeacher as any);
+        useTeacherStore.getState().setAssignedTeacher(user.assignedTeacher as any, {
+          avatar: user.assignedTeacherAvatar,
+          displayNameAr: user.assignedTeacherDisplayNameAr,
+          displayNameEn: user.assignedTeacherDisplayNameEn,
+        });
         useTeacherStore.getState().setUserId(user.id);
       }
       // Mark as hydrated once we have user data
       setIsAuthHydrated(true);
     }
-  }, [user?.id, user?.assignedTeacher]);
+  }, [user?.id, user?.assignedTeacher, user?.assignedTeacherAvatar]);
 
   // Check if the stored teacher data belongs to the current user
   // If not, reset it (this happens when a different user logs in)
@@ -282,11 +286,15 @@ export function GlobalAIBot() {
       resetTeacherStore();
       // But then sync from auth if user has assigned teacher
       if (user.assignedTeacher) {
-        useTeacherStore.getState().setAssignedTeacher(user.assignedTeacher as any);
+        useTeacherStore.getState().setAssignedTeacher(user.assignedTeacher as any, {
+          avatar: user.assignedTeacherAvatar,
+          displayNameAr: user.assignedTeacherDisplayNameAr,
+          displayNameEn: user.assignedTeacherDisplayNameEn,
+        });
         useTeacherStore.getState().setUserId(user.id);
       }
     }
-  }, [user?.id, storedUserId, resetTeacherStore, user?.assignedTeacher]);
+  }, [user?.id, storedUserId, resetTeacherStore, user?.assignedTeacher, user?.assignedTeacherAvatar]);
 
   // Check if assessment is complete:
   // 1. From teacher store (for current session)

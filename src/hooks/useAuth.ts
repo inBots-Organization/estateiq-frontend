@@ -19,6 +19,9 @@ export function useAuth() {
       assignedTeacher: result.user.assignedTeacher || null,
       assignedTeacherId: result.user.assignedTeacherId || null,
       currentSkillLevel: result.user.currentSkillLevel || null,
+      assignedTeacherAvatar: result.user.assignedTeacherAvatar || null,
+      assignedTeacherDisplayNameAr: result.user.assignedTeacherDisplayNameAr || null,
+      assignedTeacherDisplayNameEn: result.user.assignedTeacherDisplayNameEn || null,
     };
     setAuth(result.accessToken, userWithTypedRole);
     // Redirect based on role
@@ -43,6 +46,9 @@ export function useAuth() {
       assignedTeacher: result.user.assignedTeacher || null,
       assignedTeacherId: result.user.assignedTeacherId || null,
       currentSkillLevel: result.user.currentSkillLevel || null,
+      assignedTeacherAvatar: result.user.assignedTeacherAvatar || null,
+      assignedTeacherDisplayNameAr: result.user.assignedTeacherDisplayNameAr || null,
+      assignedTeacherDisplayNameEn: result.user.assignedTeacherDisplayNameEn || null,
     };
     setAuth(result.accessToken, userWithTypedRole);
     // New organization creators (org_admin) go to admin, trainees go to dashboard

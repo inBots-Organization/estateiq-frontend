@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { TEACHERS, type TeacherName } from '@/config/teachers';
+import { useTeacherStore } from '@/stores/teacher.store';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 
@@ -12,6 +13,8 @@ interface TalkingAvatarProps {
   audioElement?: HTMLAudioElement | null;
   className?: string;
   showName?: boolean;
+  // Override avatar URL (for custom teachers from backend)
+  avatarUrl?: string | null;
 }
 
 const SIZES = {
@@ -28,11 +31,21 @@ export function TalkingAvatar({
   audioElement,
   className,
   showName = true,
+  avatarUrl: propAvatarUrl,
 }: TalkingAvatarProps) {
   const { language } = useLanguage();
+  // Get custom teacher avatar from store
+  const { customTeacherAvatar, customTeacherDisplayNameAr, customTeacherDisplayNameEn } = useTeacherStore();
+
   // Fallback to abdullah if teacher doesn't exist in config
   const teacher = TEACHERS[teacherName] || TEACHERS.abdullah;
   const sizeConfig = SIZES[size];
+
+  // Use prop avatar > store custom avatar > config avatar
+  const finalAvatarUrl = propAvatarUrl || customTeacherAvatar || teacher.avatarUrl;
+  const finalDisplayName = customTeacherDisplayNameAr || customTeacherDisplayNameEn
+    ? { ar: customTeacherDisplayNameAr || teacher.displayName.ar, en: customTeacherDisplayNameEn || teacher.displayName.en }
+    : teacher.displayName;
 
   // Animation states
   const [animationPhase, setAnimationPhase] = useState(0);
@@ -102,8 +115,8 @@ export function TalkingAvatar({
       >
         {/* Avatar image */}
         <img
-          src={teacher.avatarUrl}
-          alt={teacher.displayName[language]}
+          src={finalAvatarUrl}
+          alt={finalDisplayName[language]}
           className="w-full h-full object-cover"
         />
 
