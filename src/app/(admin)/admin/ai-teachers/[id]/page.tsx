@@ -78,6 +78,9 @@ import {
   Check,
   Search,
   ArrowRightLeft,
+  Play,
+  Square,
+  VolumeX,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -222,6 +225,11 @@ export default function AITeacherDetailPage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarLoading, setAvatarLoading] = useState(false);
 
+  // Voice preview state
+  const [isPreviewingVoice, setIsPreviewingVoice] = useState(false);
+  const [isPlayingVoice, setIsPlayingVoice] = useState(false);
+  const voiceAudioRef = useRef<HTMLAudioElement | null>(null);
+
   // Fetch teacher data (fast - without avatar)
   const fetchTeacher = useCallback(async () => {
     if (!token || !teacherId) return;
@@ -324,6 +332,84 @@ export default function AITeacherDetailPage() {
 
   // State for avatar upload
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  // Voice preview functions
+  const handlePreviewVoice = async () => {
+    const voiceId = formData.voiceId?.trim();
+    if (!voiceId) {
+      setError(isRTL ? 'يرجى إدخال معرف الصوت أولاً' : 'Please enter a voice ID first');
+      return;
+    }
+
+    // Stop any playing audio
+    if (voiceAudioRef.current) {
+      voiceAudioRef.current.pause();
+      voiceAudioRef.current = null;
+    }
+
+    setIsPreviewingVoice(true);
+    setError(null);
+
+    try {
+      // Use teacher name for TTS preview
+      const teacherName = teacher?.name || 'preview';
+      const previewText = isRTL
+        ? `مرحباً! أنا ${formData.displayNameAr || teacher?.displayNameAr || 'المعلم'}. كيف يمكنني مساعدتك اليوم؟`
+        : `Hello! I am ${formData.displayNameEn || teacher?.displayNameEn || 'the teacher'}. How can I help you today?`;
+
+      // Call TTS API
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai-teacher/tts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token : ''}`,
+        },
+        body: JSON.stringify({
+          text: previewText,
+          language: isRTL ? 'ar' : 'en',
+          teacherName: teacherName,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(isRTL ? 'فشل في تحميل الصوت' : 'Failed to load voice');
+      }
+
+      const data = await response.json();
+
+      if (data.audio) {
+        const audio = new Audio(`data:audio/mpeg;base64,${data.audio}`);
+        voiceAudioRef.current = audio;
+        setIsPlayingVoice(true);
+
+        audio.onended = () => {
+          setIsPlayingVoice(false);
+          voiceAudioRef.current = null;
+        };
+
+        audio.onerror = () => {
+          setIsPlayingVoice(false);
+          setError(isRTL ? 'فشل في تشغيل الصوت' : 'Failed to play audio');
+          voiceAudioRef.current = null;
+        };
+
+        await audio.play();
+      }
+    } catch (err) {
+      console.error('Voice preview error:', err);
+      setError(err instanceof Error ? err.message : (isRTL ? 'فشل في معاينة الصوت' : 'Failed to preview voice'));
+    } finally {
+      setIsPreviewingVoice(false);
+    }
+  };
+
+  const handleStopVoice = () => {
+    if (voiceAudioRef.current) {
+      voiceAudioRef.current.pause();
+      voiceAudioRef.current = null;
+    }
+    setIsPlayingVoice(false);
+  };
 
   // Handle avatar upload with WebP conversion
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -845,11 +931,35 @@ export default function AITeacherDetailPage() {
                     <Volume2 className="h-4 w-4" />
                     {isRTL ? 'معرف الصوت (ElevenLabs)' : 'Voice ID (ElevenLabs)'}
                   </Label>
-                  <Input
-                    value={formData.voiceId || ''}
-                    onChange={(e) => handleFieldChange('voiceId', e.target.value)}
-                    placeholder="e.g., onwK4e9ZLuTAKqWW03F9"
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      value={formData.voiceId || ''}
+                      onChange={(e) => handleFieldChange('voiceId', e.target.value)}
+                      placeholder="e.g., onwK4e9ZLuTAKqWW03F9"
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant={isPlayingVoice ? 'destructive' : 'outline'}
+                      size="icon"
+                      onClick={isPlayingVoice ? handleStopVoice : handlePreviewVoice}
+                      disabled={isPreviewingVoice || !formData.voiceId?.trim()}
+                      title={isRTL ? (isPlayingVoice ? 'إيقاف' : 'معاينة الصوت') : (isPlayingVoice ? 'Stop' : 'Preview Voice')}
+                    >
+                      {isPreviewingVoice ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : isPlayingVoice ? (
+                        <Square className="h-4 w-4" />
+                      ) : (
+                        <Play className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {isRTL
+                      ? 'اضغط على زر التشغيل لسماع معاينة الصوت'
+                      : 'Click play to hear a voice preview'}
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label>{isRTL ? 'بادئة البحث في المعرفة' : 'Brain Query Prefix'}</Label>
