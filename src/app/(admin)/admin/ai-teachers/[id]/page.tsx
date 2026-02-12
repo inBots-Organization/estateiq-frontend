@@ -215,7 +215,11 @@ export default function AITeacherDetailPage() {
   // Document management state
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
 
-  // Fetch teacher data
+  // Avatar state (loaded separately for performance)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+
+  // Fetch teacher data (fast - without avatar)
   const fetchTeacher = useCallback(async () => {
     if (!token || !teacherId) return;
 
@@ -250,6 +254,14 @@ export default function AITeacherDetailPage() {
         contextSource: teacherData.teacher.contextSource,
         isActive: teacherData.teacher.isActive,
       });
+
+      // Load avatar in background after main data loads
+      setAvatarLoading(true);
+      aiTeachersApi.getAvatar(teacherId)
+        .then((res) => setAvatarUrl(res.avatarUrl))
+        .catch((err) => console.error('Error loading avatar:', err))
+        .finally(() => setAvatarLoading(false));
+
     } catch (err) {
       console.error('Error fetching teacher:', err);
       setError(err instanceof Error ? err.message : 'Failed to load teacher');
@@ -343,6 +355,10 @@ export default function AITeacherDetailPage() {
 
       const result = await aiTeachersApi.uploadAvatar(teacher.id, fileToUpload);
       setTeacher(result.teacher);
+      // Update avatar state immediately
+      if (result.teacher.avatarUrl) {
+        setAvatarUrl(result.teacher.avatarUrl);
+      }
       setSuccessMessage(isRTL ? 'تم تحديث الصورة بنجاح' : 'Avatar updated successfully');
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
@@ -533,11 +549,13 @@ export default function AITeacherDetailPage() {
           <div className="flex flex-col items-center gap-2">
             <div className="relative group cursor-pointer" onClick={() => !isUploadingAvatar && fileInputRef.current?.click()}>
               <Avatar className="h-20 w-20 border-2 border-border shadow-soft">
-                {teacher.avatarUrl ? (
-                  <AvatarImage src={teacher.avatarUrl} alt={teacher.displayNameEn} />
+                {/* Use avatarUrl state (lazy loaded) */}
+                {avatarUrl ? (
+                  <AvatarImage src={avatarUrl} alt={teacher.displayNameEn} />
                 ) : null}
                 <AvatarFallback className={cn(
                   "text-white text-3xl font-bold bg-gradient-to-br",
+                  avatarLoading ? "animate-pulse" : "",
                   GRADIENTS[0]
                 )}>
                   {teacher.displayNameEn.charAt(0)}

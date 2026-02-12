@@ -425,6 +425,23 @@ export const aiTeachersApi = {
 
     return response.json();
   },
+
+  /**
+   * Get single teacher avatar (for lazy loading on detail page)
+   */
+  async getAvatar(id: string): Promise<{ avatarUrl: string | null }> {
+    const response = await fetch(`${API_URL}/admin/ai-teachers/${id}/avatar`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to fetch avatar' }));
+      throw new Error(error.error || 'Failed to fetch avatar');
+    }
+
+    return response.json();
+  },
 };
 
 export default aiTeachersApi;
