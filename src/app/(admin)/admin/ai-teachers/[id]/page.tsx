@@ -222,22 +222,44 @@ export default function AITeacherDetailPage() {
     }
   };
 
+  // State for avatar upload
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
   // Handle avatar upload
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !teacher) return;
 
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setError(isRTL ? 'حجم الملف كبير جداً. الحد الأقصى 5 ميجابايت' : 'File too large. Maximum size is 5MB.');
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setError(isRTL ? 'نوع الملف غير مدعوم. يرجى استخدام JPEG, PNG, أو WebP' : 'Unsupported file type. Please use JPEG, PNG, or WebP.');
+      return;
+    }
+
     try {
-      setIsSaving(true);
+      setIsUploadingAvatar(true);
+      setError(null);
       const result = await aiTeachersApi.uploadAvatar(teacher.id, file);
       setTeacher(result.teacher);
       setSuccessMessage(isRTL ? 'تم تحديث الصورة بنجاح' : 'Avatar updated successfully');
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       console.error('Error uploading avatar:', err);
-      setError(err instanceof Error ? err.message : 'Failed to upload avatar');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to upload avatar';
+      setError(isRTL ? `فشل رفع الصورة: ${errorMessage}` : `Failed to upload avatar: ${errorMessage}`);
     } finally {
-      setIsSaving(false);
+      setIsUploadingAvatar(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -306,7 +328,21 @@ export default function AITeacherDetailPage() {
   if (!teacher) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Full screen loading overlay for avatar upload */}
+      {isUploadingAvatar && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4 p-6 rounded-lg bg-card border shadow-lg">
+            <Loader2 className="h-10 w-10 animate-spin text-violet-500" />
+            <p className="text-lg font-medium">
+              {isRTL ? 'جاري رفع الصورة...' : 'Uploading avatar...'}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {isRTL ? 'يرجى الانتظار' : 'Please wait'}
+            </p>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -319,7 +355,7 @@ export default function AITeacherDetailPage() {
             <BackArrow className="h-5 w-5" />
           </Button>
           <div className="flex flex-col items-center gap-2">
-            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+            <div className="relative group cursor-pointer" onClick={() => !isUploadingAvatar && fileInputRef.current?.click()}>
               <Avatar className="h-20 w-20 border-2 border-border shadow-soft">
                 {teacher.avatarUrl ? (
                   <AvatarImage src={teacher.avatarUrl} alt={teacher.displayNameEn} />
@@ -331,19 +367,35 @@ export default function AITeacherDetailPage() {
                   {teacher.displayNameEn.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                <Camera className="h-6 w-6 text-white" />
-              </div>
+              {/* Loading overlay during upload */}
+              {isUploadingAvatar ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/70 rounded-full">
+                  <Loader2 className="h-8 w-8 animate-spin text-white" />
+                </div>
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Camera className="h-6 w-6 text-white" />
+                </div>
+              )}
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isSaving}
+              disabled={isSaving || isUploadingAvatar}
               className="text-xs"
             >
-              <Camera className={cn("h-3 w-3", isRTL ? "ml-1" : "mr-1")} />
-              {isRTL ? 'تغيير الصورة' : 'Change Photo'}
+              {isUploadingAvatar ? (
+                <>
+                  <Loader2 className={cn("h-3 w-3 animate-spin", isRTL ? "ml-1" : "mr-1")} />
+                  {isRTL ? 'جاري الرفع...' : 'Uploading...'}
+                </>
+              ) : (
+                <>
+                  <Camera className={cn("h-3 w-3", isRTL ? "ml-1" : "mr-1")} />
+                  {isRTL ? 'تغيير الصورة' : 'Change Photo'}
+                </>
+              )}
             </Button>
             <input
               ref={fileInputRef}
