@@ -19,6 +19,7 @@ export interface BrainDocument {
   errorMessage?: string | null;
   contentLevel: ContentLevel;
   targetPersona?: string | null;
+  teacherId?: string | null;
   tags: string[];
   createdAt: string;
 }

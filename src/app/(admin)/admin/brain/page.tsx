@@ -206,7 +206,7 @@ export default function AdminBrainPage() {
 
       await brainApi.uploadDocument(pendingFile, {
         contentLevel: selectedLevel,
-        targetPersona: selectedPersona || undefined,
+        teacherId: selectedPersona || undefined,
       });
 
       await fetchDocuments();
@@ -254,24 +254,43 @@ export default function AdminBrainPage() {
         return false;
       }
     }
-    // Filter by teacher
+    // Filter by teacher (check both teacherId and legacy targetPersona)
     if (filterTeacher !== 'all') {
-      if (!doc.targetPersona || doc.targetPersona !== filterTeacher) {
+      const hasTeacherId = doc.teacherId === filterTeacher;
+      const hasTargetPersona = doc.targetPersona === filterTeacher;
+      // Also check if filterTeacher is a teacher name (legacy) matching by name
+      const teacherObj = teachers.find(t => t.id === filterTeacher);
+      const hasLegacyMatch = teacherObj && doc.targetPersona === teacherObj.name;
+      if (!hasTeacherId && !hasTargetPersona && !hasLegacyMatch) {
         return false;
       }
     }
     return true;
   });
 
-  // Helper to get teacher display name
-  const getTeacherName = (personaId: string) => {
-    const teacher = teachers.find(t => t.name === personaId);
-    if (teacher) {
-      return isRTL ? teacher.displayNameAr : teacher.displayNameEn;
+  // Helper to get teacher display name (from ID or legacy name)
+  const getTeacherName = (teacherId?: string | null, targetPersona?: string | null) => {
+    // First try by ID
+    if (teacherId) {
+      const teacher = teachers.find(t => t.id === teacherId);
+      if (teacher) {
+        return isRTL ? teacher.displayNameAr : teacher.displayNameEn;
+      }
     }
-    // Fallback to static list
-    const fallback = FALLBACK_TEACHER_PERSONAS.find(p => p.id === personaId);
-    return fallback ? (isRTL ? fallback.name : fallback.nameEn) : personaId;
+    // Then try by legacy name (targetPersona)
+    if (targetPersona) {
+      const teacher = teachers.find(t => t.name === targetPersona);
+      if (teacher) {
+        return isRTL ? teacher.displayNameAr : teacher.displayNameEn;
+      }
+      // Fallback to static list
+      const fallback = FALLBACK_TEACHER_PERSONAS.find(p => p.id === targetPersona);
+      if (fallback) {
+        return isRTL ? fallback.name : fallback.nameEn;
+      }
+      return targetPersona;
+    }
+    return null;
   };
 
   const totalChunks = documents.reduce((sum, d) => sum + d.chunkCount, 0);
@@ -396,8 +415,8 @@ export default function AdminBrainPage() {
                   <SelectContent>
                     <SelectItem value="all">{isRTL ? 'كل المعلمين' : 'All Teachers'}</SelectItem>
                     {teachers.length > 0 ? (
-                      teachers.filter(t => t.name).map(t => (
-                        <SelectItem key={t.id} value={t.name || t.id}>
+                      teachers.map(t => (
+                        <SelectItem key={t.id} value={t.id}>
                           {isRTL ? t.displayNameAr : t.displayNameEn}
                         </SelectItem>
                       ))
@@ -452,10 +471,10 @@ export default function AdminBrainPage() {
                         </Badge>
                       )}
                       {getLevelBadge(doc.contentLevel, isRTL)}
-                      {doc.targetPersona && (
+                      {(doc.teacherId || doc.targetPersona) && (
                         <Badge variant="outline" className="text-xs bg-violet-50 text-violet-700 border-violet-200">
                           <User className="w-3 h-3 mr-1" />
-                          {getTeacherName(doc.targetPersona)}
+                          {getTeacherName(doc.teacherId, doc.targetPersona)}
                         </Badge>
                       )}
                     </div>
@@ -547,7 +566,7 @@ export default function AdminBrainPage() {
               </p>
             </div>
 
-            {/* Target Persona (optional) */}
+            {/* Target Teacher (optional) */}
             <div className="space-y-2">
               <Label>{isRTL ? 'المعلم المستهدف (اختياري)' : 'Target Teacher (Optional)'}</Label>
               <Select value={selectedPersona || '_all_'} onValueChange={(v) => setSelectedPersona(v === '_all_' ? '' : v)}>
@@ -557,8 +576,8 @@ export default function AdminBrainPage() {
                 <SelectContent>
                   <SelectItem value="_all_">{isRTL ? 'كل المعلمين' : 'All Teachers'}</SelectItem>
                   {teachers.length > 0 ? (
-                    teachers.filter(t => t.name).map(t => (
-                      <SelectItem key={t.id} value={t.name || t.id}>
+                    teachers.map(t => (
+                      <SelectItem key={t.id} value={t.id}>
                         {isRTL ? t.displayNameAr : t.displayNameEn} ({isRTL ?
                           (t.level === 'beginner' ? 'مبتدئ' : t.level === 'intermediate' ? 'متوسط' : t.level === 'advanced' ? 'متقدم' : t.level === 'professional' ? 'محترف' : 'عام')
                           : t.level})
