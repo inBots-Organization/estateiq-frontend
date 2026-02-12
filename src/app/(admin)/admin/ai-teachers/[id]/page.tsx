@@ -178,6 +178,9 @@ const GRADIENTS = [
   'from-amber-500 to-orange-500',
 ];
 
+// Core teachers that cannot be deleted (the 4 default AI teachers)
+const PROTECTED_TEACHER_NAMES = ['ahmed', 'noura', 'anas', 'abdullah'];
+
 export default function AITeacherDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -621,45 +624,48 @@ export default function AITeacherDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" className="text-destructive hover:bg-destructive/10">
-                <Trash2 className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
-                {isRTL ? 'حذف' : 'Delete'}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  {isRTL ? 'هل أنت متأكد؟' : 'Are you sure?'}
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  {teacher.isDefault
-                    ? (isRTL
-                        ? 'هذا معلم افتراضي. سيتم حذفه نهائياً ولن يمكن استعادته. يمكنك إعادة إنشاء المعلمين الافتراضيين من الإعدادات.'
-                        : 'This is a default teacher. It will be permanently deleted. You can recreate default teachers from settings.')
-                    : (isRTL
-                        ? 'سيتم حذف هذا المعلم نهائياً. لا يمكن التراجع عن هذا الإجراء.'
-                        : 'This teacher will be permanently deleted. This action cannot be undone.')
-                  }
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>{isRTL ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDelete}
-                  className="bg-destructive hover:bg-destructive/90"
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    isRTL ? 'حذف' : 'Delete'
-                  )}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          {/* Hide delete button for core teachers (ahmed, noura, anas, abdullah) */}
+          {!PROTECTED_TEACHER_NAMES.includes(teacher.name.toLowerCase()) && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="text-destructive hover:bg-destructive/10">
+                  <Trash2 className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                  {isRTL ? 'حذف' : 'Delete'}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {isRTL ? 'هل أنت متأكد؟' : 'Are you sure?'}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {teacher.isDefault
+                      ? (isRTL
+                          ? 'هذا معلم افتراضي. سيتم حذفه نهائياً ولن يمكن استعادته. يمكنك إعادة إنشاء المعلمين الافتراضيين من الإعدادات.'
+                          : 'This is a default teacher. It will be permanently deleted. You can recreate default teachers from settings.')
+                      : (isRTL
+                          ? 'سيتم حذف هذا المعلم نهائياً. لا يمكن التراجع عن هذا الإجراء.'
+                          : 'This teacher will be permanently deleted. This action cannot be undone.')
+                    }
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{isRTL ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive hover:bg-destructive/90"
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      isRTL ? 'حذف' : 'Delete'
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           <Button
             onClick={handleSave}
             disabled={!hasChanges || isSaving}
