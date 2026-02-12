@@ -408,6 +408,23 @@ export const aiTeachersApi = {
 
     return response.json();
   },
+
+  /**
+   * Get all avatars (for lazy loading after initial data loads)
+   */
+  async getAvatars(): Promise<{ avatars: Record<string, string | null> }> {
+    const response = await fetch(`${API_URL}/admin/ai-teachers/avatars`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to fetch avatars' }));
+      throw new Error(error.error || 'Failed to fetch avatars');
+    }
+
+    return response.json();
+  },
 };
 
 export default aiTeachersApi;

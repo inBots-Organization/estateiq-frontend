@@ -206,7 +206,11 @@ export default function AITeachersPage() {
     contextSource: 'brain',
   });
 
-  // Fetch teachers
+  // State for avatars (loaded separately for performance)
+  const [avatars, setAvatars] = useState<Record<string, string | null>>({});
+  const [avatarsLoading, setAvatarsLoading] = useState(false);
+
+  // Fetch teachers (fast - without avatars)
   const fetchTeachers = useCallback(async () => {
     if (!token) return;
 
@@ -215,6 +219,13 @@ export default function AITeachersPage() {
       setError(null);
       const data = await aiTeachersApi.list();
       setTeachers(data.teachers);
+
+      // Load avatars in background after data is displayed
+      setAvatarsLoading(true);
+      aiTeachersApi.getAvatars()
+        .then((res) => setAvatars(res.avatars))
+        .catch((err) => console.error('Error loading avatars:', err))
+        .finally(() => setAvatarsLoading(false));
     } catch (err) {
       console.error('Error fetching teachers:', err);
       setError(err instanceof Error ? err.message : 'Failed to load teachers');
@@ -497,13 +508,21 @@ export default function AITeachersPage() {
                 {/* Header with Avatar and Status */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="h-16 w-16 rounded-full border-2 border-border shadow-soft overflow-hidden flex items-center justify-center">
-                    {teacher.avatarUrl ? (
+                    {/* Use avatars state (lazy loaded) or fallback to teacher.avatarUrl */}
+                    {(avatars[teacher.id] || teacher.avatarUrl) ? (
                       <img
-                        src={teacher.avatarUrl}
+                        src={avatars[teacher.id] || teacher.avatarUrl || ''}
                         alt={teacher.displayNameEn}
                         className="h-full w-full object-cover"
-                        loading="eager"
+                        loading="lazy"
                       />
+                    ) : avatarsLoading ? (
+                      <div className={cn(
+                        "h-full w-full flex items-center justify-center text-white text-xl font-bold bg-gradient-to-br animate-pulse",
+                        getGradient(index)
+                      )}>
+                        {teacher.displayNameEn.charAt(0)}
+                      </div>
                     ) : (
                       <div className={cn(
                         "h-full w-full flex items-center justify-center text-white text-xl font-bold bg-gradient-to-br",
