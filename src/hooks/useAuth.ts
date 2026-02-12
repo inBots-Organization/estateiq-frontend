@@ -12,9 +12,13 @@ export function useAuth() {
   const login = useCallback(async (input: LoginInput) => {
     const result = await authApi.login(input);
     // The setAuth function normalizes the role internally, but we cast for TypeScript
+    // Include all user data including assignedTeacher, assignedTeacherId, currentSkillLevel
     const userWithTypedRole = {
       ...result.user,
       role: normalizeRole(result.user.role) as UserRole,
+      assignedTeacher: result.user.assignedTeacher || null,
+      assignedTeacherId: result.user.assignedTeacherId || null,
+      currentSkillLevel: result.user.currentSkillLevel || null,
     };
     setAuth(result.accessToken, userWithTypedRole);
     // Redirect based on role
@@ -32,9 +36,13 @@ export function useAuth() {
   const register = useCallback(async (input: RegisterInput) => {
     const result = await authApi.register(input);
     // The setAuth function normalizes the role internally, but we cast for TypeScript
+    // New users won't have assigned teacher yet
     const userWithTypedRole = {
       ...result.user,
       role: normalizeRole(result.user.role) as UserRole,
+      assignedTeacher: result.user.assignedTeacher || null,
+      assignedTeacherId: result.user.assignedTeacherId || null,
+      currentSkillLevel: result.user.currentSkillLevel || null,
     };
     setAuth(result.accessToken, userWithTypedRole);
     // New organization creators (org_admin) go to admin, trainees go to dashboard

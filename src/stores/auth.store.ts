@@ -25,6 +25,10 @@ interface User {
   lastName: string;
   role: UserRole;
   organizationId?: string;
+  // Teacher assignment info (for trainees)
+  assignedTeacher?: string | null;
+  assignedTeacherId?: string | null;
+  currentSkillLevel?: string | null;
 }
 
 interface ImpersonationState {

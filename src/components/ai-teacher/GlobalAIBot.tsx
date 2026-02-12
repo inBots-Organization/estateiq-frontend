@@ -224,6 +224,20 @@ export function GlobalAIBot() {
     });
   }, [autoPlayEnabled]);
 
+  // Sync teacher store with auth store on login
+  // If user has assignedTeacher from backend, update the teacher store
+  useEffect(() => {
+    if (user?.id && user.assignedTeacher) {
+      const currentTeacherStore = useTeacherStore.getState();
+      // Only update if teacher store doesn't have this user's teacher, or if it's a different user
+      if (!currentTeacherStore.assignedTeacher || currentTeacherStore.userId !== user.id) {
+        console.log('[GlobalAIBot] Syncing teacher from auth:', user.assignedTeacher);
+        useTeacherStore.getState().setAssignedTeacher(user.assignedTeacher as any);
+        useTeacherStore.getState().setUserId(user.id);
+      }
+    }
+  }, [user?.id, user?.assignedTeacher]);
+
   // Check if the stored teacher data belongs to the current user
   // If not, reset it (this happens when a different user logs in)
   useEffect(() => {
@@ -231,13 +245,18 @@ export function GlobalAIBot() {
       console.log('[GlobalAIBot] Different user detected, resetting teacher store');
       console.log('[GlobalAIBot] Current user:', user.id, 'Stored user:', storedUserId);
       resetTeacherStore();
+      // But then sync from auth if user has assigned teacher
+      if (user.assignedTeacher) {
+        useTeacherStore.getState().setAssignedTeacher(user.assignedTeacher as any);
+        useTeacherStore.getState().setUserId(user.id);
+      }
     }
-  }, [user?.id, storedUserId, resetTeacherStore]);
+  }, [user?.id, storedUserId, resetTeacherStore, user?.assignedTeacher]);
 
-  // Check if assessment is complete (has assigned teacher AND it belongs to this user)
-  // If storedUserId is null but assignedTeacher exists, this is OLD data from before userId tracking
-  // SIMPLIFIED: Just check if assignedTeacher exists - the reset useEffect handles user mismatch
-  const hasCompletedAssessment = assignedTeacher !== null;
+  // Check if assessment is complete:
+  // 1. From teacher store (for current session)
+  // 2. OR from auth store (from backend - user already has assigned teacher)
+  const hasCompletedAssessment = assignedTeacher !== null || user?.assignedTeacher !== null;
 
   // Hide on specific pages (but allow welcome bot for new trainees on assessment pages)
   // Assessment can be at /assessment OR /simulation?diagnostic=true
