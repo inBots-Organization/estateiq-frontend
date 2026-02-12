@@ -81,6 +81,72 @@ import {
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
+/**
+ * Convert image to WebP format for smaller file size
+ * Uses Canvas API to compress and convert images
+ */
+async function convertToWebP(file: File, maxWidth = 512, quality = 0.85): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    img.onload = () => {
+      // Calculate new dimensions (max 512x512 for avatars)
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxWidth || height > maxWidth) {
+        if (width > height) {
+          height = (height / width) * maxWidth;
+          width = maxWidth;
+        } else {
+          width = (width / height) * maxWidth;
+          height = maxWidth;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      if (!ctx) {
+        reject(new Error('Failed to get canvas context'));
+        return;
+      }
+
+      // Draw image on canvas
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Convert to WebP blob
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error('Failed to convert image'));
+            return;
+          }
+
+          // Create new file with WebP extension
+          const webpFile = new File(
+            [blob],
+            file.name.replace(/\.[^.]+$/, '.webp'),
+            { type: 'image/webp' }
+          );
+
+          console.log(`Image converted: ${file.size} bytes → ${webpFile.size} bytes (${Math.round((1 - webpFile.size / file.size) * 100)}% smaller)`);
+          resolve(webpFile);
+        },
+        'image/webp',
+        quality
+      );
+    };
+
+    img.onerror = () => reject(new Error('Failed to load image'));
+
+    // Load image from file
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 // Personality options
 const PERSONALITIES = [
   { value: 'friendly', labelAr: 'ودود', labelEn: 'Friendly' },
@@ -244,19 +310,19 @@ export default function AITeacherDetailPage() {
   // State for avatar upload
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
-  // Handle avatar upload
+  // Handle avatar upload with WebP conversion
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !teacher) return;
 
-    // Validate file size (10MB max)
+    // Validate file size (10MB max for original file)
     if (file.size > 10 * 1024 * 1024) {
       setError(isRTL ? 'حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت' : 'File too large. Maximum size is 10MB.');
       return;
     }
 
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
       setError(isRTL ? 'نوع الملف غير مدعوم. يرجى استخدام JPEG, PNG, أو WebP' : 'Unsupported file type. Please use JPEG, PNG, or WebP.');
       return;
@@ -265,7 +331,17 @@ export default function AITeacherDetailPage() {
     try {
       setIsUploadingAvatar(true);
       setError(null);
-      const result = await aiTeachersApi.uploadAvatar(teacher.id, file);
+
+      // Convert image to WebP for smaller file size
+      let fileToUpload = file;
+      try {
+        fileToUpload = await convertToWebP(file, 512, 0.85);
+      } catch (conversionError) {
+        console.warn('WebP conversion failed, uploading original:', conversionError);
+        // Fall back to original file if conversion fails
+      }
+
+      const result = await aiTeachersApi.uploadAvatar(teacher.id, fileToUpload);
       setTeacher(result.teacher);
       setSuccessMessage(isRTL ? 'تم تحديث الصورة بنجاح' : 'Avatar updated successfully');
       setTimeout(() => setSuccessMessage(null), 3000);

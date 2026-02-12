@@ -98,6 +98,72 @@ const LEVELS = {
   general: { label: { ar: 'عام', en: 'General' }, color: 'bg-gray-500/10 text-gray-500' },
 };
 
+/**
+ * Convert image to WebP format for smaller file size
+ * Uses Canvas API to compress and convert images
+ */
+async function convertToWebP(file: File, maxWidth = 512, quality = 0.85): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    img.onload = () => {
+      // Calculate new dimensions (max 512x512 for avatars)
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxWidth || height > maxWidth) {
+        if (width > height) {
+          height = (height / width) * maxWidth;
+          width = maxWidth;
+        } else {
+          width = (width / height) * maxWidth;
+          height = maxWidth;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      if (!ctx) {
+        reject(new Error('Failed to get canvas context'));
+        return;
+      }
+
+      // Draw image on canvas
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Convert to WebP blob
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error('Failed to convert image'));
+            return;
+          }
+
+          // Create new file with WebP extension
+          const webpFile = new File(
+            [blob],
+            file.name.replace(/\.[^.]+$/, '.webp'),
+            { type: 'image/webp' }
+          );
+
+          console.log(`Image converted: ${file.size} bytes → ${webpFile.size} bytes (${Math.round((1 - webpFile.size / file.size) * 100)}% smaller)`);
+          resolve(webpFile);
+        },
+        'image/webp',
+        quality
+      );
+    };
+
+    img.onerror = () => reject(new Error('Failed to load image'));
+
+    // Load image from file
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 // Gradient colors for teacher avatars
 const GRADIENTS = [
   'from-blue-500 to-blue-600',
@@ -173,17 +239,30 @@ export default function AITeachersPage() {
     }
   };
 
-  // Handle avatar file selection
-  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle avatar file selection with WebP conversion
+  const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setAvatarFile(file);
-      // Create preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        // Convert to WebP for smaller file size
+        const webpFile = await convertToWebP(file, 512, 0.85);
+        setAvatarFile(webpFile);
+        // Create preview URL from converted file
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setAvatarPreview(reader.result as string);
+        };
+        reader.readAsDataURL(webpFile);
+      } catch (conversionError) {
+        console.warn('WebP conversion failed, using original:', conversionError);
+        // Fall back to original file
+        setAvatarFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setAvatarPreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
