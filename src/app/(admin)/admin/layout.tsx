@@ -45,6 +45,7 @@ import {
   Layers,
   Brain,
   Bot,
+  BookOpen,
 } from 'lucide-react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 
@@ -149,6 +150,15 @@ export default function AdminLayout({
           ? 'إدارة قاعدة معرفة الذكاء الاصطناعي'
           : 'Manage AI knowledge base',
         showFor: ['org_admin'],
+      },
+      {
+        href: '/admin/courses',
+        label: isRTL ? 'الدورات التدريبية' : 'Training Courses',
+        icon: BookOpen,
+        description: isRTL
+          ? 'إدارة الدورات التدريبية والدروس'
+          : 'Manage courses & lectures',
+        showFor: ['org_admin', 'trainer'],
       },
       {
         href: '/admin/reports',
