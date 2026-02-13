@@ -541,10 +541,17 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
             {/* Brand */}
             <div className="col-span-2 md:col-span-1">
+              {/* Light mode logo */}
+              <img
+                src="/light-logo.png"
+                alt="INLEARN"
+                className="h-8 w-auto mb-4 dark:hidden"
+              />
+              {/* Dark mode logo */}
               <img
                 src="/logo-white.png"
                 alt="INLEARN"
-                className="h-8 w-auto mb-4"
+                className="h-8 w-auto mb-4 hidden dark:block"
               />
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {t.landing.footer.description}

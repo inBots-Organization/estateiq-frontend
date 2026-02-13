@@ -158,11 +158,21 @@ export function EnhancedNavbar() {
               onClick={(e) => scrollToSection(e, '#hero')}
             >
               <div className="relative">
+                {/* Light mode logo */}
+                <img
+                  src="/light-logo.png"
+                  alt="INLEARN"
+                  className={cn(
+                    "w-auto transition-all duration-300 group-hover:brightness-110 dark:hidden",
+                    scrolled ? "h-8" : "h-9 lg:h-10"
+                  )}
+                />
+                {/* Dark mode logo */}
                 <img
                   src="/logo-white.png"
                   alt="INLEARN"
                   className={cn(
-                    "w-auto transition-all duration-300 group-hover:brightness-125",
+                    "w-auto transition-all duration-300 group-hover:brightness-125 hidden dark:block",
                     scrolled ? "h-8" : "h-9 lg:h-10"
                   )}
                 />
