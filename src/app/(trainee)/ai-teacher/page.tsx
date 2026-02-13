@@ -496,17 +496,15 @@ Would you like a quick quiz to test your understanding?`;
         language: isRTL ? 'ar' : 'en',
       });
 
-      // Add message with embedded audio player
+      // Add message with embedded audio player (audio only, no text shown)
       const summaryMessage: Message = {
         id: `audio-summary-${Date.now()}`,
         role: 'assistant',
-        content: isRTL
-          ? `🎧 **${result.title}**\n\n${result.text}`
-          : `🎧 **${result.title}**\n\n${result.text}`,
+        content: '', // Empty content - only audio player will show
         timestamp: new Date(),
         audioSummary: {
           title: result.title,
-          text: result.text,
+          text: result.text, // Keep text for accessibility but don't display
           audioBase64: result.audioBase64,
           durationSeconds: result.durationSeconds,
         },
@@ -1259,16 +1257,16 @@ ${lastLessonText}${skillSection}
                       </div>
                     )}
 
-                    {/* Audio Summary Player (simple audio in chat) */}
+                    {/* Audio Summary Player (voice message style like WhatsApp) */}
                     {message.audioSummary && (
-                      <div className="mt-3 pt-3 border-t border-border/30">
-                        <Button
-                          variant="default"
-                          size="sm"
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30">
+                        {/* Play/Stop Button */}
+                        <button
                           className={cn(
-                            "w-full h-12 text-sm font-medium transition-all",
-                            "bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700",
-                            audioState === 'playing' && audioManager.getCurrentAudioId() === message.id && "animate-pulse"
+                            "flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all",
+                            audioState === 'playing' && audioManager.getCurrentAudioId() === message.id
+                              ? "bg-red-500 hover:bg-red-600"
+                              : "bg-emerald-500 hover:bg-emerald-600"
                           )}
                           onClick={() => {
                             if (audioState === 'playing' && audioManager.getCurrentAudioId() === message.id) {
@@ -1279,20 +1277,35 @@ ${lastLessonText}${skillSection}
                           }}
                         >
                           {audioState === 'playing' && audioManager.getCurrentAudioId() === message.id ? (
-                            <>
-                              <VolumeX className="h-5 w-5 me-2" />
-                              {isRTL ? 'إيقاف الملخص' : 'Stop Summary'}
-                            </>
+                            <VolumeX className="h-6 w-6 text-white" />
                           ) : (
-                            <>
-                              <Music className="h-5 w-5 me-2" />
-                              {isRTL ? 'تشغيل الملخص' : 'Play Summary'}
-                              <span className="ms-2 text-xs opacity-75">
-                                ({Math.round((message.audioSummary?.durationSeconds || 60) / 60)} {isRTL ? 'د' : 'min'})
-                              </span>
-                            </>
+                            <Play className="h-6 w-6 text-white ms-0.5" />
                           )}
-                        </Button>
+                        </button>
+
+                        {/* Waveform visualization (static) */}
+                        <div className="flex-1 flex items-center gap-0.5 h-8">
+                          {Array.from({ length: 30 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className={cn(
+                                "w-1 rounded-full transition-all duration-150",
+                                audioState === 'playing' && audioManager.getCurrentAudioId() === message.id
+                                  ? "bg-emerald-400 animate-pulse"
+                                  : "bg-emerald-500/50"
+                              )}
+                              style={{
+                                height: `${Math.random() * 60 + 20}%`,
+                                animationDelay: `${i * 50}ms`
+                              }}
+                            />
+                          ))}
+                        </div>
+
+                        {/* Duration */}
+                        <div className="flex-shrink-0 text-sm text-emerald-300 font-medium">
+                          {Math.floor((message.audioSummary?.durationSeconds || 60) / 60)}:{String((message.audioSummary?.durationSeconds || 60) % 60).padStart(2, '0')}
+                        </div>
                       </div>
                     )}
 
