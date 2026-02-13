@@ -119,12 +119,12 @@ export function TextReportsSection({ className, traineeId }: TextReportsSectionP
         return;
       }
 
-      const envUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const baseUrl = envUrl.replace(/\/api\/?$/, '');
+      // FIXED: Use NEXT_PUBLIC_API_URL directly - it already includes /api
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
       // Use admin endpoint if traineeId is provided, otherwise use personal history
       const url = traineeId
-        ? `${baseUrl}/api/admin/trainee/${traineeId}/simulations`
-        : `${baseUrl}/api/simulations/history`;
+        ? `${apiUrl}/admin/trainee/${traineeId}/simulations`
+        : `${apiUrl}/simulations/history`;
 
       const response = await fetch(url, {
         headers: {
@@ -170,10 +170,10 @@ export function TextReportsSection({ className, traineeId }: TextReportsSectionP
       const token = getAuthToken();
       if (!token) return;
 
-      const envUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const baseUrl = envUrl.replace(/\/api\/?$/, '');
+      // FIXED: Use NEXT_PUBLIC_API_URL directly - it already includes /api
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-      const response = await fetch(`${baseUrl}/api/simulations/${sessionId}`, {
+      const response = await fetch(`${apiUrl}/simulations/${sessionId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
