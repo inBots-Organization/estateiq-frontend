@@ -188,6 +188,9 @@ export default function AdminTraineeReportsPage() {
       setTraineeInfo(traineeData);
 
       // Fetch all reports data for the trainee (using trainee's reports endpoints with admin override)
+      console.log('[Admin Reports] Fetching reports for traineeId:', traineeId);
+      console.log('[Admin Reports] API URL:', apiUrl, 'Base URL:', baseUrl);
+
       const [dashboardRes, skillsRes, sessionsRes, trendsRes, recsRes] = await Promise.all([
         fetch(`${baseUrl}/api/reports/${traineeId}/dashboard`, { headers }),
         fetch(`${baseUrl}/api/reports/${traineeId}/skills`, { headers }),
@@ -196,11 +199,51 @@ export default function AdminTraineeReportsPage() {
         fetch(`${baseUrl}/api/reports/${traineeId}/recommendations`, { headers }),
       ]);
 
-      if (dashboardRes.ok) setDashboard(await dashboardRes.json());
-      if (skillsRes.ok) setSkills(await skillsRes.json());
-      if (sessionsRes.ok) setSessions(await sessionsRes.json());
-      if (trendsRes.ok) setTrends(await trendsRes.json());
-      if (recsRes.ok) setRecommendations(await recsRes.json());
+      console.log('[Admin Reports] Dashboard response:', dashboardRes.status, dashboardRes.ok);
+      console.log('[Admin Reports] Skills response:', skillsRes.status, skillsRes.ok);
+      console.log('[Admin Reports] Sessions response:', sessionsRes.status, sessionsRes.ok);
+      console.log('[Admin Reports] Trends response:', trendsRes.status, trendsRes.ok);
+      console.log('[Admin Reports] Recommendations response:', recsRes.status, recsRes.ok);
+
+      if (dashboardRes.ok) {
+        const dashboardData = await dashboardRes.json();
+        console.log('[Admin Reports] Dashboard data:', dashboardData);
+        setDashboard(dashboardData);
+      } else {
+        console.error('[Admin Reports] Dashboard error:', await dashboardRes.text());
+      }
+
+      if (skillsRes.ok) {
+        const skillsData = await skillsRes.json();
+        console.log('[Admin Reports] Skills data:', skillsData);
+        setSkills(skillsData);
+      } else {
+        console.error('[Admin Reports] Skills error:', await skillsRes.text());
+      }
+
+      if (sessionsRes.ok) {
+        const sessionsData = await sessionsRes.json();
+        console.log('[Admin Reports] Sessions data:', sessionsData);
+        setSessions(sessionsData);
+      } else {
+        console.error('[Admin Reports] Sessions error:', await sessionsRes.text());
+      }
+
+      if (trendsRes.ok) {
+        const trendsData = await trendsRes.json();
+        console.log('[Admin Reports] Trends data:', trendsData);
+        setTrends(trendsData);
+      } else {
+        console.error('[Admin Reports] Trends error:', await trendsRes.text());
+      }
+
+      if (recsRes.ok) {
+        const recsData = await recsRes.json();
+        console.log('[Admin Reports] Recommendations data:', recsData);
+        setRecommendations(recsData);
+      } else {
+        console.error('[Admin Reports] Recommendations error:', await recsRes.text());
+      }
 
     } catch (err) {
       console.error('Error fetching trainee reports:', err);
