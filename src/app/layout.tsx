@@ -34,6 +34,15 @@ export const metadata: Metadata = {
   description: 'Transform your professional skills with intelligent AI training. Practice with realistic simulations, master video courses, and get real-time performance analytics.',
   keywords: ['professional training', 'AI simulation', 'sales training', 'Saudi Arabia', 'skill development', 'INLEARN'],
   authors: [{ name: 'INLEARN' }],
+  icons: {
+    icon: [
+      { url: '/favicon.png', type: 'image/png' },
+      { url: '/icon.png', type: 'image/png', sizes: '192x192' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
   openGraph: {
     title: 'INLEARN | AI-Powered Professional Training Platform',
     description: 'Transform your professional skills with intelligent AI training.',
@@ -52,7 +61,6 @@ export default function RootLayout({
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <meta name="theme-color" content="#059669" />
-        <link rel="icon" href="/favicon.ico" />
       </head>
       <body
         className={`${inter.variable} ${cairo.variable} ${alexandria.variable} font-sans antialiased`}
