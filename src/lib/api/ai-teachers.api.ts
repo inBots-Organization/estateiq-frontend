@@ -322,6 +322,24 @@ export const aiTeachersApi = {
   },
 
   /**
+   * Add missing default teachers (doesn't overwrite existing)
+   */
+  async seedMissing(): Promise<{ message: string; createdCount: number; existingCount: number; createdNames?: string[] }> {
+    const response = await fetch(`${API_URL}/admin/ai-teachers/seed-missing`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({}), // Cloud Run needs content-length
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to seed missing teachers' }));
+      throw new Error(error.error || 'Failed to seed missing teachers');
+    }
+
+    return response.json();
+  },
+
+  /**
    * Bulk assign trainees to a teacher
    */
   async assignTrainees(teacherId: string, traineeIds: string[]): Promise<{ message: string; assignedCount: number }> {

@@ -187,6 +187,7 @@ export default function AITeachersPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [isSeedingMissing, setIsSeedingMissing] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [newTeacher, setNewTeacher] = useState<CreateAITeacherData>({
@@ -345,6 +346,25 @@ export default function AITeachersPage() {
     }
   };
 
+  // Seed missing default teachers
+  const handleSeedMissing = async () => {
+    try {
+      setIsSeedingMissing(true);
+      const result = await aiTeachersApi.seedMissing();
+      console.log('Seed missing result:', result);
+
+      if (result.createdCount > 0) {
+        // Refresh teachers to show newly added ones
+        await fetchTeachers();
+      }
+    } catch (err) {
+      console.error('Error seeding missing teachers:', err);
+      setError(err instanceof Error ? err.message : 'Failed to seed missing teachers');
+    } finally {
+      setIsSeedingMissing(false);
+    }
+  };
+
   // Get gradient for teacher
   const getGradient = (index: number) => GRADIENTS[index % GRADIENTS.length];
 
@@ -401,7 +421,23 @@ export default function AITeachersPage() {
               : 'Manage AI teachers and customize them for your trainees'}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Show seed missing button only when there are fewer than 5 teachers */}
+          {teachers.length < 5 && (
+            <Button
+              variant="outline"
+              onClick={handleSeedMissing}
+              disabled={isSeedingMissing}
+              className="text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10"
+            >
+              {isSeedingMissing ? (
+                <Loader2 className={cn("h-4 w-4 animate-spin", isRTL ? "ml-2" : "mr-2")} />
+              ) : (
+                <Sparkles className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+              )}
+              {isRTL ? 'إضافة المعلمين الافتراضيين' : 'Add Default Teachers'}
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={() => setResetDialogOpen(true)}
