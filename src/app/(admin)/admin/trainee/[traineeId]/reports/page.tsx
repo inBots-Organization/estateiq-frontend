@@ -255,12 +255,26 @@ export default function AdminTraineeReportsPage() {
       }
 
     } catch (err) {
-      console.error('Error fetching trainee reports:', err);
+      console.error('[Admin Reports] Error fetching trainee reports:', err);
       setError(isRTL ? 'فشل تحميل التقارير' : 'Failed to load reports');
     } finally {
+      console.log('[Admin Reports] fetchData completed');
       setIsLoading(false);
     }
   }, [getAuthToken, traineeId, currentPage, scenarioFilter, isRTL]);
+
+  // Log state changes for debugging
+  useEffect(() => {
+    console.log('[Admin Reports] State update:', {
+      isLoading,
+      error,
+      traineeInfo: traineeInfo ? 'present' : 'null',
+      dashboard: dashboard ? { completedSessions: dashboard.completedSessions, averageScore: dashboard.averageScore } : 'null',
+      skills: skills ? `${skills.skills.length} skills` : 'null',
+      sessions: sessions ? `${sessions.sessions.length} sessions` : 'null',
+      trends: trends.length,
+    });
+  }, [isLoading, error, traineeInfo, dashboard, skills, sessions, trends]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
