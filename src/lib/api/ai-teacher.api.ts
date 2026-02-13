@@ -567,3 +567,29 @@ export const avContentApi = {
     await apiClient.delete(`/ai-teacher/av/content/${id}`);
   },
 };
+
+// ============================================================================
+// AUDIO SUMMARY API (Simple audio for chat)
+// ============================================================================
+
+export interface AudioSummaryResponse {
+  title: string;
+  text: string;
+  audioBase64: string;
+  durationSeconds: number;
+}
+
+export interface AudioSummaryRequest {
+  topic: string;
+  focusAreas?: string[];
+  language?: 'ar' | 'en';
+}
+
+export const audioSummaryApi = {
+  /**
+   * Generate a simple audio-only summary for chat playback
+   */
+  generate: async (params: AudioSummaryRequest): Promise<AudioSummaryResponse> => {
+    return apiClient.post<AudioSummaryResponse>('/ai-teacher/audio-summary', params);
+  },
+};

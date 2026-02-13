@@ -60,6 +60,7 @@ import { useAudioManager } from '@/lib/audio-manager';
 import {
   aiTeacherApi,
   avContentApi,
+  audioSummaryApi,
   WelcomeResponse,
   FileAttachment,
   TraineeProfile,
@@ -140,6 +141,13 @@ interface Message {
     title: string;
     titleAr?: string;
     duration: number; // in seconds
+  };
+  // Simple audio summary (audio-only, no slides)
+  audioSummary?: {
+    title: string;
+    text: string;
+    audioBase64: string;
+    durationSeconds: number;
   };
 }
 
@@ -468,7 +476,7 @@ Would you like a quick quiz to test your understanding?`;
     }
   }, [currentLessonContext, isRTL, isGeneratingAVContent]);
 
-  // Generate AV Summary
+  // Generate Audio Summary (simple audio-only, displayed in chat)
   const handleGenerateAVSummary = useCallback(async () => {
     if (isGeneratingAVContent) return;
 
@@ -481,34 +489,29 @@ Would you like a quick quiz to test your understanding?`;
       // Get trainee weaknesses for adaptive content
       const focusAreas = profile?.weaknesses || [];
 
-      const content = await avContentApi.generateSummary({
+      // Use the new simple audio summary API
+      const result = await audioSummaryApi.generate({
         topic,
-        sourceText: currentLessonContext?.lessonDescription,
         focusAreas,
         language: isRTL ? 'ar' : 'en',
       });
 
-      // Add message about summary generation with playable content
+      // Add message with embedded audio player
       const summaryMessage: Message = {
-        id: `av-summary-${Date.now()}`,
+        id: `audio-summary-${Date.now()}`,
         role: 'assistant',
         content: isRTL
-          ? `🎧 تم إنشاء ملخص صوتي تفاعلي: "${content.titleAr || content.title}"\n\nالمدة: ${Math.round(content.totalDuration / 60)} دقائق\n\nتم تخصيص المحتوى بناءً على نقاط ضعفك.`
-          : `🎧 Interactive audio summary created: "${content.title}"\n\nDuration: ${Math.round(content.totalDuration / 60)} minutes\n\nContent has been tailored to your weak areas.`,
+          ? `🎧 **${result.title}**\n\n${result.text}`
+          : `🎧 **${result.title}**\n\n${result.text}`,
         timestamp: new Date(),
-        avContent: {
-          id: content.id,
-          type: 'summary',
-          title: content.title,
-          titleAr: content.titleAr,
-          duration: content.totalDuration,
+        audioSummary: {
+          title: result.title,
+          text: result.text,
+          audioBase64: result.audioBase64,
+          durationSeconds: result.durationSeconds,
         },
       };
       setMessages((prev) => [...prev, summaryMessage]);
-
-      // Automatically open the player
-      setAVContentId(content.id);
-      setShowAVPlayer(true);
 
     } catch (err: any) {
       const errorDetails = err?.message || 'Unknown error';
@@ -1256,8 +1259,45 @@ ${lastLessonText}${skillSection}
                       </div>
                     )}
 
+                    {/* Audio Summary Player (simple audio in chat) */}
+                    {message.audioSummary && (
+                      <div className="mt-3 pt-3 border-t border-border/30">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className={cn(
+                            "w-full h-12 text-sm font-medium transition-all",
+                            "bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700",
+                            audioState === 'playing' && audioManager.getCurrentAudioId() === message.id && "animate-pulse"
+                          )}
+                          onClick={() => {
+                            if (audioState === 'playing' && audioManager.getCurrentAudioId() === message.id) {
+                              stopAudio();
+                            } else if (message.audioSummary?.audioBase64) {
+                              audioManager.play(message.audioSummary.audioBase64, message.id);
+                            }
+                          }}
+                        >
+                          {audioState === 'playing' && audioManager.getCurrentAudioId() === message.id ? (
+                            <>
+                              <VolumeX className="h-5 w-5 me-2" />
+                              {isRTL ? 'إيقاف الملخص' : 'Stop Summary'}
+                            </>
+                          ) : (
+                            <>
+                              <Music className="h-5 w-5 me-2" />
+                              {isRTL ? 'تشغيل الملخص' : 'Play Summary'}
+                              <span className="ms-2 text-xs opacity-75">
+                                ({Math.round((message.audioSummary?.durationSeconds || 60) / 60)} {isRTL ? 'د' : 'min'})
+                              </span>
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+
                     {/* Audio playback button for assistant messages (text-to-speech) */}
-                    {message.role === 'assistant' && !message.avContent && (
+                    {message.role === 'assistant' && !message.avContent && !message.audioSummary && (
                       <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border/30">
                         <Button
                           variant="outline"
