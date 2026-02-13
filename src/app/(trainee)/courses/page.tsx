@@ -8,12 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
-import {
-  courses,
-  getCourseTitle,
-  getCourseDescription,
-  Course
-} from '@/data/courses';
+import { traineeCoursesApi, Course } from '@/lib/api/trainee-courses.api';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { traineeApi } from '@/lib/api/trainee.api';
@@ -34,16 +29,18 @@ import {
   ArrowRight,
   CheckCircle,
   Target,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 
 // Skill-to-category mapping for weakness prioritization
 const SKILL_TO_CATEGORIES: Record<string, string[]> = {
-  communication: ['Client Relations', 'Fundamentals'],
-  negotiation: ['Sales Skills'],
-  objectionHandling: ['Sales Skills'],
-  relationshipBuilding: ['Client Relations'],
-  productKnowledge: ['Fundamentals', 'Specialization'],
-  closingTechnique: ['Sales Skills'],
+  communication: ['customer-relations', 'fundamentals', 'Client Relations', 'Fundamentals'],
+  negotiation: ['sales', 'Sales Skills'],
+  objectionHandling: ['sales', 'Sales Skills'],
+  relationshipBuilding: ['customer-relations', 'Client Relations'],
+  productKnowledge: ['fundamentals', 'specialization', 'Fundamentals', 'Specialization'],
+  closingTechnique: ['sales', 'Sales Skills'],
 };
 
 export default function CoursesPage() {
@@ -55,6 +52,30 @@ export default function CoursesPage() {
   const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set());
   const [diagnosticReport, setDiagnosticReport] = useState<SkillReport | null>(null);
   const [recommendedCategories, setRecommendedCategories] = useState<Set<string>>(new Set());
+
+  // Dynamic courses state
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch courses from API
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await traineeCoursesApi.listCourses();
+        setCourses(response.courses);
+      } catch (err: any) {
+        console.error('Failed to fetch courses:', err);
+        setError(err.message || 'Failed to load courses');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   // Fetch completed lessons and diagnostic report
   useEffect(() => {
@@ -81,7 +102,7 @@ export default function CoursesPage() {
           setRecommendedCategories(weakCategories);
         }
       } catch (err) {
-        console.error('Failed to fetch data:', err);
+        console.error('Failed to fetch user data:', err);
       }
     };
 
@@ -90,24 +111,26 @@ export default function CoursesPage() {
 
   // Calculate progress for each course
   const getCourseProgress = (course: Course): number => {
-    if (course.lessons.length === 0) return 0;
+    if (!course.lessons || course.lessons.length === 0) return 0;
     const completedCount = course.lessons.filter(lesson => completedLessonIds.has(lesson.id)).length;
     return Math.round((completedCount / course.lessons.length) * 100);
   };
 
   // Check if course is completed
   const isCourseCompleted = (course: Course): boolean => {
-    return course.lessons.length > 0 && course.lessons.every(lesson => completedLessonIds.has(lesson.id));
+    if (!course.lessons || course.lessons.length === 0) return false;
+    return course.lessons.every(lesson => completedLessonIds.has(lesson.id));
   };
 
   // Localized categories
   const categories = useMemo(() => [
     { id: 'All', label: isRTL ? 'جميع التصنيفات' : 'All Categories' },
-    { id: 'Fundamentals', label: isRTL ? 'الأساسيات' : 'Fundamentals' },
-    { id: 'Sales Skills', label: isRTL ? 'مهارات البيع' : 'Sales Skills' },
-    { id: 'Client Relations', label: isRTL ? 'علاقات العملاء' : 'Client Relations' },
-    { id: 'Specialization', label: isRTL ? 'التخصص' : 'Specialization' },
-    { id: 'Marketing', label: isRTL ? 'التسويق' : 'Marketing' },
+    { id: 'fundamentals', label: isRTL ? 'الأساسيات' : 'Fundamentals' },
+    { id: 'sales', label: isRTL ? 'مهارات البيع' : 'Sales Skills' },
+    { id: 'customer-relations', label: isRTL ? 'علاقات العملاء' : 'Customer Relations' },
+    { id: 'specialization', label: isRTL ? 'التخصص' : 'Specialization' },
+    { id: 'marketing', label: isRTL ? 'التسويق' : 'Marketing' },
+    { id: 'legal', label: isRTL ? 'القانون العقاري' : 'Real Estate Law' },
   ], [isRTL]);
 
   // Localized difficulties
@@ -120,8 +143,8 @@ export default function CoursesPage() {
 
   const filteredCourses = useMemo(() => {
     const filtered = courses.filter(course => {
-      const title = getCourseTitle(course, isRTL).toLowerCase();
-      const description = getCourseDescription(course, isRTL).toLowerCase();
+      const title = traineeCoursesApi.getCourseTitle(course, isRTL).toLowerCase();
+      const description = traineeCoursesApi.getCourseDescription(course, isRTL).toLowerCase();
       const query = searchQuery.toLowerCase();
 
       const matchesSearch = title.includes(query) || description.includes(query);
@@ -140,60 +163,7 @@ export default function CoursesPage() {
     }
 
     return filtered;
-  }, [searchQuery, selectedCategory, selectedDifficulty, isRTL, recommendedCategories]);
-
-  const formatDuration = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (isRTL) {
-      return hours > 0 ? `${hours} ساعة ${mins} دقيقة` : `${mins} دقيقة`;
-    }
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-  };
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'beginner':
-        return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'intermediate':
-        return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
-      case 'advanced':
-        return 'bg-red-500/10 text-red-500 border-red-500/20';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
-  };
-
-  const getDifficultyLabel = (difficulty: string) => {
-    const labels: Record<string, { ar: string; en: string }> = {
-      beginner: { ar: 'مبتدئ', en: 'Beginner' },
-      intermediate: { ar: 'متوسط', en: 'Intermediate' },
-      advanced: { ar: 'متقدّم', en: 'Advanced' },
-    };
-    return isRTL ? labels[difficulty]?.ar : labels[difficulty]?.en || difficulty;
-  };
-
-  const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      'Fundamentals': 'bg-blue-500',
-      'Sales Skills': 'bg-purple-500',
-      'Client Relations': 'bg-green-500',
-      'Specialization': 'bg-orange-500',
-      'Marketing': 'bg-pink-500',
-    };
-    return colors[category] || 'bg-muted-foreground';
-  };
-
-  const getCategoryLabel = (category: string) => {
-    const categoryMap: Record<string, { ar: string; en: string }> = {
-      'Fundamentals': { ar: 'الأساسيات', en: 'Fundamentals' },
-      'Sales Skills': { ar: 'مهارات البيع', en: 'Sales Skills' },
-      'Client Relations': { ar: 'علاقات العملاء', en: 'Client Relations' },
-      'Specialization': { ar: 'التخصص', en: 'Specialization' },
-      'Marketing': { ar: 'التسويق', en: 'Marketing' },
-    };
-    return isRTL ? categoryMap[category]?.ar : categoryMap[category]?.en || category;
-  };
+  }, [courses, searchQuery, selectedCategory, selectedDifficulty, isRTL, recommendedCategories]);
 
   const getSimulationLabel = (type: 'text' | 'voice') => {
     if (type === 'text') {
@@ -202,17 +172,23 @@ export default function CoursesPage() {
     return isRTL ? 'مكالمة صوتية' : 'Voice Call';
   };
 
-  // Get appropriate course image based on course ID/category
-  const getCourseImage = (courseId: string) => {
-    const courseImages: Record<string, string> = {
-      'real-estate-fundamentals': 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=450&fit=crop&q=80',
-      'negotiation-mastery': 'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=800&h=450&fit=crop&q=80',
-      'client-psychology': 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=450&fit=crop&q=80',
-      'luxury-properties': 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=450&fit=crop&q=80',
-      'digital-marketing': 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=450&fit=crop&q=80',
-      'first-time-buyers': 'https://images.unsplash.com/photo-1560520031-3a4dc4e9de0c?w=800&h=450&fit=crop&q=80',
+  // Get appropriate course image - prefer thumbnailUrl, fallback to category-based images
+  const getCourseImage = (course: Course) => {
+    if (course.thumbnailUrl) {
+      return course.thumbnailUrl;
+    }
+
+    // Fallback images by category
+    const categoryImages: Record<string, string> = {
+      'fundamentals': 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=450&fit=crop&q=80',
+      'sales': 'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=800&h=450&fit=crop&q=80',
+      'customer-relations': 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=450&fit=crop&q=80',
+      'specialization': 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=450&fit=crop&q=80',
+      'marketing': 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=450&fit=crop&q=80',
+      'legal': 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&h=450&fit=crop&q=80',
     };
-    return courseImages[courseId] || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=450&fit=crop&q=80';
+
+    return categoryImages[course.category] || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=450&fit=crop&q=80';
   };
 
   const handleStartSimulation = (course: Course, e: React.MouseEvent) => {
@@ -230,8 +206,39 @@ export default function CoursesPage() {
   };
 
   // RTL-aware icons
-  const ChevronIcon = isRTL ? ChevronLeft : ChevronRight;
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 text-primary animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">
+            {isRTL ? 'جاري تحميل الدورات...' : 'Loading courses...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-foreground mb-2">
+            {isRTL ? 'حدث خطأ' : 'Error Loading Courses'}
+          </h2>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>
+            {isRTL ? 'إعادة المحاولة' : 'Try Again'}
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -360,10 +367,10 @@ export default function CoursesPage() {
                 <Card className="h-full overflow-hidden border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300 cursor-pointer group bg-card">
                   {/* Course Image/Thumbnail */}
                   <div className="relative aspect-video bg-gradient-to-br from-muted/80 to-muted overflow-hidden">
-                    {/* Background image using Unsplash */}
+                    {/* Background image */}
                     <img
-                      src={getCourseImage(course.id)}
-                      alt={getCourseTitle(course, isRTL)}
+                      src={getCourseImage(course)}
+                      alt={traineeCoursesApi.getCourseTitle(course, isRTL)}
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     {/* Overlay gradient */}
@@ -375,8 +382,8 @@ export default function CoursesPage() {
                       </div>
                     </div>
                     <div className={cn("absolute top-3", isRTL ? "right-3" : "left-3")}>
-                      <Badge className={cn("border font-medium backdrop-blur-sm", getDifficultyColor(course.difficulty))}>
-                        {getDifficultyLabel(course.difficulty)}
+                      <Badge className={cn("border font-medium backdrop-blur-sm", traineeCoursesApi.getDifficultyColor(course.difficulty))}>
+                        {traineeCoursesApi.getDifficultyLabel(course.difficulty, isRTL)}
                       </Badge>
                     </div>
                     <div className={cn("absolute top-3", isRTL ? "left-3" : "right-3")}>
@@ -387,7 +394,7 @@ export default function CoursesPage() {
                         </Badge>
                       ) : (
                         <Badge variant="secondary" className="bg-white/90 text-foreground font-medium backdrop-blur-sm">
-                          {course.lessons.length} {isRTL ? 'درس' : 'lessons'}
+                          {course.lessons?.length || 0} {isRTL ? 'درس' : 'lessons'}
                         </Badge>
                       )}
                     </div>
@@ -396,9 +403,9 @@ export default function CoursesPage() {
                   <CardContent className="p-5 space-y-4">
                     {/* Category */}
                     <div className="flex items-center gap-2">
-                      <div className={cn("w-2.5 h-2.5 rounded-full", getCategoryColor(course.category))} />
+                      <div className={cn("w-2.5 h-2.5 rounded-full", traineeCoursesApi.getCategoryColor(course.category))} />
                       <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        {getCategoryLabel(course.category)}
+                        {traineeCoursesApi.getCategoryLabel(course.category, isRTL)}
                       </span>
                       {recommendedCategories.has(course.category) && (
                         <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] px-1.5 py-0">
@@ -411,10 +418,10 @@ export default function CoursesPage() {
                     {/* Title & Description */}
                     <div className="space-y-2">
                       <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1 leading-relaxed">
-                        {getCourseTitle(course, isRTL)}
+                        {traineeCoursesApi.getCourseTitle(course, isRTL)}
                       </h3>
                       <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                        {getCourseDescription(course, isRTL)}
+                        {traineeCoursesApi.getCourseDescription(course, isRTL)}
                       </p>
                     </div>
 
@@ -422,11 +429,11 @@ export default function CoursesPage() {
                     <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t border-border">
                       <div className="flex items-center gap-1.5">
                         <Clock className="h-4 w-4" />
-                        <span>{formatDuration(course.estimatedDurationMinutes)}</span>
+                        <span>{traineeCoursesApi.formatDuration(course.estimatedDurationMinutes, isRTL)}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <BookOpen className="h-4 w-4" />
-                        <span>{course.lessons.length} {isRTL ? 'درس' : 'lessons'}</span>
+                        <span>{course.lessons?.length || 0} {isRTL ? 'درس' : 'lessons'}</span>
                       </div>
                     </div>
 

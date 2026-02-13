@@ -8,16 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import {
-  getCourseById,
-  getCourseTitle,
-  getCourseDescription,
-  getCourseObjectives,
-  getLessonTitle,
-  getLessonDescription,
-  Course,
-  Lesson
-} from '@/data/courses';
+import { traineeCoursesApi, Course, Lesson } from '@/lib/api/trainee-courses.api';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { traineeApi } from '@/lib/api/trainee.api';
@@ -36,6 +27,7 @@ import {
   Loader2,
   GraduationCap,
   Brain,
+  AlertCircle,
 } from 'lucide-react';
 
 export default function CourseDetailPage() {
@@ -49,17 +41,34 @@ export default function CourseDetailPage() {
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
   const [isCompletingLesson, setIsCompletingLesson] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const lessonStartTime = useRef<number>(Date.now());
 
-  // Load course and fetch completed lessons from backend
+  // Load course from API
   useEffect(() => {
-    const foundCourse = getCourseById(courseId);
-    if (foundCourse) {
-      setCourse(foundCourse);
-      setSelectedLesson(foundCourse.lessons[0]);
-    }
+    const fetchCourse = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await traineeCoursesApi.getCourse(courseId);
+        setCourse(response.course);
+        if (response.course.lessons && response.course.lessons.length > 0) {
+          setSelectedLesson(response.course.lessons[0]);
+        }
+      } catch (err: any) {
+        console.error('Failed to fetch course:', err);
+        setError(err.message || 'Course not found');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    // Fetch user's completed lectures from backend
+    fetchCourse();
+  }, [courseId]);
+
+  // Fetch completed lessons from backend
+  useEffect(() => {
     const fetchCompletedLessons = async () => {
       try {
         const profile = await traineeApi.getProfile();
@@ -72,7 +81,7 @@ export default function CourseDetailPage() {
     };
 
     fetchCompletedLessons();
-  }, [courseId]);
+  }, []);
 
   // Track when lesson changes to calculate time spent
   useEffect(() => {
@@ -81,14 +90,30 @@ export default function CourseDetailPage() {
 
   const ArrowBackIcon = isRTL ? ArrowRight : ArrowLeft;
 
-  if (!course) {
+  // Loading state
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <BookOpen className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+          <Loader2 className="h-12 w-12 text-primary animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">
+            {isRTL ? 'جاري تحميل الدورة...' : 'Loading course...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error/Not found state
+  if (error || !course) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
           <h2 className="text-lg font-medium text-foreground mb-2">
             {isRTL ? 'الدورة غير موجودة' : 'Course not found'}
           </h2>
+          <p className="text-muted-foreground mb-4">{error}</p>
           <Link href="/courses">
             <Button variant="outline">
               {isRTL ? 'العودة للدورات' : 'Back to Courses'}
@@ -98,48 +123,6 @@ export default function CourseDetailPage() {
       </div>
     );
   }
-
-  const formatDuration = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (isRTL) {
-      return hours > 0 ? `${hours} ساعة ${mins} دقيقة` : `${mins} دقيقة`;
-    }
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-  };
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'beginner':
-        return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'intermediate':
-        return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
-      case 'advanced':
-        return 'bg-red-500/10 text-red-500 border-red-500/20';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
-  };
-
-  const getDifficultyLabel = (difficulty: string) => {
-    const labels: Record<string, { ar: string; en: string }> = {
-      beginner: { ar: 'مبتدئ', en: 'Beginner' },
-      intermediate: { ar: 'متوسط', en: 'Intermediate' },
-      advanced: { ar: 'متقدّم', en: 'Advanced' },
-    };
-    return isRTL ? labels[difficulty]?.ar : labels[difficulty]?.en || difficulty;
-  };
-
-  const getCategoryLabel = (category: string) => {
-    const categoryMap: Record<string, { ar: string; en: string }> = {
-      'Fundamentals': { ar: 'الأساسيات', en: 'Fundamentals' },
-      'Sales Skills': { ar: 'مهارات البيع', en: 'Sales Skills' },
-      'Client Relations': { ar: 'علاقات العملاء', en: 'Client Relations' },
-      'Specialization': { ar: 'التخصص', en: 'Specialization' },
-      'Marketing': { ar: 'التسويق', en: 'Marketing' },
-    };
-    return isRTL ? categoryMap[category]?.ar : categoryMap[category]?.en || category;
-  };
 
   const handleLessonComplete = async () => {
     if (selectedLesson && !completedLessons.has(selectedLesson.id)) {
@@ -162,9 +145,11 @@ export default function CourseDetailPage() {
         setCompletedLessons(newCompleted);
 
         // Auto-advance to next lesson
-        const currentIndex = course.lessons.findIndex(l => l.id === selectedLesson.id);
-        if (currentIndex < course.lessons.length - 1) {
-          setSelectedLesson(course.lessons[currentIndex + 1]);
+        if (course.lessons) {
+          const currentIndex = course.lessons.findIndex(l => l.id === selectedLesson.id);
+          if (currentIndex < course.lessons.length - 1) {
+            setSelectedLesson(course.lessons[currentIndex + 1]);
+          }
         }
       } catch (err) {
         console.error('Failed to save lesson completion:', err);
@@ -216,8 +201,21 @@ export default function CourseDetailPage() {
     router.push('/ai-teacher');
   };
 
-  const progressPercent = Math.round((completedLessons.size / course.lessons.length) * 100);
-  const objectives = getCourseObjectives(course, isRTL);
+  // Get video ID for embedding
+  const getVideoEmbedUrl = (lesson: Lesson) => {
+    const videoId = traineeCoursesApi.getYouTubeVideoId(lesson.videoId || lesson.videoUrl);
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
+    }
+    // If it's not a YouTube URL, return as-is
+    return lesson.videoUrl;
+  };
+
+  const lessons = course.lessons || [];
+  const lessonCount = lessons.length;
+  const completedCount = lessons.filter(l => completedLessons.has(l.id)).length;
+  const progressPercent = lessonCount > 0 ? Math.round((completedCount / lessonCount) * 100) : 0;
+  const objectives = traineeCoursesApi.getCourseObjectives(course, isRTL);
 
   return (
     <div className="min-h-screen bg-background">
@@ -234,23 +232,23 @@ export default function CourseDetailPage() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <Badge className={cn("border", getDifficultyColor(course.difficulty))}>
-                  {getDifficultyLabel(course.difficulty)}
+                <Badge className={cn("border", traineeCoursesApi.getDifficultyColor(course.difficulty))}>
+                  {traineeCoursesApi.getDifficultyLabel(course.difficulty, isRTL)}
                 </Badge>
-                <Badge variant="outline">{getCategoryLabel(course.category)}</Badge>
+                <Badge variant="outline">{traineeCoursesApi.getCategoryLabel(course.category, isRTL)}</Badge>
               </div>
               <h1 className="text-2xl lg:text-3xl font-bold text-foreground leading-relaxed">
-                {getCourseTitle(course, isRTL)}
+                {traineeCoursesApi.getCourseTitle(course, isRTL)}
               </h1>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center gap-1.5">
                 <Clock className="h-4 w-4" />
-                <span>{formatDuration(course.estimatedDurationMinutes)}</span>
+                <span>{traineeCoursesApi.formatDuration(course.estimatedDurationMinutes, isRTL)}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <BookOpen className="h-4 w-4" />
-                <span>{course.lessons.length} {isRTL ? 'درس' : 'lessons'}</span>
+                <span>{lessonCount} {isRTL ? 'درس' : 'lessons'}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Award className="h-4 w-4" />
@@ -271,8 +269,8 @@ export default function CourseDetailPage() {
                 {selectedLesson && (
                   <iframe
                     className="w-full h-full"
-                    src={`https://www.youtube.com/embed/${selectedLesson.videoId}?rel=0&modestbranding=1`}
-                    title={getLessonTitle(selectedLesson, isRTL)}
+                    src={getVideoEmbedUrl(selectedLesson)}
+                    title={traineeCoursesApi.getLessonTitle(selectedLesson, isRTL)}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
@@ -283,10 +281,10 @@ export default function CourseDetailPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <h2 className="text-xl font-semibold text-foreground mb-2 leading-relaxed">
-                        {getLessonTitle(selectedLesson, isRTL)}
+                        {traineeCoursesApi.getLessonTitle(selectedLesson, isRTL)}
                       </h2>
                       <p className="text-muted-foreground leading-relaxed">
-                        {getLessonDescription(selectedLesson, isRTL)}
+                        {traineeCoursesApi.getLessonDescription(selectedLesson, isRTL)}
                       </p>
                     </div>
                     <Button
@@ -322,22 +320,24 @@ export default function CourseDetailPage() {
             </Card>
 
             {/* Course Objectives */}
-            <Card className="border-border">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <Target className="h-5 w-5 text-primary" />
-                  {isRTL ? 'ما ستتعلمه' : "What You'll Learn"}
-                </h3>
-                <ul className="grid md:grid-cols-2 gap-3">
-                  {objectives.map((objective, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-muted-foreground leading-relaxed">{objective}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            {objectives.length > 0 && (
+              <Card className="border-border">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    {isRTL ? 'ما ستتعلمه' : "What You'll Learn"}
+                  </h3>
+                  <ul className="grid md:grid-cols-2 gap-3">
+                    {objectives.map((objective, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground leading-relaxed">{objective}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Course Description */}
             <Card className="border-border">
@@ -346,7 +346,7 @@ export default function CourseDetailPage() {
                   {isRTL ? 'عن هذه الدورة' : 'About This Course'}
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  {getCourseDescription(course, isRTL)}
+                  {traineeCoursesApi.getCourseDescription(course, isRTL)}
                 </p>
               </CardContent>
             </Card>
@@ -373,41 +373,43 @@ export default function CourseDetailPage() {
                 </div>
 
                 {/* Study with AI Teacher - Primary CTA */}
-                <div className="p-4 bg-gradient-to-br from-violet-500/10 to-purple-500/10 rounded-xl border border-violet-500/20 mb-3 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-violet-500/5 to-purple-500/5 animate-pulse" />
-                  <div className="relative">
-                    <div className="flex items-center gap-2 mb-2">
-                      <GraduationCap className="h-5 w-5 text-violet-400" />
-                      <span className="font-bold text-violet-400">
-                        {isRTL ? 'ذاكر مع معلمك الذكي' : 'Study with AI Teacher'}
-                      </span>
+                {selectedLesson && (
+                  <div className="p-4 bg-gradient-to-br from-violet-500/10 to-purple-500/10 rounded-xl border border-violet-500/20 mb-3 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-violet-500/5 to-purple-500/5 animate-pulse" />
+                    <div className="relative">
+                      <div className="flex items-center gap-2 mb-2">
+                        <GraduationCap className="h-5 w-5 text-violet-400" />
+                        <span className="font-bold text-violet-400">
+                          {isRTL ? 'ذاكر مع معلمك الذكي' : 'Study with AI Teacher'}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+                        {isRTL
+                          ? `احصل على شرح مخصص لـ "${traineeCoursesApi.getLessonTitle(selectedLesson, isRTL)}" مع اختبارات فورية.`
+                          : `Get personalized explanation of "${traineeCoursesApi.getLessonTitle(selectedLesson, isRTL)}" with instant quizzes.`
+                        }
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        <Badge variant="secondary" className="bg-violet-500/20 text-violet-300 border-violet-500/30 text-xs">
+                          <Brain className="h-3 w-3 me-1" />
+                          {isRTL ? 'شرح مفصل' : 'Explanations'}
+                        </Badge>
+                        <Badge variant="secondary" className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs">
+                          <Target className="h-3 w-3 me-1" />
+                          {isRTL ? 'اختبارات' : 'Quizzes'}
+                        </Badge>
+                      </div>
+                      <Button
+                        onClick={handleStudyWithAI}
+                        className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-semibold shadow-lg shadow-violet-500/25"
+                      >
+                        <GraduationCap className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                        {isRTL ? 'ابدأ المذاكرة الآن' : 'Start Studying Now'}
+                        <Sparkles className={cn("h-4 w-4", isRTL ? "mr-2" : "ml-2")} />
+                      </Button>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                      {isRTL
-                        ? `احصل على شرح مخصص لـ "${getLessonTitle(selectedLesson!, isRTL)}" مع اختبارات فورية.`
-                        : `Get personalized explanation of "${getLessonTitle(selectedLesson!, isRTL)}" with instant quizzes.`
-                      }
-                    </p>
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      <Badge variant="secondary" className="bg-violet-500/20 text-violet-300 border-violet-500/30 text-xs">
-                        <Brain className="h-3 w-3 me-1" />
-                        {isRTL ? 'شرح مفصل' : 'Explanations'}
-                      </Badge>
-                      <Badge variant="secondary" className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs">
-                        <Target className="h-3 w-3 me-1" />
-                        {isRTL ? 'اختبارات' : 'Quizzes'}
-                      </Badge>
-                    </div>
-                    <Button
-                      onClick={handleStudyWithAI}
-                      className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-semibold shadow-lg shadow-violet-500/25"
-                    >
-                      <GraduationCap className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
-                      {isRTL ? 'ابدأ المذاكرة الآن' : 'Start Studying Now'}
-                      <Sparkles className={cn("h-4 w-4", isRTL ? "mr-2" : "ml-2")} />
-                    </Button>
                   </div>
-                </div>
+                )}
 
                 {/* AI Practice Section */}
                 <div className="p-4 bg-gradient-to-br from-primary/5 to-teal-500/5 rounded-xl border border-primary/20 mb-3">
@@ -489,8 +491,8 @@ export default function CourseDetailPage() {
                   <Progress value={progressPercent} className="h-2" />
                   <p className="text-xs text-muted-foreground mt-1">
                     {isRTL
-                      ? `${completedLessons.size} من ${course.lessons.length} دروس مكتملة`
-                      : `${completedLessons.size} of ${course.lessons.length} lessons completed`
+                      ? `${completedCount} من ${lessonCount} دروس مكتملة`
+                      : `${completedCount} of ${lessonCount} lessons completed`
                     }
                   </p>
                 </div>
@@ -520,7 +522,7 @@ export default function CourseDetailPage() {
                     {isRTL ? 'الدروس' : 'Lessons'}
                   </h3>
                   <div className="space-y-1 max-h-[400px] overflow-y-auto pr-1">
-                    {course.lessons.map((lesson, index) => {
+                    {lessons.map((lesson, index) => {
                       const isSelected = selectedLesson?.id === lesson.id;
                       const isCompleted = completedLessons.has(lesson.id);
 
@@ -555,7 +557,7 @@ export default function CourseDetailPage() {
                                 "text-sm font-medium truncate leading-relaxed",
                                 isSelected ? 'text-primary' : 'text-foreground'
                               )}>
-                                {getLessonTitle(lesson, isRTL)}
+                                {traineeCoursesApi.getLessonTitle(lesson, isRTL)}
                               </p>
                               <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                                 <Clock className="h-3 w-3" />
