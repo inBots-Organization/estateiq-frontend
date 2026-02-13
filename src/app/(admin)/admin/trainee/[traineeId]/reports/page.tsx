@@ -138,12 +138,16 @@ export default function AdminTraineeReportsPage() {
 
   // Helper to get token
   const getAuthToken = useCallback((): string | null => {
+    console.log('[Admin Reports] getAuthToken called, zustand token:', token ? 'present' : 'null');
     if (token) return token;
     try {
       const authStorage = localStorage.getItem('auth-storage');
+      console.log('[Admin Reports] auth-storage from localStorage:', authStorage ? 'present' : 'null');
       if (authStorage) {
         const parsed = JSON.parse(authStorage);
-        return parsed?.state?.token || null;
+        const storedToken = parsed?.state?.token || null;
+        console.log('[Admin Reports] Parsed token from localStorage:', storedToken ? 'present' : 'null');
+        return storedToken;
       }
     } catch (e) {
       console.error('Failed to parse auth-storage:', e);
@@ -153,8 +157,12 @@ export default function AdminTraineeReportsPage() {
 
   // Fetch trainee info and reports data
   const fetchData = useCallback(async () => {
+    console.log('[Admin Reports] fetchData called for traineeId:', traineeId);
     const authToken = getAuthToken();
+    console.log('[Admin Reports] authToken:', authToken ? `present (${authToken.substring(0, 20)}...)` : 'null');
+
     if (!authToken) {
+      console.error('[Admin Reports] No auth token found!');
       setError(isRTL ? 'غير مصرح' : 'Not authorized');
       setIsLoading(false);
       return;
@@ -166,6 +174,7 @@ export default function AdminTraineeReportsPage() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
     // Remove /api suffix if present to avoid duplication
     const baseUrl = apiUrl.replace(/\/api\/?$/, '');
+    console.log('[Admin Reports] API URLs - apiUrl:', apiUrl, ', baseUrl:', baseUrl);
 
     const headers = {
       'Authorization': `Bearer ${authToken}`,
