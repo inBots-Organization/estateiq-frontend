@@ -152,19 +152,19 @@ export default function ReportsPage() {
     };
 
     try {
-      // Use explicit base URL without /api suffix - we add it in the paths
-      const envUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      // Remove trailing /api if present to avoid duplication
-      const baseUrl = envUrl.replace(/\/api\/?$/, '');
+      // Get base URL - the env var already ends with /api
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+      // Ensure it ends with /api (no trailing slash)
+      const baseUrl = apiUrl.endsWith('/api') ? apiUrl : `${apiUrl.replace(/\/$/, '')}/api`;
 
       console.log('[ReportsPage] Fetching from:', baseUrl);
 
       const [dashboardRes, skillsRes, sessionsRes, trendsRes, recsRes] = await Promise.all([
-        fetch(`${baseUrl}/api/reports/me/dashboard`, { headers }),
-        fetch(`${baseUrl}/api/reports/me/skills`, { headers }),
-        fetch(`${baseUrl}/api/reports/me/sessions?page=${currentPage}&limit=10&scenarioType=${scenarioFilter}`, { headers }),
-        fetch(`${baseUrl}/api/reports/me/trends?months=6`, { headers }),
-        fetch(`${baseUrl}/api/reports/me/recommendations`, { headers }),
+        fetch(`${baseUrl}/reports/me/dashboard`, { headers }),
+        fetch(`${baseUrl}/reports/me/skills`, { headers }),
+        fetch(`${baseUrl}/reports/me/sessions?page=${currentPage}&limit=10&scenarioType=${scenarioFilter}`, { headers }),
+        fetch(`${baseUrl}/reports/me/trends?months=6`, { headers }),
+        fetch(`${baseUrl}/reports/me/recommendations`, { headers }),
       ]);
 
       // Log all response statuses for debugging
@@ -262,10 +262,10 @@ export default function ReportsPage() {
 
     setIsAnalyzing(true);
     try {
-      const envUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const baseUrl = envUrl.replace(/\/api\/?$/, '');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+      const baseUrl = apiUrl.endsWith('/api') ? apiUrl : `${apiUrl.replace(/\/$/, '')}/api`;
 
-      const response = await fetch(`${baseUrl}/api/reports/me/analyze-missing`, {
+      const response = await fetch(`${baseUrl}/reports/me/analyze-missing`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,
