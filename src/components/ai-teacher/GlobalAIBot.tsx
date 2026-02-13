@@ -13,6 +13,80 @@ import { cn } from '@/lib/utils';
 import { aiTeacherApi } from '@/lib/api/ai-teacher.api';
 import { traineeApi, AssignedTeacherInfo } from '@/lib/api/trainee.api';
 import { TalkingAvatar } from './TalkingAvatar';
+import Link from 'next/link';
+
+// Helper to render message content with clickable links and proper formatting
+function renderMessageContent(content: string, isRTL: boolean) {
+  // Remove markdown bold markers (**)
+  let cleaned = content.replace(/\*\*/g, '');
+
+  // Split by URLs and links
+  // Match markdown links [text](url) or plain URLs
+  const urlRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s]+)/g;
+
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+  let keyIndex = 0;
+
+  while ((match = urlRegex.exec(cleaned)) !== null) {
+    // Add text before the link
+    if (match.index > lastIndex) {
+      const textBefore = cleaned.slice(lastIndex, match.index);
+      // Split by newlines to preserve formatting
+      textBefore.split('\n').forEach((line, i, arr) => {
+        if (line) parts.push(<span key={`text-${keyIndex++}`}>{line}</span>);
+        if (i < arr.length - 1) parts.push(<br key={`br-${keyIndex++}`} />);
+      });
+    }
+
+    // Add the link
+    const linkText = match[1] || match[3] || match[0];
+    const linkUrl = match[2] || match[3] || match[0];
+
+    // Check if it's an internal link
+    const isInternal = linkUrl.includes('inlearn.macsoft.ai') || linkUrl.includes('estateiq-app.vercel.app') || linkUrl.includes('localhost');
+
+    if (isInternal) {
+      // Extract path from URL
+      const urlObj = new URL(linkUrl);
+      parts.push(
+        <Link
+          key={`link-${keyIndex++}`}
+          href={urlObj.pathname}
+          className="inline-flex items-center gap-1 text-primary hover:text-primary/80 underline underline-offset-2 font-medium transition-colors"
+        >
+          📚 {linkText.replace(linkUrl, '').trim() || 'فتح الدورة'}
+        </Link>
+      );
+    } else {
+      parts.push(
+        <a
+          key={`link-${keyIndex++}`}
+          href={linkUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-primary hover:text-primary/80 underline underline-offset-2 font-medium transition-colors"
+        >
+          🔗 {linkText}
+        </a>
+      );
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text
+  if (lastIndex < cleaned.length) {
+    const remaining = cleaned.slice(lastIndex);
+    remaining.split('\n').forEach((line, i, arr) => {
+      if (line) parts.push(<span key={`text-${keyIndex++}`}>{line}</span>);
+      if (i < arr.length - 1) parts.push(<br key={`br-${keyIndex++}`} />);
+    });
+  }
+
+  return parts.length > 0 ? parts : cleaned;
+}
 
 interface BotMessage {
   id: string;
@@ -1355,7 +1429,9 @@ export function GlobalAIBot() {
                 ? 'bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-2xl rounded-br-md'
                 : 'bg-muted/80 text-foreground rounded-2xl rounded-bl-md border border-border/50'
             )}>
-              <p className="whitespace-pre-wrap break-words leading-relaxed">{msg.content}</p>
+              <div className="whitespace-pre-wrap break-words leading-relaxed">
+                {msg.role === 'assistant' ? renderMessageContent(msg.content, isRTL) : msg.content}
+              </div>
             </div>
             {/* Audio button for assistant messages */}
             {msg.role === 'assistant' && msg.audioBase64 && (
@@ -1427,6 +1503,7 @@ export function GlobalAIBot() {
             )}
           </Button>
 
+          {/* Text Input */}
           <div className="flex-1 relative">
             <input
               ref={inputRef}
@@ -1447,6 +1524,8 @@ export function GlobalAIBot() {
               disabled={isLoading || isTranscribing}
             />
           </div>
+
+          {/* Send Button */}
           <Button
             size="icon"
             onClick={handleSend}

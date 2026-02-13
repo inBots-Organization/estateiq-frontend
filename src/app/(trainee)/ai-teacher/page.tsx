@@ -72,6 +72,95 @@ import { traineeApi } from '@/lib/api/trainee.api';
 import { diagnosticApi } from '@/lib/api/diagnostic.api';
 import type { SkillReport } from '@/types/diagnostic';
 import { courses, getCourseById } from '@/data/courses';
+import Link from 'next/link';
+
+// Helper to render message content with clickable links and proper formatting
+function renderMessageContent(content: string, isRTL: boolean): React.ReactNode {
+  // Remove markdown bold markers (**)
+  let cleaned = content.replace(/\*\*/g, '');
+
+  // Split by URLs and links
+  // Match markdown links [text](url) or plain URLs
+  const urlRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s]+)/g;
+
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+  let keyIndex = 0;
+
+  while ((match = urlRegex.exec(cleaned)) !== null) {
+    // Add text before the link
+    if (match.index > lastIndex) {
+      const textBefore = cleaned.slice(lastIndex, match.index);
+      // Split by newlines to preserve formatting
+      textBefore.split('\n').forEach((line, i, arr) => {
+        if (line) parts.push(<span key={`text-${keyIndex++}`}>{line}</span>);
+        if (i < arr.length - 1) parts.push(<br key={`br-${keyIndex++}`} />);
+      });
+    }
+
+    // Add the link
+    const linkText = match[1] || match[3] || match[0];
+    const linkUrl = match[2] || match[3] || match[0];
+
+    // Check if it's an internal link
+    const isInternal = linkUrl.includes('inlearn.macsoft.ai') || linkUrl.includes('estateiq-app.vercel.app') || linkUrl.includes('localhost');
+
+    if (isInternal) {
+      // Extract path from URL
+      try {
+        const urlObj = new URL(linkUrl);
+        parts.push(
+          <Link
+            key={`link-${keyIndex++}`}
+            href={urlObj.pathname}
+            className="inline-flex items-center gap-1 px-3 py-1.5 my-1 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg font-medium transition-colors border border-primary/20"
+          >
+            <BookOpen className="h-4 w-4" />
+            {isRTL ? 'افتح الدورة' : 'Open Course'}
+          </Link>
+        );
+      } catch {
+        parts.push(
+          <a
+            key={`link-${keyIndex++}`}
+            href={linkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-primary hover:text-primary/80 underline underline-offset-2 font-medium transition-colors"
+          >
+            🔗 {linkText}
+          </a>
+        );
+      }
+    } else {
+      parts.push(
+        <a
+          key={`link-${keyIndex++}`}
+          href={linkUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-primary hover:text-primary/80 underline underline-offset-2 font-medium transition-colors"
+        >
+          🔗 {linkText}
+        </a>
+      );
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text
+  if (lastIndex < cleaned.length) {
+    const remaining = cleaned.slice(lastIndex);
+    remaining.split('\n').forEach((line, i, arr) => {
+      if (line) parts.push(<span key={`text-${keyIndex++}`}>{line}</span>);
+      if (i < arr.length - 1) parts.push(<br key={`br-${keyIndex++}`} />);
+    });
+  }
+
+  return parts.length > 0 ? parts : cleaned;
+}
 
 // Storage key for last studied lesson
 const LAST_LESSON_KEY = 'ai-teacher-last-lesson';
@@ -1222,7 +1311,9 @@ ${lastLessonText}${skillSection}
                     )}
 
                     {/* Content */}
-                    <p className="whitespace-pre-wrap leading-relaxed text-[15px]">{message.content}</p>
+                    <div className="whitespace-pre-wrap leading-relaxed text-[15px]">
+                      {message.role === 'assistant' ? renderMessageContent(message.content, isRTL) : message.content}
+                    </div>
 
                     {/* AV Content Play Button - for lectures and summaries */}
                     {message.avContent && (
