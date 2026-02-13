@@ -20,6 +20,17 @@ export interface TraineeProfile {
   };
 }
 
+export interface AssignedTeacherInfo {
+  hasAssignedTeacher: boolean;
+  teacherName: string | null;
+  teacherId: string | null;
+  displayNameAr: string | null;
+  displayNameEn: string | null;
+  avatarUrl: string | null;
+  voiceId: string | null;
+  currentSkillLevel: string | null;
+}
+
 export interface TraineeProgress {
   traineeId: string;
   programId: string;
@@ -69,6 +80,14 @@ export interface DashboardStats {
 export const traineeApi = {
   getProfile: async (): Promise<TraineeProfile> => {
     return apiClient.get<TraineeProfile>('/trainees/me');
+  },
+
+  /**
+   * Get current assigned AI teacher with full details from database
+   * This is the source of truth - always fresh, not cached
+   */
+  getAssignedTeacher: async (): Promise<AssignedTeacherInfo> => {
+    return apiClient.get<AssignedTeacherInfo>('/trainees/me/assigned-teacher');
   },
 
   getDashboardStats: async (): Promise<DashboardStats> => {

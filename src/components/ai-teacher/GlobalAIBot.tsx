@@ -11,6 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useDiagnosticStore } from '@/stores/diagnostic.store';
 import { cn } from '@/lib/utils';
 import { aiTeacherApi } from '@/lib/api/ai-teacher.api';
+import { traineeApi, AssignedTeacherInfo } from '@/lib/api/trainee.api';
 import { TalkingAvatar } from './TalkingAvatar';
 
 interface BotMessage {
@@ -198,36 +199,74 @@ export function GlobalAIBot() {
     avatarUrl: string | null;
   } | null>(null);
 
+  // CRITICAL: Fresh teacher info from API (source of truth)
+  // This overrides any cached localStorage data
+  const [freshTeacherInfo, setFreshTeacherInfo] = useState<AssignedTeacherInfo | null>(null);
+  const [isLoadingTeacher, setIsLoadingTeacher] = useState(true);
+  const teacherFetchedRef = useRef(false);
+
   // Audio refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const audioQueueRef = useRef<string[]>([]); // Queue for auto-playing audio
 
+  // Fetch fresh teacher info from API on mount (source of truth)
+  useEffect(() => {
+    if (teacherFetchedRef.current || !user?.id) return;
+
+    const fetchTeacher = async () => {
+      try {
+        teacherFetchedRef.current = true;
+        setIsLoadingTeacher(true);
+        const info = await traineeApi.getAssignedTeacher();
+        console.log('[GlobalAIBot] Fresh teacher info from API:', info);
+        setFreshTeacherInfo(info);
+
+        // Sync to teacher store for consistency
+        if (info.hasAssignedTeacher && info.teacherName) {
+          useTeacherStore.getState().setAssignedTeacher(info.teacherName as any, {
+            avatar: info.avatarUrl,
+            displayNameAr: info.displayNameAr,
+            displayNameEn: info.displayNameEn,
+            voiceId: info.voiceId,
+          });
+          useTeacherStore.getState().setUserId(user.id);
+        }
+      } catch (error) {
+        console.error('[GlobalAIBot] Failed to fetch teacher info:', error);
+      } finally {
+        setIsLoadingTeacher(false);
+      }
+    };
+
+    fetchTeacher();
+  }, [user?.id]);
+
   // Determine which teacher to use
-  // Priority: 1) user.assignedTeacher from backend (source of truth)
-  //           2) activeTeacher from store (session selection)
-  //           3) assignedTeacher from store (persisted)
-  //           4) 'abdullah' as fallback
-  const rawTeacher = user?.assignedTeacher || activeTeacher || assignedTeacher || 'abdullah';
+  // Priority: 1) freshTeacherInfo from API (ALWAYS source of truth)
+  //           2) Fallback to localStorage data during loading
+  const rawTeacher = freshTeacherInfo?.teacherName || user?.assignedTeacher || activeTeacher || assignedTeacher || 'abdullah';
   const currentTeacher = rawTeacher as TeacherName;
 
-  // Get teacher config - use TEACHERS config if exists, otherwise create dynamic config for custom teachers
+  // Get teacher config - use fresh API data if available, otherwise fall back to TEACHERS config
   const isCustomTeacher = !TEACHERS[currentTeacher];
+
+  // Build teacher object with API data taking priority
   const teacher = TEACHERS[currentTeacher] || {
     ...TEACHERS.abdullah, // Base config
     name: currentTeacher,
     displayName: {
-      ar: customTeacherDisplayNameAr || currentTeacher,
-      en: customTeacherDisplayNameEn || currentTeacher,
+      ar: freshTeacherInfo?.displayNameAr || customTeacherDisplayNameAr || currentTeacher,
+      en: freshTeacherInfo?.displayNameEn || customTeacherDisplayNameEn || currentTeacher,
     },
-    avatarUrl: customTeacherAvatar || TEACHERS.abdullah.avatarUrl,
+    avatarUrl: freshTeacherInfo?.avatarUrl || customTeacherAvatar || TEACHERS.abdullah.avatarUrl,
   };
 
-  // For custom teachers, override avatar with database value if available
-  const effectiveAvatarUrl = isCustomTeacher && customTeacherAvatar
-    ? customTeacherAvatar
-    : teacher.avatarUrl;
+  // For custom teachers, use fresh API avatar if available, otherwise fall back
+  const effectiveAvatarUrl = freshTeacherInfo?.avatarUrl
+    || (isCustomTeacher && customTeacherAvatar)
+    || teacher.avatarUrl;
 
   // Get detailed page context
   const pageContext = getDetailedPageContext(pathname, language);
@@ -333,9 +372,10 @@ export function GlobalAIBot() {
   }, [user?.id, storedUserId, resetTeacherStore, user?.assignedTeacher, user?.assignedTeacherAvatar]);
 
   // Check if assessment is complete:
-  // 1. From teacher store (for current session)
-  // 2. OR from auth store (from backend - user already has assigned teacher)
-  const hasCompletedAssessment = assignedTeacher !== null || user?.assignedTeacher !== null;
+  // 1. From fresh API data (source of truth)
+  // 2. OR from teacher store (for current session)
+  // 3. OR from auth store (from backend - user already has assigned teacher)
+  const hasCompletedAssessment = freshTeacherInfo?.hasAssignedTeacher || assignedTeacher !== null || user?.assignedTeacher !== null;
 
   // Hide on specific pages (but allow welcome bot for new trainees on assessment pages)
   // Assessment can be at /assessment OR /simulation?diagnostic=true
