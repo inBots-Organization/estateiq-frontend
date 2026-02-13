@@ -460,6 +460,24 @@ export const aiTeachersApi = {
 
     return response.json();
   },
+
+  /**
+   * Sync avatars with default static images (updates existing teachers)
+   */
+  async syncAvatars(): Promise<{ message: string; updatedCount: number }> {
+    const response = await fetch(`${API_URL}/admin/ai-teachers/sync-avatars`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({}),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to sync avatars' }));
+      throw new Error(error.error || 'Failed to sync avatars');
+    }
+
+    return response.json();
+  },
 };
 
 export default aiTeachersApi;
