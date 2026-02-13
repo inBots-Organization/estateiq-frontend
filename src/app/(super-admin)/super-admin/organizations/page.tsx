@@ -147,9 +147,11 @@ export default function OrganizationsPage() {
     }
   };
 
+  const isDeleteConfirmValid = deleteTarget && deleteConfirmText.trim().toLowerCase() === deleteTarget.name.trim().toLowerCase();
+
   const handleDeleteOrganization = async () => {
     if (!deleteTarget) return;
-    if (deleteConfirmText !== deleteTarget.name) return;
+    if (!isDeleteConfirmValid) return;
 
     try {
       setDeleting(true);
@@ -568,7 +570,7 @@ export default function OrganizationsPage() {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteOrganization}
-              disabled={deleting || deleteConfirmText !== deleteTarget?.name}
+              disabled={deleting || !isDeleteConfirmValid}
               className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
             >
               {deleting ? (
