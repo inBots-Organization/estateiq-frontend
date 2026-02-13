@@ -461,8 +461,15 @@ export function GlobalAIBot() {
           };
           setMessages([welcomeMsg]);
 
-          // Play audio automatically
+          // Play audio automatically - stop any existing audio first
           if (result.audio) {
+            // CRITICAL: Stop any existing audio before playing new one
+            if (currentAudioRef.current) {
+              currentAudioRef.current.pause();
+              currentAudioRef.current = null;
+              setPlayingMessageId(null);
+            }
+
             const audio = new Audio(`data:audio/mpeg;base64,${result.audio}`);
             currentAudioRef.current = audio;
             setPlayingMessageId(welcomeMsg.id);
@@ -777,6 +784,13 @@ export function GlobalAIBot() {
     setOnboardingStep('speaking');
 
     try {
+      // CRITICAL: Stop any existing audio before playing Sara's welcome
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current = null;
+        setPlayingMessageId(null);
+      }
+
       // Use getWelcomeAudio API - fetches welcome message and voice from database for Sara
       const result = await aiTeacherApi.getWelcomeAudio('sara', language);
 
