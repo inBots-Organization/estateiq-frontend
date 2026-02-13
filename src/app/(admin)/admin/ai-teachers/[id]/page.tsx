@@ -184,6 +184,9 @@ const GRADIENTS = [
 // Core teachers that cannot be deleted (the 4 default AI teachers)
 const PROTECTED_TEACHER_NAMES = ['ahmed', 'noura', 'anas', 'abdullah'];
 
+// Sara is the welcome bot - no trainees or documents should be assigned to her
+const WELCOME_BOT_NAME = 'sara';
+
 export default function AITeacherDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -779,35 +782,44 @@ export default function AITeacherDetailPage() {
       )}
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid grid-cols-4 w-full max-w-xl">
-          <TabsTrigger value="info" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            <span className="hidden sm:inline">{isRTL ? 'المعلومات' : 'Info'}</span>
-          </TabsTrigger>
-          <TabsTrigger value="prompts" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            <span className="hidden sm:inline">{isRTL ? 'الـ Prompts' : 'Prompts'}</span>
-          </TabsTrigger>
-          <TabsTrigger value="documents" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">{isRTL ? 'الملفات' : 'Docs'}</span>
-            {documents.length > 0 && (
-              <Badge variant="secondary" className="h-5 px-1.5 text-xs">
-                {documents.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="trainees" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">{isRTL ? 'الطلاب' : 'Trainees'}</span>
-            {trainees.length > 0 && (
-              <Badge variant="secondary" className="h-5 px-1.5 text-xs">
-                {trainees.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
+      {/* Sara is a welcome bot - she doesn't have trainees or documents tabs */}
+      {(() => {
+        const isWelcomeBot = teacher.name.toLowerCase() === WELCOME_BOT_NAME;
+        const tabCount = isWelcomeBot ? 2 : 4;
+        return (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className={cn("grid w-full max-w-xl", `grid-cols-${tabCount}`)}>
+              <TabsTrigger value="info" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">{isRTL ? 'المعلومات' : 'Info'}</span>
+              </TabsTrigger>
+              <TabsTrigger value="prompts" className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                <span className="hidden sm:inline">{isRTL ? 'الـ Prompts' : 'Prompts'}</span>
+              </TabsTrigger>
+              {!isWelcomeBot && (
+                <TabsTrigger value="documents" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  <span className="hidden sm:inline">{isRTL ? 'الملفات' : 'Docs'}</span>
+                  {documents.length > 0 && (
+                    <Badge variant="secondary" className="h-5 px-1.5 text-xs">
+                      {documents.length}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+              )}
+              {!isWelcomeBot && (
+                <TabsTrigger value="trainees" className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  <span className="hidden sm:inline">{isRTL ? 'الطلاب' : 'Trainees'}</span>
+                  {trainees.length > 0 && (
+                    <Badge variant="secondary" className="h-5 px-1.5 text-xs">
+                      {trainees.length}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+              )}
+            </TabsList>
 
         {/* Info Tab */}
         <TabsContent value="info" className="space-y-6">
@@ -1391,7 +1403,9 @@ export default function AITeacherDetailPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </Tabs>
+          </Tabs>
+        );
+      })()}
     </div>
   );
 }

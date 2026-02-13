@@ -563,19 +563,67 @@ export function GlobalAIBot() {
     }
   }, [hasCompletedAssessment, saraInfo]);
 
-  // Play onboarding welcome audio for new trainees (Sara's voice) - plays ONCE when bot opens
+  // Auto-play Sara's welcome audio for new trainees when bot opens
   useEffect(() => {
     // Must be: new trainee + bot is open + haven't triggered yet + not admin
     if (!hasCompletedAssessment && isOpen && !onboardingWelcomeTriggeredRef.current && !isAdminUser) {
       // Mark as triggered IMMEDIATELY to prevent any race conditions
       onboardingWelcomeTriggeredRef.current = true;
-      console.log('[GlobalAIBot] Onboarding welcome triggered for new trainee');
+      console.log('[GlobalAIBot] Auto-playing Sara welcome for new trainee');
 
-      // Don't auto-play audio - browsers block it. User must click the "Listen" button
-      // Just set the flag so we show the welcome UI
-      setOnboardingWelcomePlayed(false); // Reset so button shows
+      // Auto-start Sara's welcome audio immediately
+      // Skip the initial step and go straight to speaking
+      setOnboardingStep('speaking');
+
+      // Start playing Sara's welcome audio automatically
+      const autoPlaySaraWelcome = async () => {
+        setIsLoadingAudio(true);
+        try {
+          // CRITICAL: Stop any existing audio before playing Sara's welcome
+          if (currentAudioRef.current) {
+            currentAudioRef.current.pause();
+            currentAudioRef.current = null;
+            setPlayingMessageId(null);
+          }
+
+          // Use getWelcomeAudio API - fetches welcome message and voice from database for Sara
+          const result = await aiTeacherApi.getWelcomeAudio('sara', language);
+
+          if (result.audio) {
+            const audio = new Audio(`data:audio/mpeg;base64,${result.audio}`);
+            currentAudioRef.current = audio;
+            setIsLoadingAudio(false);
+
+            audio.onended = () => {
+              currentAudioRef.current = null;
+              setOnboardingStep('ready');
+            };
+
+            audio.onerror = () => {
+              currentAudioRef.current = null;
+              setOnboardingStep('ready');
+            };
+
+            // Try to auto-play - may be blocked by browser
+            audio.play().catch((e) => {
+              console.log('[GlobalAIBot] Auto-play blocked by browser, showing button:', e);
+              setIsLoadingAudio(false);
+              setOnboardingStep('initial'); // Fall back to button if blocked
+            });
+          } else {
+            setIsLoadingAudio(false);
+            setOnboardingStep('ready');
+          }
+        } catch (e) {
+          console.error('[GlobalAIBot] Failed to auto-play Sara welcome:', e);
+          setIsLoadingAudio(false);
+          setOnboardingStep('initial'); // Fall back to button if error
+        }
+      };
+
+      autoPlaySaraWelcome();
     }
-  }, [hasCompletedAssessment, isOpen, isAdminUser]);
+  }, [hasCompletedAssessment, isOpen, isAdminUser, language]);
 
   // Detect page changes and offer contextual help
   useEffect(() => {
@@ -1008,21 +1056,39 @@ export function GlobalAIBot() {
               ))}
             </div>
 
-            {/* Stop button */}
-            <Button
-              onClick={() => {
-                if (currentAudioRef.current) {
-                  currentAudioRef.current.pause();
-                  currentAudioRef.current = null;
-                }
-                setOnboardingStep('ready');
-              }}
-              variant="outline"
-              className="w-full h-10 text-sm border-teal-300 text-teal-700 hover:bg-teal-50 rounded-xl"
-            >
-              <Square className="w-4 h-4 mr-2" />
-              {language === 'ar' ? 'تخطي للمتابعة' : 'Skip to continue'}
-            </Button>
+            {/* Stop and Replay buttons */}
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  if (currentAudioRef.current) {
+                    currentAudioRef.current.pause();
+                    currentAudioRef.current = null;
+                  }
+                  setOnboardingStep('ready');
+                }}
+                variant="outline"
+                className="flex-1 h-10 text-sm border-red-300 text-red-600 hover:bg-red-50 rounded-xl"
+              >
+                <Square className="w-4 h-4 mr-2" />
+                {language === 'ar' ? 'إيقاف' : 'Stop'}
+              </Button>
+              <Button
+                onClick={() => {
+                  // Stop current audio and replay
+                  if (currentAudioRef.current) {
+                    currentAudioRef.current.pause();
+                    currentAudioRef.current = null;
+                  }
+                  // Restart Sara's welcome
+                  startSaraWelcome();
+                }}
+                variant="outline"
+                className="flex-1 h-10 text-sm border-teal-300 text-teal-600 hover:bg-teal-50 rounded-xl"
+              >
+                <Volume2 className="w-4 h-4 mr-2" />
+                {language === 'ar' ? 'إعادة التشغيل' : 'Replay'}
+              </Button>
+            </div>
           </div>
         </div>
       );
