@@ -1,8 +1,11 @@
 'use client';
 
-import { GraduationCap, Target, Brain, Star } from 'lucide-react';
+import { useState } from 'react';
+import Image from 'next/image';
+import { GraduationCap, Target, Brain, Star, Bot } from 'lucide-react';
 import { TEACHERS, type TeacherName } from '@/config/teachers';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTeacherStore } from '@/stores/teacher.store';
 import { cn } from '@/lib/utils';
 
 const ICON_MAP = {
@@ -19,20 +22,43 @@ const SIZES = {
   xl: { container: 'w-20 h-20', text: 'text-3xl', icon: 'h-5 w-5', iconOffset: '-bottom-1 -right-1' },
 };
 
+const SIZE_PX = {
+  sm: 32,
+  md: 40,
+  lg: 56,
+  xl: 80,
+};
+
 interface TeacherAvatarProps {
   teacherName: TeacherName;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showName?: boolean;
   showPulse?: boolean;
   className?: string;
+  avatarUrl?: string | null;
 }
 
-export function TeacherAvatar({ teacherName, size = 'md', showName = false, showPulse = false, className }: TeacherAvatarProps) {
+export function TeacherAvatar({ teacherName, size = 'md', showName = false, showPulse = false, className, avatarUrl: propAvatarUrl }: TeacherAvatarProps) {
   const { language } = useLanguage();
+  const [imgError, setImgError] = useState(false);
+
+  // Get custom avatar from store if available
+  const { customTeacherAvatar, activeTeacher, assignedTeacher } = useTeacherStore();
+
   // Fallback to abdullah if teacher doesn't exist in config
   const teacher = TEACHERS[teacherName] || TEACHERS.abdullah;
   const sizeConfig = SIZES[size];
-  const Icon = ICON_MAP[teacher.iconName];
+  const sizePx = SIZE_PX[size];
+  const Icon = ICON_MAP[teacher.iconName] || Bot;
+
+  // Determine which avatar URL to use
+  // Priority: prop > store (if same teacher) > teacher config
+  const isCurrentTeacher = teacherName === (activeTeacher || assignedTeacher);
+  const avatarUrl = propAvatarUrl
+    || (isCurrentTeacher && customTeacherAvatar)
+    || teacher.avatarUrl;
+
+  const hasValidImage = avatarUrl && !imgError;
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
@@ -43,20 +69,44 @@ export function TeacherAvatar({ teacherName, size = 'md', showName = false, show
             teacher.gradient
           )} />
         )}
-        <div className={cn(
-          'rounded-full flex items-center justify-center text-white font-bold bg-gradient-to-br relative',
-          teacher.gradient,
-          sizeConfig.container,
-          sizeConfig.text
-        )}>
-          {teacher.initial[language]}
-        </div>
-        <div className={cn(
-          'absolute bg-white rounded-full p-0.5 shadow-sm',
-          sizeConfig.iconOffset
-        )}>
-          <Icon className={cn(sizeConfig.icon, teacher.textColor)} />
-        </div>
+
+        {hasValidImage ? (
+          // Show actual avatar image
+          <div className={cn(
+            'rounded-full overflow-hidden relative',
+            sizeConfig.container
+          )}>
+            <Image
+              src={avatarUrl}
+              alt={teacher.displayName[language]}
+              width={sizePx}
+              height={sizePx}
+              className="object-cover w-full h-full"
+              onError={() => setImgError(true)}
+              unoptimized={avatarUrl.startsWith('data:')}
+            />
+          </div>
+        ) : (
+          // Fallback to initial letter
+          <div className={cn(
+            'rounded-full flex items-center justify-center text-white font-bold bg-gradient-to-br relative',
+            teacher.gradient,
+            sizeConfig.container,
+            sizeConfig.text
+          )}>
+            {teacher.initial[language]}
+          </div>
+        )}
+
+        {/* Icon badge - only show if not using image */}
+        {!hasValidImage && (
+          <div className={cn(
+            'absolute bg-white rounded-full p-0.5 shadow-sm',
+            sizeConfig.iconOffset
+          )}>
+            <Icon className={cn(sizeConfig.icon, teacher.textColor)} />
+          </div>
+        )}
       </div>
       {showName && (
         <span className="font-medium text-foreground">
