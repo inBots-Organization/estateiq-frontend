@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useSuperAdminApi, type OrganizationSummary, type PaginatedResult } from '@/hooks/useSuperAdminApi';
+import { useSuperAdminApi, type OrganizationSummary, type PaginatedResult, type CreateOrgInput } from '@/hooks/useSuperAdminApi';
 import { cn } from '@/lib/utils';
 import {
   Building2,
@@ -19,10 +19,14 @@ import {
   ChevronRight,
   RefreshCw,
   AlertTriangle,
+  Trash2,
+  Loader2,
+  X,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +41,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import Link from 'next/link';
 
 export default function OrganizationsPage() {
@@ -48,6 +70,23 @@ export default function OrganizationsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Create organization dialog
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [newOrg, setNewOrg] = useState<CreateOrgInput>({
+    name: '',
+    type: 'business',
+    contactEmail: '',
+    phone: '',
+    address: '',
+  });
+
+  // Delete confirmation dialog
+  const [deleteTarget, setDeleteTarget] = useState<OrganizationSummary | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   const fetchOrganizations = useCallback(async () => {
     try {
@@ -84,6 +123,45 @@ export default function OrganizationsPage() {
       fetchOrganizations();
     } catch (err) {
       console.error('Failed to update organization status:', err);
+    }
+  };
+
+  const handleCreateOrganization = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newOrg.name.trim()) {
+      setCreateError(isRTL ? 'اسم المؤسسة مطلوب' : 'Organization name is required');
+      return;
+    }
+
+    try {
+      setCreating(true);
+      setCreateError(null);
+      await api.createOrganization(newOrg);
+      setShowCreateDialog(false);
+      setNewOrg({ name: '', type: 'business', contactEmail: '', phone: '', address: '' });
+      fetchOrganizations();
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : 'Failed to create organization');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleDeleteOrganization = async () => {
+    if (!deleteTarget) return;
+    if (deleteConfirmText !== deleteTarget.name) return;
+
+    try {
+      setDeleting(true);
+      await api.deleteOrganization(deleteTarget.id);
+      setDeleteTarget(null);
+      setDeleteConfirmText('');
+      fetchOrganizations();
+    } catch (err) {
+      console.error('Failed to delete organization:', err);
+      alert(err instanceof Error ? err.message : 'Failed to delete organization');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -155,7 +233,10 @@ export default function OrganizationsPage() {
             {isRTL ? 'إدارة جميع المؤسسات المسجلة على المنصة' : 'Manage all registered organizations on the platform'}
           </p>
         </div>
-        <Button className="bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700">
+        <Button
+          onClick={() => setShowCreateDialog(true)}
+          className="bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700"
+        >
           <Plus className="h-4 w-4 me-2" />
           {isRTL ? 'إضافة مؤسسة' : 'Add Organization'}
         </Button>
@@ -287,6 +368,14 @@ export default function OrganizationsPage() {
                             {isRTL ? 'تفعيل المؤسسة' : 'Activate Organization'}
                           </DropdownMenuItem>
                         )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950"
+                          onClick={() => setDeleteTarget(org)}
+                        >
+                          <Trash2 className="h-4 w-4 me-2" />
+                          {isRTL ? 'حذف المؤسسة نهائياً' : 'Delete Permanently'}
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -330,6 +419,173 @@ export default function OrganizationsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Create Organization Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-rose-500" />
+              {isRTL ? 'إضافة مؤسسة جديدة' : 'Add New Organization'}
+            </DialogTitle>
+            <DialogDescription>
+              {isRTL ? 'أدخل بيانات المؤسسة الجديدة' : 'Enter the details for the new organization'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleCreateOrganization} className="space-y-4">
+            {createError && (
+              <div className="bg-red-50 dark:bg-red-950 text-red-600 p-3 rounded-lg text-sm">
+                {createError}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="name">{isRTL ? 'اسم المؤسسة' : 'Organization Name'} *</Label>
+              <Input
+                id="name"
+                value={newOrg.name}
+                onChange={(e) => setNewOrg({ ...newOrg, name: e.target.value })}
+                placeholder={isRTL ? 'مثال: شركة العقارات المتحدة' : 'e.g., United Real Estate Company'}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="type">{isRTL ? 'نوع المؤسسة' : 'Organization Type'} *</Label>
+              <Select value={newOrg.type} onValueChange={(value) => setNewOrg({ ...newOrg, type: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="business">{isRTL ? 'شركة / أعمال' : 'Business'}</SelectItem>
+                  <SelectItem value="educational">{isRTL ? 'تعليمية' : 'Educational'}</SelectItem>
+                  <SelectItem value="government">{isRTL ? 'حكومية' : 'Government'}</SelectItem>
+                  <SelectItem value="non-profit">{isRTL ? 'غير ربحية' : 'Non-Profit'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="contactEmail">{isRTL ? 'البريد الإلكتروني' : 'Contact Email'}</Label>
+              <Input
+                id="contactEmail"
+                type="email"
+                value={newOrg.contactEmail || ''}
+                onChange={(e) => setNewOrg({ ...newOrg, contactEmail: e.target.value })}
+                placeholder={isRTL ? 'info@company.com' : 'info@company.com'}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">{isRTL ? 'رقم الهاتف' : 'Phone Number'}</Label>
+              <Input
+                id="phone"
+                value={newOrg.phone || ''}
+                onChange={(e) => setNewOrg({ ...newOrg, phone: e.target.value })}
+                placeholder={isRTL ? '+966 50 123 4567' : '+966 50 123 4567'}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="address">{isRTL ? 'العنوان' : 'Address'}</Label>
+              <Input
+                id="address"
+                value={newOrg.address || ''}
+                onChange={(e) => setNewOrg({ ...newOrg, address: e.target.value })}
+                placeholder={isRTL ? 'الرياض، المملكة العربية السعودية' : 'Riyadh, Saudi Arabia'}
+              />
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
+                {isRTL ? 'إلغاء' : 'Cancel'}
+              </Button>
+              <Button type="submit" disabled={creating} className="bg-gradient-to-r from-rose-500 to-pink-600">
+                {creating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 me-2 animate-spin" />
+                    {isRTL ? 'جاري الإنشاء...' : 'Creating...'}
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 me-2" />
+                    {isRTL ? 'إنشاء المؤسسة' : 'Create Organization'}
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash2 className="h-5 w-5" />
+              {isRTL ? 'حذف المؤسسة نهائياً' : 'Delete Organization Permanently'}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4">
+              <p>
+                {isRTL
+                  ? `أنت على وشك حذف المؤسسة "${deleteTarget?.name}" وجميع بياناتها بشكل نهائي. هذا الإجراء لا يمكن التراجع عنه.`
+                  : `You are about to permanently delete the organization "${deleteTarget?.name}" and all its data. This action cannot be undone.`
+                }
+              </p>
+              <p className="font-medium text-foreground">
+                {isRTL ? 'سيتم حذف:' : 'The following will be deleted:'}
+              </p>
+              <ul className="list-disc ps-6 text-sm space-y-1">
+                <li>{isRTL ? 'جميع المستخدمين والمتدربين' : 'All users and trainees'}</li>
+                <li>{isRTL ? 'جميع المجموعات' : 'All groups'}</li>
+                <li>{isRTL ? 'جميع جلسات المحاكاة والتدريب الصوتي' : 'All simulation and voice training sessions'}</li>
+                <li>{isRTL ? 'جميع المعلمين الأذكياء ومستنداتهم' : 'All AI teachers and their documents'}</li>
+                <li>{isRTL ? 'جميع وثائق Brain' : 'All Brain documents'}</li>
+                <li>{isRTL ? 'بيانات الاشتراك' : 'Subscription data'}</li>
+              </ul>
+              <div className="pt-2">
+                <Label htmlFor="confirmDelete" className="text-sm font-medium">
+                  {isRTL
+                    ? `للتأكيد، اكتب اسم المؤسسة: "${deleteTarget?.name}"`
+                    : `To confirm, type the organization name: "${deleteTarget?.name}"`
+                  }
+                </Label>
+                <Input
+                  id="confirmDelete"
+                  className="mt-2"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder={deleteTarget?.name || ''}
+                />
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setDeleteTarget(null); setDeleteConfirmText(''); }}>
+              {isRTL ? 'إلغاء' : 'Cancel'}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteOrganization}
+              disabled={deleting || deleteConfirmText !== deleteTarget?.name}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 me-2 animate-spin" />
+                  {isRTL ? 'جاري الحذف...' : 'Deleting...'}
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 me-2" />
+                  {isRTL ? 'حذف نهائياً' : 'Delete Permanently'}
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

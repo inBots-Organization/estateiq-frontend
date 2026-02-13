@@ -68,6 +68,11 @@ export function useSuperAdminApi() {
         method: 'POST',
       }),
 
+    deleteOrganization: (id: string) =>
+      fetchApi<DeleteOrganizationResult>(`/organizations/${id}`, {
+        method: 'DELETE',
+      }),
+
     // Plans
     getPlans: async (): Promise<SubscriptionPlan[]> => {
       const response = await fetchApi<{ plans: SubscriptionPlan[] }>('/plans');
@@ -430,4 +435,10 @@ export interface AuditLogParams {
   endDate?: string;
   page?: number;
   limit?: number;
+}
+
+export interface DeleteOrganizationResult {
+  success: boolean;
+  message: string;
+  deletedCounts: Record<string, number>;
 }
