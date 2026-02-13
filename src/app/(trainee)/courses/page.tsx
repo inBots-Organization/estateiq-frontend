@@ -426,13 +426,13 @@ export default function CoursesPage() {
                     </div>
 
                     {/* Course Info */}
-                    <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t border-border">
-                      <div className="flex items-center gap-1.5">
+                    <div className="flex items-center justify-between text-sm pt-2 border-t border-border">
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
                         <Clock className="h-4 w-4" />
                         <span>{traineeCoursesApi.formatDuration(course.estimatedDurationMinutes, isRTL)}</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <BookOpen className="h-4 w-4" />
+                      <div className="flex items-center gap-1.5 text-foreground font-medium">
+                        <BookOpen className="h-4 w-4 text-primary" />
                         <span>{course.lessons?.length || 0} {isRTL ? 'درس' : 'lessons'}</span>
                       </div>
                     </div>
