@@ -140,13 +140,22 @@ export default function AdminTraineeReportsPage() {
   const getAuthToken = useCallback((): string | null => {
     console.log('[Admin Reports] getAuthToken called, zustand token:', token ? 'present' : 'null');
     if (token) return token;
+
+    // Try auth_token directly first (simpler)
+    const directToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    if (directToken) {
+      console.log('[Admin Reports] Found token in auth_token localStorage');
+      return directToken;
+    }
+
+    // Fallback to auth-storage
     try {
       const authStorage = localStorage.getItem('auth-storage');
       console.log('[Admin Reports] auth-storage from localStorage:', authStorage ? 'present' : 'null');
       if (authStorage) {
         const parsed = JSON.parse(authStorage);
         const storedToken = parsed?.state?.token || null;
-        console.log('[Admin Reports] Parsed token from localStorage:', storedToken ? 'present' : 'null');
+        console.log('[Admin Reports] Parsed token from auth-storage:', storedToken ? 'present' : 'null');
         return storedToken;
       }
     } catch (e) {
