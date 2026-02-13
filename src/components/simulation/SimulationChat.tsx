@@ -4,9 +4,11 @@ import { useState, useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Send, Loader2, Clock, MessageCircle, StopCircle, Lightbulb, User, UserCircle } from 'lucide-react';
+import { Send, Loader2, Clock, MessageCircle, StopCircle, Lightbulb, User, UserCircle, Mic, Square } from 'lucide-react';
 import { useSimulationStore } from '@/stores/simulation.store';
 import { cn } from '@/lib/utils/cn';
+import { aiTeacherApi } from '@/lib/api/ai-teacher.api';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { Sentiment } from '@/types/entities';
 
 interface SimulationChatProps {
@@ -28,6 +30,13 @@ export function SimulationChat({ onSendMessage, onEndSimulation, isDiagnosticMod
   const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { language } = useLanguage();
+
+  // Voice recording state
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   // Calculate minimum messages needed
   const minMessages = minMessagesRequired ?? (isDiagnosticMode ? MIN_DIAGNOSTIC_MESSAGES : 0);
@@ -88,6 +97,52 @@ export function SimulationChat({ onSendMessage, onEndSimulation, isDiagnosticMod
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  // Voice recording handlers
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        stream.getTracks().forEach(track => track.stop());
+
+        // Transcribe
+        setIsTranscribing(true);
+        try {
+          const result = await aiTeacherApi.speechToText(audioBlob, language);
+          if (result.text) {
+            setInputMessage(prev => prev + (prev ? ' ' : '') + result.text);
+          }
+        } catch (error) {
+          console.error('Transcription failed:', error);
+        } finally {
+          setIsTranscribing(false);
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Failed to start recording:', error);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
     }
   };
 
@@ -257,6 +312,32 @@ export function SimulationChat({ onSendMessage, onEndSimulation, isDiagnosticMod
         {/* Input Area */}
         <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
           <div className="flex gap-3 items-center">
+            {/* Voice Recording Button */}
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={isRecording ? stopRecording : startRecording}
+              disabled={!isActive || isSending || isTranscribing}
+              className={cn(
+                'h-11 w-11 rounded-xl shrink-0 border-2 transition-all duration-300',
+                isRecording
+                  ? 'bg-red-500 hover:bg-red-600 text-white border-red-500 animate-pulse shadow-lg shadow-red-500/30'
+                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-blue-500/50'
+              )}
+              title={isRecording
+                ? (isArabicSession ? 'إيقاف التسجيل' : 'Stop recording')
+                : (isArabicSession ? 'تسجيل صوتي' : 'Voice recording')
+              }
+            >
+              {isTranscribing ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : isRecording ? (
+                <Square className="h-5 w-5" />
+              ) : (
+                <Mic className="h-5 w-5" />
+              )}
+            </Button>
+
             <div className="flex-1 relative">
               <input
                 ref={inputRef}
@@ -264,11 +345,13 @@ export function SimulationChat({ onSendMessage, onEndSimulation, isDiagnosticMod
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={isActive
-                  ? (isArabicSession ? "اكتب ردك هنا..." : "Type your message...")
-                  : (isArabicSession ? "انتهت الجلسة" : "Session ended")
+                placeholder={isTranscribing
+                  ? (isArabicSession ? 'جاري تحويل الصوت...' : 'Transcribing...')
+                  : isActive
+                    ? (isArabicSession ? "اكتب ردك هنا..." : "Type your message...")
+                    : (isArabicSession ? "انتهت الجلسة" : "Session ended")
                 }
-                disabled={!isActive || isSending}
+                disabled={!isActive || isSending || isTranscribing}
                 className={cn(
                   'w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700',
                   'bg-slate-50 dark:bg-slate-800',
