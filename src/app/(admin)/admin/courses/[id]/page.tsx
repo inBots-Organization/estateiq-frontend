@@ -1065,7 +1065,7 @@ export default function AdminCourseDetailPage() {
 
       {/* Lecture Dialog */}
       <Dialog open={lectureDialogOpen} onOpenChange={setLectureDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Video className="h-5 w-5 text-violet-500" />
@@ -1079,7 +1079,7 @@ export default function AdminCourseDetailPage() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 overflow-y-auto flex-1">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>{isRTL ? 'العنوان بالعربي *' : 'Arabic Title *'}</Label>
@@ -1140,9 +1140,9 @@ export default function AdminCourseDetailPage() {
 
             {/* YouTube Preview */}
             {lectureForm.videoUrl && getYouTubeId(lectureForm.videoUrl) && (
-              <div className="rounded-lg overflow-hidden border">
+              <div className="rounded-lg overflow-hidden border max-w-[300px]">
                 <img
-                  src={`https://img.youtube.com/vi/${getYouTubeId(lectureForm.videoUrl)}/maxresdefault.jpg`}
+                  src={`https://img.youtube.com/vi/${getYouTubeId(lectureForm.videoUrl)}/mqdefault.jpg`}
                   alt="Video preview"
                   className="w-full aspect-video object-cover"
                 />
