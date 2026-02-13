@@ -152,19 +152,18 @@ export default function ReportsPage() {
     };
 
     try {
-      // Get base URL - the env var already ends with /api
+      // FIXED: Use NEXT_PUBLIC_API_URL directly - it already includes /api
+      // Example: https://estateiq-backend-xxx.run.app/api
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-      // Ensure it ends with /api (no trailing slash)
-      const baseUrl = apiUrl.endsWith('/api') ? apiUrl : `${apiUrl.replace(/\/$/, '')}/api`;
 
-      console.log('[ReportsPage] Fetching from:', baseUrl);
+      console.log('[ReportsPage] API URL:', apiUrl);
 
       const [dashboardRes, skillsRes, sessionsRes, trendsRes, recsRes] = await Promise.all([
-        fetch(`${baseUrl}/reports/me/dashboard`, { headers }),
-        fetch(`${baseUrl}/reports/me/skills`, { headers }),
-        fetch(`${baseUrl}/reports/me/sessions?page=${currentPage}&limit=10&scenarioType=${scenarioFilter}`, { headers }),
-        fetch(`${baseUrl}/reports/me/trends?months=6`, { headers }),
-        fetch(`${baseUrl}/reports/me/recommendations`, { headers }),
+        fetch(`${apiUrl}/reports/me/dashboard`, { headers }),
+        fetch(`${apiUrl}/reports/me/skills`, { headers }),
+        fetch(`${apiUrl}/reports/me/sessions?page=${currentPage}&limit=10&scenarioType=${scenarioFilter}`, { headers }),
+        fetch(`${apiUrl}/reports/me/trends?months=6`, { headers }),
+        fetch(`${apiUrl}/reports/me/recommendations`, { headers }),
       ]);
 
       // Log all response statuses for debugging
@@ -263,9 +262,8 @@ export default function ReportsPage() {
     setIsAnalyzing(true);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-      const baseUrl = apiUrl.endsWith('/api') ? apiUrl : `${apiUrl.replace(/\/$/, '')}/api`;
 
-      const response = await fetch(`${baseUrl}/reports/me/analyze-missing`, {
+      const response = await fetch(`${apiUrl}/reports/me/analyze-missing`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,
