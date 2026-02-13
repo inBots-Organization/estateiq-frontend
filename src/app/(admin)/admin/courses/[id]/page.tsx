@@ -1065,7 +1065,7 @@ export default function AdminCourseDetailPage() {
 
       {/* Lecture Dialog */}
       <Dialog open={lectureDialogOpen} onOpenChange={setLectureDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
+        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Video className="h-5 w-5 text-violet-500" />
@@ -1079,7 +1079,7 @@ export default function AdminCourseDetailPage() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 py-4 overflow-y-auto flex-1">
+          <div className="space-y-4 py-4 overflow-y-auto flex-1 pr-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>{isRTL ? 'العنوان بالعربي *' : 'Arabic Title *'}</Label>
@@ -1138,14 +1138,22 @@ export default function AdminCourseDetailPage() {
               </p>
             </div>
 
-            {/* YouTube Preview */}
+            {/* YouTube Preview - Small thumbnail */}
             {lectureForm.videoUrl && getYouTubeId(lectureForm.videoUrl) && (
-              <div className="rounded-lg overflow-hidden border max-w-[300px]">
+              <div className="flex items-center gap-3 p-2 rounded-lg border bg-muted/30">
                 <img
-                  src={`https://img.youtube.com/vi/${getYouTubeId(lectureForm.videoUrl)}/mqdefault.jpg`}
+                  src={`https://img.youtube.com/vi/${getYouTubeId(lectureForm.videoUrl)}/default.jpg`}
                   alt="Video preview"
-                  className="w-full aspect-video object-cover"
+                  className="w-20 h-14 object-cover rounded"
                 />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-emerald-500">
+                    {isRTL ? '✓ تم التعرف على الفيديو' : '✓ Video detected'}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    youtube.com/watch?v={getYouTubeId(lectureForm.videoUrl)}
+                  </p>
+                </div>
               </div>
             )}
 
