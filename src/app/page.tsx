@@ -1,5 +1,18 @@
 'use client';
 
+/**
+ * INLearn Landing Page — Premium AI-Driven Design 2024
+ *
+ * Features:
+ * - Modern glassmorphism hero section with animated orbs
+ * - Scroll-reveal animations for all sections
+ * - Premium feature cards with hover effects
+ * - Enhanced statistics with gradient backgrounds
+ * - Testimonials with elegant quote styling
+ * - Responsive design with RTL support
+ */
+
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,392 +33,568 @@ import {
   BookOpen,
   Phone,
   Globe,
+  Sparkles,
+  Shield,
+  ChevronDown,
 } from 'lucide-react';
+
+// Scroll reveal hook
+function useScrollReveal() {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed');
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    const elements = ref.current?.querySelectorAll('[data-scroll-reveal]');
+    elements?.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+
+  return ref;
+}
 
 export default function HomePage() {
   const { t, isRTL } = useLanguage();
+  const scrollRef = useScrollReveal();
 
   // RTL-aware arrow
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div ref={scrollRef} className="flex flex-col min-h-screen bg-background overflow-x-hidden">
       <EnhancedNavbar />
 
-      <main className="flex-grow pt-20">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-muted/50 to-background py-16 sm:py-20 lg:py-32">
-          {/* Background decorations */}
-          <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] dark:opacity-20" />
-          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-float-rotate" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/5 via-transparent to-blue-500/5 rounded-full blur-3xl animate-pulse-soft" />
+      <main className="flex-grow">
+        {/* ═══════════════════════════════════════════════════════════
+            Hero Section — Premium AI-Driven Design
+           ═══════════════════════════════════════════════════════════ */}
+        <section id="hero" className="relative min-h-[100vh] flex items-center justify-center overflow-hidden pt-20">
+          {/* Animated background orbs */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="orb orb-1 absolute top-[10%] left-[5%]" />
+            <div className="orb orb-2 absolute bottom-[20%] right-[10%]" />
+            <div className="orb orb-3 absolute top-[40%] right-[30%]" />
+          </div>
 
-          <div className="container mx-auto px-4 lg:px-8 relative">
-            <div className="max-w-4xl mx-auto text-center">
-              <Badge className="mb-4 sm:mb-6 bg-primary/10 text-primary hover:bg-primary/15 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm animate-bounce-in border border-primary/20 shadow-sm">
-                <Zap className={cn("h-3 w-3 sm:h-4 sm:w-4", isRTL ? "ml-1.5" : "mr-1.5")} />
-                {t.landing.hero.badge}
-              </Badge>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-5 sm:mb-7 leading-tight px-2 animate-blur-in delay-100">
-                {t.landing.hero.titlePart1}{' '}
-                <span className="gradient-text animate-gradient-text bg-gradient-to-r from-primary via-blue-500 to-primary bg-clip-text text-transparent relative">
-                  {t.landing.hero.titleHighlight}
-                  <span className="absolute -inset-1 bg-primary/10 blur-xl rounded-lg -z-10" />
+          {/* Grid pattern overlay */}
+          <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.03] dark:opacity-[0.05]" />
+
+          {/* Gradient overlays */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background" />
+          <div className="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
+
+          {/* Content */}
+          <div className="container mx-auto px-4 lg:px-8 relative z-10">
+            <div className="max-w-5xl mx-auto text-center">
+              {/* Badge */}
+              <div data-scroll-reveal className="reveal-up mb-6">
+                <Badge className="bg-primary/10 text-primary hover:bg-primary/15 px-4 py-2 text-sm font-semibold border border-primary/20 shadow-lg shadow-primary/5 badge-pulse">
+                  <Sparkles className={cn("h-4 w-4 animate-pulse", isRTL ? "ml-2" : "mr-2")} />
+                  {t.landing.hero.badge}
+                </Badge>
+              </div>
+
+              {/* Main heading */}
+              <h1
+                data-scroll-reveal
+                className="reveal-up reveal-up-1 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-[1.1] tracking-tight"
+              >
+                <span className="block mb-2">{t.landing.hero.titlePart1}</span>
+                <span className="relative inline-block">
+                  <span className="bg-gradient-to-r from-primary via-emerald-400 to-teal-500 bg-clip-text text-transparent animate-gradient-text">
+                    {t.landing.hero.titleHighlight}
+                  </span>
+                  {/* Glow effect behind text */}
+                  <span className="absolute inset-0 bg-gradient-to-r from-primary via-emerald-400 to-teal-500 blur-2xl opacity-20 -z-10" />
                 </span>
               </h1>
-              <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-8 sm:mb-10 max-w-2xl mx-auto leading-relaxed px-4 animate-slide-in-bottom delay-200">
+
+              {/* Subtitle */}
+              <p
+                data-scroll-reveal
+                className="reveal-up reveal-up-2 text-lg sm:text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed"
+              >
                 {t.landing.hero.description}
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0 animate-slide-in-bottom delay-300">
-                <Link href="/register" className="w-full sm:w-auto">
-                  <Button size="lg" className="w-full sm:w-auto btn-gradient h-12 sm:h-14 px-7 sm:px-10 text-sm sm:text-base shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+
+              {/* CTA Buttons */}
+              <div
+                data-scroll-reveal
+                className="reveal-up reveal-up-3 flex flex-col sm:flex-row gap-4 justify-center mb-12"
+              >
+                <Link href="/register">
+                  <Button
+                    size="lg"
+                    className={cn(
+                      "w-full sm:w-auto h-14 px-8 text-base font-semibold rounded-2xl",
+                      "bg-gradient-to-r from-primary via-emerald-500 to-teal-500 bg-[length:200%_100%]",
+                      "hover:bg-[position:100%_0] hover:shadow-xl hover:shadow-primary/25",
+                      "hover:scale-[1.02] active:scale-[0.98]",
+                      "transition-all duration-300 group"
+                    )}
+                  >
+                    <Sparkles className={cn("h-5 w-5", isRTL ? "ml-2" : "mr-2")} />
                     {t.landing.hero.startFreeTrial}
-                    <ArrowIcon className={cn("h-4 w-4 sm:h-5 sm:w-5", isRTL ? "mr-2" : "ml-2")} />
+                    <ArrowIcon className={cn(
+                      "h-5 w-5 transition-transform duration-300",
+                      isRTL ? "mr-2 group-hover:-translate-x-1" : "ml-2 group-hover:translate-x-1"
+                    )} />
                   </Button>
                 </Link>
-                <Link href="#how-it-works" className="w-full sm:w-auto">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto h-12 sm:h-14 px-7 sm:px-10 text-sm sm:text-base hover:bg-muted/50 transition-all duration-300">
-                    <Play className={cn("h-4 w-4 sm:h-5 sm:w-5", isRTL ? "ml-2" : "mr-2")} />
+                <Link href="#how-it-works">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full sm:w-auto h-14 px-8 text-base font-semibold rounded-2xl border-2 hover:bg-muted/50 hover:border-primary/30 transition-all duration-300 group"
+                  >
+                    <Play className={cn("h-5 w-5", isRTL ? "ml-2" : "mr-2")} />
                     {t.landing.hero.watchDemo}
                   </Button>
                 </Link>
               </div>
-              <div className="mt-10 sm:mt-14 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-5 sm:gap-10 text-xs sm:text-sm text-muted-foreground animate-fade-in-up-delayed-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-success/15 flex items-center justify-center">
-                    <CheckCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-success" />
+
+              {/* Trust badges */}
+              <div
+                data-scroll-reveal
+                className="reveal-up reveal-up-4 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground"
+              >
+                {[
+                  { icon: CheckCircle, text: t.landing.hero.noCreditCard },
+                  { icon: Shield, text: t.landing.hero.freeTrial },
+                  { icon: CheckCircle, text: t.landing.hero.cancelAnytime },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-2 bg-muted/30 px-4 py-2 rounded-full">
+                    <item.icon className="h-4 w-4 text-primary" />
+                    <span className="font-medium">{item.text}</span>
                   </div>
-                  <span className="font-medium">{t.landing.hero.noCreditCard}</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-success/15 flex items-center justify-center">
-                    <CheckCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-success" />
-                  </div>
-                  <span className="font-medium">{t.landing.hero.freeTrial}</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-success/15 flex items-center justify-center">
-                    <CheckCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-success" />
-                  </div>
-                  <span className="font-medium">{t.landing.hero.cancelAnytime}</span>
-                </div>
+                ))}
               </div>
             </div>
           </div>
+
+          {/* Scroll indicator */}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 scroll-indicator">
+            <ChevronDown className="h-8 w-8 text-muted-foreground/50" />
+          </div>
         </section>
 
-        {/* Stats Section */}
-        <section className="py-10 sm:py-14 bg-card border-y border-border relative overflow-hidden">
-          {/* Subtle background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.02] via-transparent to-primary/[0.02]" />
+        {/* ═══════════════════════════════════════════════════════════
+            Stats Section — Vibrant Gradient Cards
+           ═══════════════════════════════════════════════════════════ */}
+        <section className="py-16 sm:py-20 relative overflow-hidden">
+          {/* Background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-background to-background" />
+
           <div className="container mx-auto px-4 lg:px-8 relative">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10 stagger-children">
-              <div className="text-center p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-muted/30 to-transparent hover:from-primary/10 hover:to-primary/5 transition-all duration-500 card-hover-glow">
-                <p className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-1">10,000+</p>
-                <p className="text-xs sm:text-sm text-muted-foreground font-medium">{t.landing.stats.activeTrainees}</p>
-              </div>
-              <div className="text-center p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-muted/30 to-transparent hover:from-primary/10 hover:to-primary/5 transition-all duration-500 card-hover-glow">
-                <p className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-1">95%</p>
-                <p className="text-xs sm:text-sm text-muted-foreground font-medium">{t.landing.stats.successRate}</p>
-              </div>
-              <div className="text-center p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-muted/30 to-transparent hover:from-primary/10 hover:to-primary/5 transition-all duration-500 card-hover-glow">
-                <p className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-1">50K+</p>
-                <p className="text-xs sm:text-sm text-muted-foreground font-medium">{t.landing.stats.sessionsCompleted}</p>
-              </div>
-              <div className="text-center p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-muted/30 to-transparent hover:from-primary/10 hover:to-primary/5 transition-all duration-500 card-hover-glow">
-                <div className="flex items-center justify-center gap-1 mb-1">
-                  <p className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text">4.9</p>
-                  <Star className="h-5 w-5 sm:h-6 sm:w-6 fill-warning text-warning animate-float" />
-                </div>
-                <p className="text-xs sm:text-sm text-muted-foreground font-medium">{t.landing.stats.userRating}</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section id="features" className="py-16 sm:py-20 lg:py-28 bg-background">
-          <div className="container mx-auto px-4 lg:px-8">
-            <div className="text-center mb-10 sm:mb-16">
-              <Badge className="mb-3 sm:mb-4 bg-primary/10 text-primary hover:bg-primary/10 text-xs sm:text-sm">{t.landing.nav.features}</Badge>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4 px-4">
-                {t.landing.features.title}
-              </h2>
-              <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-                {t.landing.features.subtitle}
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 stagger-children">
-              <Card className="card-hover group hover-lift border-transparent hover:border-primary/20 transition-all duration-300">
-                <CardContent className="p-7">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mb-5 group-hover:from-primary group-hover:to-emerald-600 transition-all duration-300 shadow-sm">
-                    <MessageSquare className="h-7 w-7 text-primary group-hover:text-white transition-colors" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-3">{t.landing.features.aiSimulations.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {t.landing.features.aiSimulations.description}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="card-hover group hover-lift border-transparent hover:border-purple-500/20 transition-all duration-300">
-                <CardContent className="p-7">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-800/20 flex items-center justify-center mb-5 group-hover:from-purple-600 group-hover:to-purple-700 transition-all duration-300 shadow-sm">
-                    <Phone className="h-7 w-7 text-purple-600 dark:text-purple-400 group-hover:text-white transition-colors" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-3">{t.landing.features.voiceCalls.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {t.landing.features.voiceCalls.description}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="card-hover group hover-lift border-transparent hover:border-success/20 transition-all duration-300">
-                <CardContent className="p-7">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-success/10 to-success/5 flex items-center justify-center mb-5 group-hover:from-success group-hover:to-emerald-600 transition-all duration-300 shadow-sm">
-                    <BarChart className="h-7 w-7 text-success group-hover:text-white transition-colors" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-3">{t.landing.features.analytics.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {t.landing.features.analytics.description}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="card-hover group hover-lift border-transparent hover:border-warning/20 transition-all duration-300">
-                <CardContent className="p-7">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-warning/10 to-warning/5 flex items-center justify-center mb-5 group-hover:from-warning group-hover:to-amber-600 transition-all duration-300 shadow-sm">
-                    <BookOpen className="h-7 w-7 text-warning group-hover:text-white transition-colors" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-3">{t.landing.features.courses.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {t.landing.features.courses.description}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="card-hover group hover-lift border-transparent hover:border-destructive/20 transition-all duration-300">
-                <CardContent className="p-7">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-destructive/10 to-destructive/5 flex items-center justify-center mb-5 group-hover:from-destructive group-hover:to-red-600 transition-all duration-300 shadow-sm">
-                    <Award className="h-7 w-7 text-destructive group-hover:text-white transition-colors" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-3">{t.landing.features.certifications.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {t.landing.features.certifications.description}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="card-hover group hover-lift border-transparent hover:border-info/20 transition-all duration-300">
-                <CardContent className="p-7">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-info/10 to-info/5 flex items-center justify-center mb-5 group-hover:from-info group-hover:to-sky-600 transition-all duration-300 shadow-sm">
-                    <Globe className="h-7 w-7 text-info group-hover:text-white transition-colors" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-3">{t.landing.features.bilingual.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {t.landing.features.bilingual.description}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* How It Works Section */}
-        <section id="how-it-works" className="py-16 sm:py-20 lg:py-28 bg-muted/30">
-          <div className="container mx-auto px-4 lg:px-8">
-            <div className="text-center mb-10 sm:mb-16">
-              <Badge className="mb-3 sm:mb-4 bg-primary/10 text-primary hover:bg-primary/10 text-xs sm:text-sm">{t.landing.nav.howItWorks}</Badge>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4 px-4">
-                {t.landing.howItWorks.title}
-              </h2>
-              <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-                {t.landing.howItWorks.subtitle}
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8 sm:gap-10 lg:gap-16">
-              <div className="relative group">
-                <div className="flex flex-col items-center text-center">
-                  <div className="relative mb-8">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-emerald-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-                      1
-                    </div>
-                    <div className="absolute -inset-2 bg-primary/20 rounded-2xl blur-lg -z-10 group-hover:bg-primary/30 transition-colors" />
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-semibold text-foreground mb-4">{t.landing.howItWorks.step1.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {t.landing.howItWorks.step1.description}
-                  </p>
-                </div>
-                <div className={cn(
-                  "hidden md:block absolute top-10 w-[calc(50%-3rem)] h-1 bg-gradient-to-r from-primary via-purple-500 to-purple-600 rounded-full",
-                  isRTL ? "right-[calc(50%+2.5rem)]" : "left-[calc(50%+2.5rem)]"
-                )} />
-              </div>
-
-              <div className="relative group">
-                <div className="flex flex-col items-center text-center">
-                  <div className="relative mb-8">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-600 to-purple-700 flex items-center justify-center text-white text-3xl font-bold shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-                      2
-                    </div>
-                    <div className="absolute -inset-2 bg-purple-500/20 rounded-2xl blur-lg -z-10 group-hover:bg-purple-500/30 transition-colors" />
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-semibold text-foreground mb-4">{t.landing.howItWorks.step2.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {t.landing.howItWorks.step2.description}
-                  </p>
-                </div>
-                <div className={cn(
-                  "hidden md:block absolute top-10 w-[calc(50%-3rem)] h-1 bg-gradient-to-r from-purple-600 via-emerald-500 to-success rounded-full",
-                  isRTL ? "right-[calc(50%+2.5rem)]" : "left-[calc(50%+2.5rem)]"
-                )} />
-              </div>
-
-              <div className="relative group">
-                <div className="flex flex-col items-center text-center">
-                  <div className="relative mb-8">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-success to-emerald-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-                      3
-                    </div>
-                    <div className="absolute -inset-2 bg-success/20 rounded-2xl blur-lg -z-10 group-hover:bg-success/30 transition-colors" />
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-semibold text-foreground mb-4">{t.landing.howItWorks.step3.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {t.landing.howItWorks.step3.description}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials Section */}
-        <section id="testimonials" className="py-16 sm:py-20 lg:py-28 bg-background">
-          <div className="container mx-auto px-4 lg:px-8">
-            <div className="text-center mb-10 sm:mb-16">
-              <Badge className="mb-3 sm:mb-4 bg-primary/10 text-primary hover:bg-primary/10 text-xs sm:text-sm">{t.landing.nav.testimonials}</Badge>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4 px-4">
-                {t.landing.testimonials.title}
-              </h2>
-              <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-                {t.landing.testimonials.subtitle}
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-4 sm:gap-8">
-              {t.landing.testimonials.items.map((testimonial, index) => (
-                <Card key={index} className="card-hover">
-                  <CardContent className="p-6">
-                    <div className="flex gap-1 mb-4">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-5 w-5 fill-warning text-warning" />
-                      ))}
-                    </div>
-                    <p className="text-muted-foreground mb-6 leading-relaxed">
-                      "{testimonial.quote}"
-                    </p>
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm",
-                        index === 0 ? "bg-gradient-to-br from-primary to-blue-600" :
-                        index === 1 ? "bg-gradient-to-br from-success to-emerald-500" :
-                        "bg-gradient-to-br from-purple-500 to-pink-500"
-                      )}>
-                        {testimonial.initials}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              {[
+                { value: '10,000+', label: t.landing.stats.activeTrainees, delay: '0' },
+                { value: '95%', label: t.landing.stats.successRate, delay: '1' },
+                { value: '50K+', label: t.landing.stats.sessionsCompleted, delay: '2' },
+                { value: '4.9', label: t.landing.stats.userRating, icon: Star, delay: '3' },
+              ].map((stat, i) => (
+                <div
+                  key={i}
+                  data-scroll-reveal
+                  className={cn("reveal-up", `reveal-up-${i + 1}`)}
+                >
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-emerald-500/10 to-teal-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 text-center hover:border-primary/30 transition-all duration-300 hover:shadow-lg">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <p className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-emerald-500 to-teal-500 bg-clip-text text-transparent">
+                          {stat.value}
+                        </p>
+                        {stat.icon && <stat.icon className="h-6 w-6 fill-warning text-warning" />}
                       </div>
-                      <div>
-                        <p className="font-medium text-foreground">{testimonial.name}</p>
-                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                      </div>
+                      <p className="text-sm text-muted-foreground font-medium">{stat.label}</p>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-20 sm:py-24 lg:py-32 bg-gradient-to-br from-primary via-emerald-600 to-blue-700 dark:from-primary/90 dark:via-emerald-700/80 dark:to-blue-800 relative overflow-hidden">
-          {/* Background decorations */}
+        {/* ═══════════════════════════════════════════════════════════
+            Features Section — Premium Cards with Hover Effects
+           ═══════════════════════════════════════════════════════════ */}
+        <section id="features" className="py-20 sm:py-28 bg-background relative">
+          {/* Decorative gradient */}
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
+
+          <div className="container mx-auto px-4 lg:px-8 relative">
+            {/* Section header */}
+            <div className="text-center mb-16" data-scroll-reveal>
+              <Badge className="mb-4 bg-primary/10 text-primary px-4 py-1.5">{t.landing.nav.features}</Badge>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4">
+                {t.landing.features.title}
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t.landing.features.subtitle}
+              </p>
+            </div>
+
+            {/* Features grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {[
+                {
+                  icon: MessageSquare,
+                  title: t.landing.features.aiSimulations.title,
+                  description: t.landing.features.aiSimulations.description,
+                  gradient: 'from-primary to-emerald-600',
+                  iconBg: 'from-primary/10 to-primary/5',
+                },
+                {
+                  icon: Phone,
+                  title: t.landing.features.voiceCalls.title,
+                  description: t.landing.features.voiceCalls.description,
+                  gradient: 'from-purple-600 to-purple-700',
+                  iconBg: 'from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-800/20',
+                  iconColor: 'text-purple-600 dark:text-purple-400',
+                },
+                {
+                  icon: BarChart,
+                  title: t.landing.features.analytics.title,
+                  description: t.landing.features.analytics.description,
+                  gradient: 'from-success to-emerald-600',
+                  iconBg: 'from-success/10 to-success/5',
+                  iconColor: 'text-success',
+                },
+                {
+                  icon: BookOpen,
+                  title: t.landing.features.courses.title,
+                  description: t.landing.features.courses.description,
+                  gradient: 'from-warning to-amber-600',
+                  iconBg: 'from-warning/10 to-warning/5',
+                  iconColor: 'text-warning',
+                },
+                {
+                  icon: Award,
+                  title: t.landing.features.certifications.title,
+                  description: t.landing.features.certifications.description,
+                  gradient: 'from-destructive to-red-600',
+                  iconBg: 'from-destructive/10 to-destructive/5',
+                  iconColor: 'text-destructive',
+                },
+                {
+                  icon: Globe,
+                  title: t.landing.features.bilingual.title,
+                  description: t.landing.features.bilingual.description,
+                  gradient: 'from-info to-sky-600',
+                  iconBg: 'from-info/10 to-info/5',
+                  iconColor: 'text-info',
+                },
+              ].map((feature, i) => (
+                <div key={i} data-scroll-reveal className={cn("reveal-up", `reveal-up-${(i % 3) + 1}`)}>
+                  <Card className="h-full group hover:shadow-xl hover:-translate-y-2 transition-all duration-500 border-border/50 hover:border-primary/30 bg-card/80 backdrop-blur-sm overflow-hidden">
+                    <CardContent className="p-7 relative">
+                      {/* Hover gradient overlay */}
+                      <div className={cn(
+                        "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-5 transition-opacity duration-500",
+                        feature.gradient
+                      )} />
+
+                      {/* Icon */}
+                      <div className={cn(
+                        "relative w-14 h-14 rounded-2xl flex items-center justify-center mb-5 transition-all duration-500",
+                        "bg-gradient-to-br",
+                        feature.iconBg,
+                        `group-hover:bg-gradient-to-br group-hover:${feature.gradient}`
+                      )}>
+                        <feature.icon className={cn(
+                          "h-7 w-7 transition-colors duration-300",
+                          feature.iconColor || "text-primary",
+                          "group-hover:text-white"
+                        )} />
+                      </div>
+
+                      {/* Content */}
+                      <h3 className="text-xl font-semibold text-foreground mb-3 group-hover:text-primary transition-colors">
+                        {feature.title}
+                      </h3>
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        {feature.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════
+            How It Works Section — Step-by-Step Process
+           ═══════════════════════════════════════════════════════════ */}
+        <section id="how-it-works" className="py-20 sm:py-28 bg-muted/30 relative overflow-hidden">
+          {/* Background pattern */}
+          <div className="absolute inset-0 dot-grid opacity-30" />
+
+          <div className="container mx-auto px-4 lg:px-8 relative">
+            {/* Section header */}
+            <div className="text-center mb-16" data-scroll-reveal>
+              <Badge className="mb-4 bg-primary/10 text-primary px-4 py-1.5">{t.landing.nav.howItWorks}</Badge>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4">
+                {t.landing.howItWorks.title}
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t.landing.howItWorks.subtitle}
+              </p>
+            </div>
+
+            {/* Steps */}
+            <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+              {[
+                {
+                  step: 1,
+                  title: t.landing.howItWorks.step1.title,
+                  description: t.landing.howItWorks.step1.description,
+                  gradient: 'from-primary to-emerald-600',
+                },
+                {
+                  step: 2,
+                  title: t.landing.howItWorks.step2.title,
+                  description: t.landing.howItWorks.step2.description,
+                  gradient: 'from-purple-600 to-purple-700',
+                },
+                {
+                  step: 3,
+                  title: t.landing.howItWorks.step3.title,
+                  description: t.landing.howItWorks.step3.description,
+                  gradient: 'from-success to-emerald-600',
+                },
+              ].map((item, i) => (
+                <div key={i} data-scroll-reveal className={cn("reveal-up", `reveal-up-${i + 1}`)}>
+                  <div className="relative group text-center">
+                    {/* Connection line (hidden on last item and mobile) */}
+                    {i < 2 && (
+                      <div className={cn(
+                        "hidden md:block absolute top-12 h-1 bg-gradient-to-r rounded-full",
+                        item.gradient,
+                        "opacity-30",
+                        isRTL ? "left-0 -translate-x-1/2 w-full" : "right-0 translate-x-1/2 w-full"
+                      )} />
+                    )}
+
+                    {/* Step number */}
+                    <div className="relative inline-flex mb-8">
+                      <div className={cn(
+                        "w-24 h-24 rounded-3xl flex items-center justify-center text-4xl font-bold text-white shadow-2xl",
+                        "bg-gradient-to-br",
+                        item.gradient,
+                        "group-hover:scale-110 group-hover:shadow-xl transition-all duration-500"
+                      )}>
+                        {item.step}
+                      </div>
+                      {/* Glow effect */}
+                      <div className={cn(
+                        "absolute inset-0 rounded-3xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity",
+                        "bg-gradient-to-br",
+                        item.gradient
+                      )} />
+                    </div>
+
+                    {/* Content */}
+                    <h3 className="text-xl sm:text-2xl font-semibold text-foreground mb-4">
+                      {item.title}
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed max-w-sm mx-auto">
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════
+            Testimonials Section — Social Proof
+           ═══════════════════════════════════════════════════════════ */}
+        <section id="testimonials" className="py-20 sm:py-28 bg-background relative">
+          <div className="container mx-auto px-4 lg:px-8">
+            {/* Section header */}
+            <div className="text-center mb-16" data-scroll-reveal>
+              <Badge className="mb-4 bg-primary/10 text-primary px-4 py-1.5">{t.landing.nav.testimonials}</Badge>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4">
+                {t.landing.testimonials.title}
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t.landing.testimonials.subtitle}
+              </p>
+            </div>
+
+            {/* Testimonials grid */}
+            <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+              {t.landing.testimonials.items.map((testimonial, index) => (
+                <div key={index} data-scroll-reveal className={cn("reveal-up", `reveal-up-${index + 1}`)}>
+                  <Card className="h-full hover:shadow-xl hover:-translate-y-1 transition-all duration-500 border-border/50 bg-card/80 backdrop-blur-sm">
+                    <CardContent className="p-6 relative">
+                      {/* Quote mark */}
+                      <div className="absolute top-4 opacity-10 text-6xl font-serif text-primary">
+                        {isRTL ? '\u201D' : '\u201C'}
+                      </div>
+
+                      {/* Stars */}
+                      <div className="flex gap-1 mb-4 relative">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="h-5 w-5 fill-warning text-warning" />
+                        ))}
+                      </div>
+
+                      {/* Quote */}
+                      <p className="text-muted-foreground mb-6 leading-relaxed relative">
+                        "{testimonial.quote}"
+                      </p>
+
+                      {/* Author */}
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm",
+                          index === 0 ? "bg-gradient-to-br from-primary to-blue-600" :
+                          index === 1 ? "bg-gradient-to-br from-success to-emerald-500" :
+                          "bg-gradient-to-br from-purple-500 to-pink-500"
+                        )}>
+                          {testimonial.initials}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-foreground">{testimonial.name}</p>
+                          <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════
+            CTA Section — Final Call to Action
+           ═══════════════════════════════════════════════════════════ */}
+        <section className="py-24 sm:py-32 relative overflow-hidden">
+          {/* Gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary via-emerald-600 to-teal-600" />
+
+          {/* Pattern overlay */}
           <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-10" />
+
+          {/* Animated orbs */}
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl" />
 
-          <div className="container mx-auto px-4 lg:px-8 text-center relative">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-5 sm:mb-6 px-4 leading-tight">
-              {t.landing.cta.title}
-            </h2>
-            <p className="text-base sm:text-lg md:text-xl text-white/85 mb-8 sm:mb-10 max-w-2xl mx-auto px-4 leading-relaxed">
-              {t.landing.cta.description}
-            </p>
-            <Link href="/register">
-              <Button size="lg" className="bg-white text-primary hover:bg-white/95 h-14 sm:h-16 px-10 sm:px-14 text-base sm:text-lg font-semibold shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 rounded-xl">
-                {t.landing.cta.button}
-                <ArrowIcon className={cn("h-5 w-5", isRTL ? "mr-3" : "ml-3")} />
-              </Button>
-            </Link>
-            <p className="mt-6 text-sm text-white/60">{t.landing.hero.noCreditCard}</p>
+          <div className="container mx-auto px-4 lg:px-8 relative" data-scroll-reveal>
+            <div className="text-center max-w-4xl mx-auto">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                {t.landing.cta.title}
+              </h2>
+              <p className="text-lg sm:text-xl text-white/80 mb-10 max-w-2xl mx-auto leading-relaxed">
+                {t.landing.cta.description}
+              </p>
+              <Link href="/register">
+                <Button
+                  size="lg"
+                  className={cn(
+                    "bg-white text-primary hover:bg-white/95",
+                    "h-16 px-12 text-lg font-semibold rounded-2xl",
+                    "shadow-2xl hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]",
+                    "transition-all duration-300 group"
+                  )}
+                >
+                  <Sparkles className={cn("h-5 w-5", isRTL ? "ml-3" : "mr-3")} />
+                  {t.landing.cta.button}
+                  <ArrowIcon className={cn(
+                    "h-5 w-5 transition-transform duration-300",
+                    isRTL ? "mr-3 group-hover:-translate-x-1" : "ml-3 group-hover:translate-x-1"
+                  )} />
+                </Button>
+              </Link>
+              <p className="mt-6 text-sm text-white/60">{t.landing.hero.noCreditCard}</p>
+            </div>
           </div>
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-card border-t border-border py-8 sm:py-12">
+      {/* ═══════════════════════════════════════════════════════════
+          Footer — Clean and Professional
+         ═══════════════════════════════════════════════════════════ */}
+      <footer className="bg-card border-t border-border py-12 sm:py-16">
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
             {/* Brand */}
-            <div className="col-span-2 sm:col-span-2 md:col-span-1">
-              <div className="flex items-center mb-4">
-                <img
-                  src="/logo-white.png"
-                  alt="INLEARN"
-                  className="h-8 w-auto"
-                />
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+            <div className="col-span-2 md:col-span-1">
+              <img
+                src="/logo-white.png"
+                alt="INLEARN"
+                className="h-8 w-auto mb-4"
+              />
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 {t.landing.footer.description}
               </p>
             </div>
 
             {/* Product Links */}
             <div>
-              <h4 className="text-foreground font-semibold mb-3 sm:mb-4 text-sm sm:text-base">{t.landing.footer.product}</h4>
-              <ul className="space-y-2 text-xs sm:text-sm">
-                <li><a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.features}</a></li>
-                <li><a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.nav.howItWorks}</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.courses}</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.simulations}</a></li>
+              <h4 className="text-foreground font-semibold mb-4">{t.landing.footer.product}</h4>
+              <ul className="space-y-3 text-sm">
+                <li><a href="#features" className="text-muted-foreground hover:text-primary transition-colors">{t.landing.nav.features}</a></li>
+                <li><a href="#how-it-works" className="text-muted-foreground hover:text-primary transition-colors">{t.landing.nav.howItWorks}</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">{t.landing.footer.courses}</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">{t.landing.footer.simulations}</a></li>
               </ul>
             </div>
 
             {/* Company Links */}
             <div>
-              <h4 className="text-foreground font-semibold mb-3 sm:mb-4 text-sm sm:text-base">{t.landing.footer.company}</h4>
-              <ul className="space-y-2 text-xs sm:text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.about}</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.blog}</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.careers}</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.contact}</a></li>
+              <h4 className="text-foreground font-semibold mb-4">{t.landing.footer.company}</h4>
+              <ul className="space-y-3 text-sm">
+                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">{t.landing.footer.about}</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">{t.landing.footer.blog}</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">{t.landing.footer.careers}</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">{t.landing.footer.contact}</a></li>
               </ul>
             </div>
 
             {/* Legal Links */}
             <div>
-              <h4 className="text-foreground font-semibold mb-3 sm:mb-4 text-sm sm:text-base">{t.landing.footer.legal}</h4>
-              <ul className="space-y-2 text-xs sm:text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.privacy}</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.terms}</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t.landing.footer.cookies}</a></li>
+              <h4 className="text-foreground font-semibold mb-4">{t.landing.footer.legal}</h4>
+              <ul className="space-y-3 text-sm">
+                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">{t.landing.footer.privacy}</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">{t.landing.footer.terms}</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">{t.landing.footer.cookies}</a></li>
               </ul>
             </div>
           </div>
-          <div className="pt-6 sm:pt-8 border-t border-border text-center text-xs sm:text-sm text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} {t.landing.brandName}. {t.landing.footer.allRightsReserved}</p>
+
+          {/* Bottom bar */}
+          <div className="pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-muted-foreground">
+              &copy; {new Date().getFullYear()} {t.landing.brandName}. {t.landing.footer.allRightsReserved}
+            </p>
+            <div className="flex items-center gap-6">
+              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+              </a>
+              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+              </a>
+              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+              </a>
+            </div>
           </div>
         </div>
       </footer>

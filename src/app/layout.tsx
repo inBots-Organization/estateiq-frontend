@@ -1,24 +1,32 @@
 import type { Metadata } from 'next';
-import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic } from 'next/font/google';
+import { Inter, Cairo, Alexandria } from 'next/font/google';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { LessonContextProvider } from '@/contexts/LessonContext';
 import '@/styles/globals.css';
 
-// IBM Plex Sans - Premium tech font for English
-const ibmPlex = IBM_Plex_Sans({
+// Inter - Premium tech font for English (clean, modern)
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-ibm-plex',
+  variable: '--font-inter',
   display: 'swap',
-  weight: ['300', '400', '500', '600', '700'],
+  weight: ['300', '400', '500', '600', '700', '800'],
 });
 
-// IBM Plex Sans Arabic - Modern, highly readable Arabic font
-const ibmPlexArabic = IBM_Plex_Sans_Arabic({
+// Cairo - Premium Arabic font for body text (highly readable)
+const cairo = Cairo({
   subsets: ['arabic', 'latin'],
-  variable: '--font-arabic',
+  variable: '--font-cairo',
   display: 'swap',
-  weight: ['300', '400', '500', '600', '700'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+});
+
+// Alexandria - Premium Arabic font for headings (modern, elegant)
+const alexandria = Alexandria({
+  subsets: ['arabic', 'latin'],
+  variable: '--font-alexandria',
+  display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
@@ -47,7 +55,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body
-        className={`${ibmPlex.variable} ${ibmPlexArabic.variable} font-sans antialiased`}
+        className={`${inter.variable} ${cairo.variable} ${alexandria.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
         <ThemeProvider>
