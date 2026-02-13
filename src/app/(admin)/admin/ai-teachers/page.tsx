@@ -222,6 +222,7 @@ export default function AITeachersPage() {
       setTeachers(data.teachers);
 
       // Load avatars in background after data is displayed
+      // Note: Backend auto-syncs DiceBear avatars to static images
       setAvatarsLoading(true);
       aiTeachersApi.getAvatars()
         .then((res) => setAvatars(res.avatars))
