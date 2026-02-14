@@ -185,14 +185,20 @@ export default function AdminTraineeReportsPage() {
     const baseUrl = apiUrl.replace(/\/api\/?$/, '');
     console.log('[Admin Reports] API URLs - apiUrl:', apiUrl, ', baseUrl:', baseUrl);
 
-    const headers = {
+    const headers: HeadersInit = {
       'Authorization': `Bearer ${authToken}`,
       'Content-Type': 'application/json',
     };
 
+    const fetchOptions: RequestInit = {
+      headers,
+      mode: 'cors',
+    };
+
     try {
       // First verify admin has access to this trainee
-      const traineeRes = await fetch(`${apiUrl}/admin/trainee/${traineeId}/reports`, { headers });
+      console.log('[Admin Reports] Fetching trainee info from:', `${apiUrl}/admin/trainee/${traineeId}/reports`);
+      const traineeRes = await fetch(`${apiUrl}/admin/trainee/${traineeId}/reports`, fetchOptions);
       if (!traineeRes.ok) {
         if (traineeRes.status === 404) {
           setError(isRTL ? 'المتدرب غير موجود' : 'Trainee not found');
@@ -210,11 +216,11 @@ export default function AdminTraineeReportsPage() {
       console.log('[Admin Reports] API URL:', apiUrl, 'Base URL:', baseUrl);
 
       const [dashboardRes, skillsRes, sessionsRes, trendsRes, recsRes] = await Promise.all([
-        fetch(`${baseUrl}/api/reports/${traineeId}/dashboard`, { headers }),
-        fetch(`${baseUrl}/api/reports/${traineeId}/skills`, { headers }),
-        fetch(`${baseUrl}/api/reports/${traineeId}/sessions?page=${currentPage}&limit=10&scenarioType=${scenarioFilter}`, { headers }),
-        fetch(`${baseUrl}/api/reports/${traineeId}/trends?months=6`, { headers }),
-        fetch(`${baseUrl}/api/reports/${traineeId}/recommendations`, { headers }),
+        fetch(`${baseUrl}/api/reports/${traineeId}/dashboard`, fetchOptions),
+        fetch(`${baseUrl}/api/reports/${traineeId}/skills`, fetchOptions),
+        fetch(`${baseUrl}/api/reports/${traineeId}/sessions?page=${currentPage}&limit=10&scenarioType=${scenarioFilter}`, fetchOptions),
+        fetch(`${baseUrl}/api/reports/${traineeId}/trends?months=6`, fetchOptions),
+        fetch(`${baseUrl}/api/reports/${traineeId}/recommendations`, fetchOptions),
       ]);
 
       console.log('[Admin Reports] Dashboard response:', dashboardRes.status, dashboardRes.ok);
