@@ -211,12 +211,9 @@ export default function AdminTraineeReportsPage() {
       setTraineeInfo(traineeData);
 
       // Fetch all reports data for the trainee (using trainee's reports endpoints with admin override)
-      console.log('[Admin Reports] Fetching reports for traineeId:', traineeId);
-      console.log('[Admin Reports] API URL:', apiUrl, 'Base URL:', baseUrl);
-
-      // Use the traineeId returned from the first API call (which is the actual UUID)
+      // Use the traineeId returned from the first API call (which is the actual ID)
       const actualTraineeId = traineeData.traineeId;
-      console.log('[Admin Reports] Using actual traineeId:', actualTraineeId);
+      console.log('[Admin Reports] Using actual traineeId:', actualTraineeId, '(from URL param:', traineeId, ')');
 
       const [dashboardRes, skillsRes, sessionsRes, trendsRes, recsRes] = await Promise.all([
         fetch(`${apiUrl}/reports/${actualTraineeId}/dashboard`, fetchOptions),
