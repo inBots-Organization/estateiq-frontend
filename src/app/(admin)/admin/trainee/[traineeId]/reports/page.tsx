@@ -181,9 +181,8 @@ export default function AdminTraineeReportsPage() {
     setError(null);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-    // Remove /api suffix if present to avoid duplication
-    const baseUrl = apiUrl.replace(/\/api\/?$/, '');
-    console.log('[Admin Reports] API URLs - apiUrl:', apiUrl, ', baseUrl:', baseUrl);
+    // Ensure apiUrl ends with /api and use it directly (don't create baseUrl)
+    console.log('[Admin Reports] API URL:', apiUrl);
 
     const headers: HeadersInit = {
       'Authorization': `Bearer ${authToken}`,
@@ -215,12 +214,16 @@ export default function AdminTraineeReportsPage() {
       console.log('[Admin Reports] Fetching reports for traineeId:', traineeId);
       console.log('[Admin Reports] API URL:', apiUrl, 'Base URL:', baseUrl);
 
+      // Use the traineeId returned from the first API call (which is the actual UUID)
+      const actualTraineeId = traineeData.traineeId;
+      console.log('[Admin Reports] Using actual traineeId:', actualTraineeId);
+
       const [dashboardRes, skillsRes, sessionsRes, trendsRes, recsRes] = await Promise.all([
-        fetch(`${baseUrl}/api/reports/${traineeId}/dashboard`, fetchOptions),
-        fetch(`${baseUrl}/api/reports/${traineeId}/skills`, fetchOptions),
-        fetch(`${baseUrl}/api/reports/${traineeId}/sessions?page=${currentPage}&limit=10&scenarioType=${scenarioFilter}`, fetchOptions),
-        fetch(`${baseUrl}/api/reports/${traineeId}/trends?months=6`, fetchOptions),
-        fetch(`${baseUrl}/api/reports/${traineeId}/recommendations`, fetchOptions),
+        fetch(`${apiUrl}/reports/${actualTraineeId}/dashboard`, fetchOptions),
+        fetch(`${apiUrl}/reports/${actualTraineeId}/skills`, fetchOptions),
+        fetch(`${apiUrl}/reports/${actualTraineeId}/sessions?page=${currentPage}&limit=10&scenarioType=${scenarioFilter}`, fetchOptions),
+        fetch(`${apiUrl}/reports/${actualTraineeId}/trends?months=6`, fetchOptions),
+        fetch(`${apiUrl}/reports/${actualTraineeId}/recommendations`, fetchOptions),
       ]);
 
       console.log('[Admin Reports] Dashboard response:', dashboardRes.status, dashboardRes.ok);
